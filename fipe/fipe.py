@@ -11,6 +11,7 @@ class FIPE(Pruner, FeatureContainer):
     """Functionally-Identical Pruning of Ensemble (FIPE) algorithm."""
 
     oracle: Oracle
+
     _n_oracle_calls: int
     _max_oracle_calls: int
     _counterfactuals: list[list[Sample]]
