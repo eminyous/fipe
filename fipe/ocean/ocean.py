@@ -13,12 +13,7 @@ class OCEAN(VoteOCEAN):
         VoteOCEAN.__init__(self, encoder, ensemble, weights, **kwargs)
 
     def _set_new_weights(self, weights):
-        self._new_weights = {}
-        for t in range(self.n_estimators):
-            try:
-                self._new_weights[t] = weights[t]
-            except (KeyError, IndexError):
-                self._new_weights[t] = 0.0
+        self._new_weights = self._to_dict(weights)
 
     def _check_counter_factual(self, x: Sample):
         pass
