@@ -2,9 +2,11 @@ name: test
 
 on:
   push:
-    branches:
-      - main
+    branches: ["main"]
+    paths: ["fipe/**", "tests/**"]
   pull_request:
+    branches: ["main"]
+    paths: ["fipe/**", "tests/**"]
   workflow_call:
 
 permissions:
