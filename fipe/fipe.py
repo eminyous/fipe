@@ -1,5 +1,4 @@
 import warnings
-from copy import deepcopy
 
 from .ensemble import Ensemble
 from .feature import FeatureContainer, FeatureEncoder
@@ -15,21 +14,26 @@ class FIPE(Pruner, FeatureContainer):
     _n_oracle_calls: int
     _max_oracle_calls: int
     _counterfactuals: list[list[Sample]]
-    _history: list[dict[int, float]]
 
     def __init__(
-        self, base: BaseEnsemble, weights, encoder: FeatureEncoder, **kwargs
+        self,
+        base: BaseEnsemble,
+        weights,
+        encoder: FeatureEncoder,
+        norm: int,
+        **kwargs,
     ):
         """Initialize parent classes and oracle component."""
         ensemble = Ensemble(base=base, encoder=encoder)
-        Pruner.__init__(self, ensemble=ensemble, weights=weights, **kwargs)
+        Pruner.__init__(
+            self, ensemble=ensemble, weights=weights, norm=norm, **kwargs
+        )
         FeatureContainer.__init__(self, encoder=encoder)
         self.oracle = Oracle(
             encoder=encoder, ensemble=ensemble, weights=weights, **kwargs
         )
         # Initialize attributes
         self._counterfactuals = []
-        self._history = []
         self._max_oracle_calls = kwargs.get("max_oracle_calls", 100)
 
     def build(self):
@@ -48,7 +52,6 @@ class FIPE(Pruner, FeatureContainer):
                 msg = "No solution found in the pruning model."
                 warnings.warn(msg)
                 break
-            self._save_weights()
 
             # Solve separation problem
             X = self._separate(self.weights)
@@ -70,10 +73,6 @@ class FIPE(Pruner, FeatureContainer):
     def counterfactuals(self) -> list[list[Sample]]:
         """Return the counterfactual examples found during pruning."""
         return self._counterfactuals
-
-    def _save_weights(self):
-        weights = deepcopy(self.weights)
-        self._history.append(weights)
 
     def _save_counterfactuals(self, counters: list[Sample]):
         self._counterfactuals.append(counters)
