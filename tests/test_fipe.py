@@ -18,9 +18,8 @@ def _test_predictions(X, pruner, weights):
     initial and pruned ensemble are the same.
     """
     ensemble = pruner.ensemble
-    pruner_weights = np.array([pruner.weights[t] for t in range(len(ensemble))])
     pred = ensemble.predict(X, weights)
-    pruner_pred = ensemble.predict(X, pruner_weights)
+    pruner_pred = pruner.predict(X)
     assert np.all(pred == pruner_pred)
 
 
@@ -30,13 +29,13 @@ def _test_fidelity(model, pruner, weights):
     on the training data.
     """
     ensemble = pruner.ensemble
-    pruner_weights = np.array([pruner.weights[t] for t in range(len(ensemble))])
+    pruner_weights = pruner.weights
     for xd in chain(*pruner.counterfactuals):
         x = pruner.transform(xd)
         x = x.reshape(1, -1)
         sk_pred = model.predict(x)
         pred = ensemble.predict(x, weights)
-        pruner_pred = ensemble.predict(x, pruner_weights)
+        pruner_pred = pruner.predict(x)
         try:
             assert np.all(pruner_pred == pred)
             assert np.all(sk_pred == pred)
