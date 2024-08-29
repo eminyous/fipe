@@ -3,7 +3,7 @@ requires = ["setuptools >= 61.0", "wheel", "setuptools_scm[toml]"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "fipe"
+name = "fipepy"
 dynamic = ["version"]
 description = "A simple Python package for Funcationally-Identical Pruning of Ensemble models"
 readme = "README.md"
