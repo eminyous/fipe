@@ -1,0 +1,114 @@
+[build-system]
+requires = ["setuptools >= 61.0", "wheel", "setuptools_scm[toml]"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fipe"
+dynamic = ["version"]
+description = "A simple Python package for Funcationally-Identical Pruning of Ensemble models"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {file = "LICENSE"}
+authors = [
+    {name = "Youssouf Emine", email = "youssouf.emine@polymtl.ca"},{name = "Alexandre Forel", email = "alexandre.forel@polymtl.ca"}
+]
+
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Software Development :: Libraries",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3 :: Only",
+]
+
+dependencies = [
+    "numpy",
+    "gurobipy",
+    "scikit-learn",
+    "pandas"
+]
+
+[tool.setuptools_scm]
+
+
+[project.optional-dependencies]
+dev = [
+    "black",
+    "coverage",
+    "isort",
+    "pylint",
+    "pytest",
+    "pytest-cov",
+    "tox",
+]
+test = [
+    "black",
+    "coverage",
+    "isort",
+    "pylint",
+    "pytest",
+    "pytest-cov",
+    "tox",
+]
+
+[project.urls]
+Homepage = "https://github.com/eminyous/fipe"
+Repository = "https://github.com/eminyous/fipe"
+Issues = "https://github.com/eminyous/fipe/issues"
+
+[tool.black]
+line-length = 80
+target-version = ['py310']
+include = '\.pyi?$'
+exclude = '''
+/(
+    .eggs/
+  | .conda/
+  | .git/
+  | .mypy_cache/
+  | .venv/
+  | .tox/
+  | .vscode/
+  | .pytest_cache/
+  | dist/
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 80
+
+[tool.coverage.report]
+exclude_lines = [
+    'return NotImplemented',
+    'raise NotImplementedError()',
+    'pragma: no cover',
+]
+
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+envlist = py
+isolated_build = True
+
+[tox:.package]
+basepython = python3
+
+[testenv]
+allowlist_externals = *
+
+commands =
+    pip install -e .[test]
+    black fipe tests
+    isort fipe tests
+    coverage run -m pytest
+    coverage report
+    coverage xml
+    pylint fipe
+    pylint -d duplicate-code tests
+"""
