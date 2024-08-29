@@ -12,7 +12,7 @@ class OCEAN(VoteOCEAN):
     ):
         VoteOCEAN.__init__(self, encoder, ensemble, weights, **kwargs)
 
-    def _set_pruned_model_weights(self, weights):
+    def _set_new_weights(self, weights):
         self._new_weights = {}
         for t in range(self.n_estimators):
             try:

@@ -29,7 +29,7 @@ class Oracle(OCEAN):
         When the separation mip returns an empty list, the pruning
         algorithm has converged to a functionally-identical model.
         """
-        self._set_pruned_model_weights(new_weights)
+        self._set_new_weights(new_weights)
         for c in range(self.n_classes):
             yield from self._run_on_single_class(c)
 
