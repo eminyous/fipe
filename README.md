@@ -15,7 +15,7 @@ Run the following commands from the project root to install the requirements. Yo
 
 ```shell
     virtualenv -p python3.10 env
-    pip install -e .
+    pip install fipepy
 ```
 
 The installation can be checked by running the test suite:
