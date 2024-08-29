@@ -17,9 +17,19 @@ class BasePruner(ABC, EnsembleContainer):
 
     @property
     @abstractmethod
-    def activated(self) -> set[int]:
-        msg = self.msg.format(name="activated", method="property")
+    def _prune_weights(self) -> dict[int, float]:
+        msg = self.msg.format(name="_prune_weights", method="property")
         raise NotImplementedError(msg)
+
+    @property
+    def weights(self):
+        w = self._prune_weights
+        return self._to_array(w)
+
+    @property
+    def activated(self) -> set[int]:
+        w = self._prune_weights
+        return {t for t, v in w.items() if v > 1e-6}
 
     @property
     def n_activated(self) -> int:

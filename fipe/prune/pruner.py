@@ -51,16 +51,6 @@ class Pruner(BasePruner, MIP):
             return self._weights
         return {t: v.X for t, v in self._weight_vars.items()}
 
-    @property
-    def weights(self):
-        w = self._prune_weights
-        return self._to_array(w)
-
-    @property
-    def activated(self) -> set[int]:
-        w = self._prune_weights
-        return {t for t, v in w.items() if v > 1e-6}
-
     def _add_vars(self):
         for t in range(self.n_estimators):
             self._weight_vars[t] = self.addVar(
