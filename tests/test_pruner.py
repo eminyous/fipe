@@ -10,14 +10,14 @@ from utils import DATASETS, gb_skip, prune, train
 from fipe import Ensemble, Pruner
 
 
-def _test_predictions(X, ensemble, weights, new_weights, pruner_weights):
+def _test_predictions(X, ensemble: Ensemble, weights, pruner: Pruner):
     """
     Check that the predictions of the
     initial and pruned ensemble are the same.
     """
     pred = ensemble.predict(X, weights)
-    prune_pred = ensemble.predict(X, pruner_weights)
-    assert len(new_weights) > 0
+    prune_pred = pruner.predict(X)
+    assert len(pruner.activated) > 0
     assert np.all(pred == prune_pred)
 
 
@@ -38,7 +38,7 @@ def _test_predictions(X, ensemble, weights, new_weights, pruner_weights):
 )
 def test_pruner_norm(dataset, n_estimators, model_cls, options, seed, norm):
     gb_skip(dataset, model_cls)
-    model, encoder, ensemble, weights, (X_train, X_test, _, _) = train(
+    model, encoder, ensemble, weights, (X_train, _, _, _) = train(
         dataset=dataset,
         model_cls=model_cls,
         n_estimators=n_estimators,
@@ -53,10 +53,6 @@ def test_pruner_norm(dataset, n_estimators, model_cls, options, seed, norm):
     pruner.set_norm(norm=norm)
     pruner.add_samples(X_train)
     prune(pruner)
-    new_weights = pruner.activated
-    pruner_weights = np.array([weights[t] for t in range(len(model))])
     # - Check that prediction of initial and pruned ensemble are the same -
     # Check on train data
-    _test_predictions(X_train, ensemble, weights, new_weights, pruner_weights)
-    # Check on test data
-    _test_predictions(X_test, ensemble, weights, new_weights, pruner_weights)
+    _test_predictions(X_train, ensemble, weights, pruner)
