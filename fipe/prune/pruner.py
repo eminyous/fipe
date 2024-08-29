@@ -1,5 +1,4 @@
 import gurobipy as gp
-import numpy as np
 from gurobipy import GRB
 
 from ..ensemble import Ensemble
