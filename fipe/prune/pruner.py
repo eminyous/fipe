@@ -26,8 +26,8 @@ class Pruner(BasePruner, MIP):
 
     def add_samples(self, X):
         w = np.array([self._weights[t] for t in range(self.n_estimators)])
-        y = self._ensemble.predict(X, w)
-        p = self._ensemble.scores(X)
+        y = self.ensemble.predict(X, w)
+        p = self.ensemble.scores(X)
         n = X.shape[0]
         for i in range(n):
             self._add_sample_constrs(p[i], y[i])
