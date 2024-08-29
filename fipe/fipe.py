@@ -46,7 +46,7 @@ class FIPE(Pruner, FeatureContainer):
         """Iteratively prune the ensemble and call the oracle to separate."""
         while self._n_oracle_calls < self._max_oracle_calls:
             # Solve pruning problem
-            self.optimize()
+            Pruner.prune(self)
             if self.SolCount == 0:
                 # No solution found.
                 msg = "No solution found in the pruning model."
