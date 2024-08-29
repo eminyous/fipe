@@ -40,26 +40,27 @@ class Pruner(BasePruner, MIP):
 
     def predict(self, X):
         w = self.weights
-        w = np.array([w[t] for t in range(self.n_estimators)])
-        return self._ensemble.predict(X, w)
+        return self.ensemble.predict(X, w)
 
     @property
     def n_samples(self) -> int:
         return self._n_samples
 
     @property
-    def weights(self) -> dict[int, float]:
+    def _prune_weights(self):
         if self.SolCount == 0:
-            return {t: self._weights[t] for t in range(self.n_estimators)}
-        return {t: self._weight_vars[t].X for t in range(self.n_estimators)}
+            return self._weights
+        return {t: v.X for t, v in self._weight_vars.items()}
 
     @property
-    def activated(self) -> list[int]:
-        if self.SolCount == 0:
-            return list(range(self.n_estimators))
-        return [
-            t for t in range(self.n_estimators) if self._weight_vars[t].X > 1e-6
-        ]
+    def weights(self):
+        w = self._prune_weights
+        return self._to_array(w)
+
+    @property
+    def activated(self) -> set[int]:
+        w = self._prune_weights
+        return {t for t, v in w.items() if v > 1e-6}
 
     def _add_vars(self):
         for t in range(self.n_estimators):
