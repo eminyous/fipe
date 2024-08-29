@@ -21,9 +21,7 @@ class EnsembleContainer:
 
     def __init__(self, ensemble: Ensemble, weights):
         self._ensemble = ensemble
-        self._weights = {}
-        for t, w in enumerate(weights):
-            self._weights[t] = w
+        self._weights = self._to_dict(weights)
 
     @property
     def ensemble(self):
