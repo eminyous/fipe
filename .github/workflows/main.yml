@@ -3,10 +3,8 @@ name: test
 on:
   push:
     branches: ["main"]
-    paths: ["fipe/**", "tests/**"]
   pull_request:
     branches: ["main"]
-    paths: ["fipe/**", "tests/**"]
   workflow_call:
 
 permissions:
@@ -17,7 +15,8 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.10", "3.11", "3.12"]
-    runs-on: ubuntu-latest
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
