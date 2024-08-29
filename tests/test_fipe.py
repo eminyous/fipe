@@ -78,11 +78,10 @@ def test_prune(dataset, n_estimators, model_cls, options, seed, norm):
     )
 
     # Test that FIPE pruning runs without error
-    pruner = FIPE(model, weights, encoder, eps=1e-4)
+    pruner = FIPE(model, weights, encoder, norm=norm, eps=1e-4)
     pruner.build()
     pruner.setParam("OutputFlag", 0)
     pruner.oracle.setParam("OutputFlag", 0)
-    pruner.set_norm(norm=norm)
     pruner.add_samples(X_train)
     prune(pruner)
 

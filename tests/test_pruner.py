@@ -47,10 +47,9 @@ def test_pruner_norm(dataset, n_estimators, model_cls, options, seed, norm):
     )
     # Test that pruner runs without error
     ensemble = Ensemble(model, encoder)
-    pruner = Pruner(ensemble, weights)
+    pruner = Pruner(ensemble, weights, norm=norm)
     pruner.build()
     pruner.setParam("OutputFlag", 0)
-    pruner.set_norm(norm=norm)
     pruner.add_samples(X_train)
     prune(pruner)
     # - Check that prediction of initial and pruned ensemble are the same -

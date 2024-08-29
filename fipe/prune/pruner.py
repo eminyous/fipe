@@ -83,8 +83,3 @@ class Pruner(BasePruner, MIP):
             >= 1.0,
             name=f"sample_{i}_{c}",
         )
-
-    def set_norm(self, norm: int = 0):
-        obj = self.addVar(name="objective")
-        self.addGenConstrNorm(obj, self._weight_vars, norm)
-        self.setObjective(obj, GRB.MINIMIZE)
