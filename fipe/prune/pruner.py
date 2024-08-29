@@ -13,7 +13,7 @@ class Pruner(BasePruner, MIP):
     _weight_vars: gp.tupledict[int, gp.Var]
     _sample_constrs: gp.tupledict[tuple[int, int], gp.Constr]
 
-    def __init__(self, ensemble: Ensemble, weights, norm: int, **kwargs):
+    def __init__(self, ensemble: Ensemble, weights, norm: int = 1, **kwargs):
         BasePruner.__init__(self, ensemble=ensemble, weights=weights)
         MIP.__init__(
             self, name=kwargs.get("name", ""), env=kwargs.get("env", None)
