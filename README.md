@@ -60,9 +60,8 @@ A minimal working example to prune an AdaBoost ensemble is presented below.
     # Prune using FIPE
     norm = 1
     print(f'Pruning model by minimizing l_{norm} norm.')
-    pruner = FIPE(base=base, weights=w, encoder=encoder, eps=1e-6)
+    pruner = FIPE(base=base, weights=w, encoder=encoder, norm=norm, eps=1e-6)
     pruner.build()
-    pruner.set_norm(norm)
     pruner.add_samples(X_train)
     pruner.oracle.setParam('LogToConsole', 0)
     pruner.prune()
