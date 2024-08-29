@@ -9,18 +9,22 @@ from .base import BasePruner
 class Pruner(BasePruner, MIP):
     _weight_vars: gp.tupledict[int, gp.Var]
     _n_samples: int
+    _norm: int
+    _objective: gp.Var
     _sample_constrs: gp.tupledict[tuple[int, int], gp.Constr]
 
-    def __init__(self, ensemble: Ensemble, weights, **kwargs):
+    def __init__(self, ensemble: Ensemble, weights, norm: int, **kwargs):
         BasePruner.__init__(self, ensemble=ensemble, weights=weights)
         MIP.__init__(
             self, name=kwargs.get("name", ""), env=kwargs.get("env", None)
         )
+        self._norm = norm
         self._weight_vars = gp.tupledict()
         self._sample_constrs = gp.tupledict()
 
     def build(self):
         self._add_vars()
+        self._add_objective()
         self._n_samples = 0
 
     def add_samples(self, X):
@@ -56,6 +60,11 @@ class Pruner(BasePruner, MIP):
             self._weight_vars[t] = self.addVar(
                 vtype=GRB.CONTINUOUS, lb=0.0, name=f"weight_{t}"
             )
+
+    def _add_objective(self):
+        self._objective = self.addVar(name="objective")
+        self.addGenConstrNorm(self._objective, self._weight_vars, self._norm)
+        self.setObjective(self._objective, GRB.MINIMIZE)
 
     def _add_sample_constrs(self, p, y: int):
         for c in range(self.n_classes):
