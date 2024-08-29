@@ -17,7 +17,7 @@ class BasePruner(ABC, EnsembleContainer):
 
     @property
     @abstractmethod
-    def activated(self) -> list[int]:
+    def activated(self) -> set[int]:
         msg = self.msg.format(name="activated", method="property")
         raise NotImplementedError(msg)
 
