@@ -1,5 +1,7 @@
 from abc import ABCMeta
 
+import numpy as np
+
 from .ensemble import Ensemble
 
 
@@ -34,3 +36,21 @@ class EnsembleContainer:
     @property
     def n_classes(self):
         return self.ensemble.n_classes
+
+    def _to_dict(self, w):
+        wd = {}
+        for t in range(self.n_estimators):
+            try:
+                wd[t] = w[t]
+            except (KeyError, IndexError):
+                wd[t] = 0.0
+        return wd
+
+    def _to_array(self, w):
+        wa = np.zeros(self.n_estimators)
+        for t in range(self.n_estimators):
+            try:
+                wa[t] = w[t]
+            except (KeyError, IndexError):
+                wa[t] = 0.0
+        return wa
