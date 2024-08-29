@@ -1,6 +1,10 @@
 # FIPE: Functionally Identical Pruning of Ensembles
 
-![Tests badge](https://github.com/eminyous/fipe/actions/workflows/main.yml/badge.svg?branch=main)
+[![PyPI](https://img.shields.io/pypi/v/fipepy
+)](https://pypi.org/project/fipepy/)
+[![Supported Python
+versions](https://img.shields.io/pypi/pyversions/fipepy.svg)](https://pypi.org/project/tox/)
+![test](https://github.com/eminyous/fipe/actions/workflows/main.yml/badge.svg)
 
 This repository provides methods for Functionally-Identical Pruning of Tree Ensembles (FIPE). Given a trained scikit-learn model, FIPE provides a pruned model that is certified to be equivalent to the original model on the entire feature space.
 
