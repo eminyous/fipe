@@ -1,14 +1,17 @@
 from collections.abc import Iterable, Iterator
 
 import numpy as np
+from numpy.typing import ArrayLike
 from sklearn.ensemble import AdaBoostClassifier, GradientBoostingClassifier
+from sklearn.tree import DecisionTreeRegressor
 
 from ..feature import FeatureEncoder
 from ..tree import Tree, TreeClassifier, TreeRegressor
-from ..typing import BaseEnsemble
+from ..typing import BaseEnsemble, BaseEstimator
 
 
 class Ensemble(Iterable[Tree]):
+
     _base: BaseEnsemble
     _trees: list[Tree]
 
@@ -16,41 +19,42 @@ class Ensemble(Iterable[Tree]):
         self,
         base: BaseEnsemble,
         encoder: FeatureEncoder,
-    ):
+    ) -> None:
         self._base = base
         self._parse_trees(encoder)
 
-    def predict(self, X, w):
-        """Return class of input points for given weights."""
+    def predict(self, X: ArrayLike, w: ArrayLike) -> np.ndarray:
         p = self.score(X, w)
         return np.argmax(p, axis=-1)
 
-    def score(self, X, w):
+    def score(self, X: ArrayLike, w: ArrayLike) -> np.ndarray:
+        w = np.asarray(w)
         p = self.scores(X)
         for i in range(len(self)):
             p[:, i, :] *= w[i]
         return np.sum(p, axis=1) / np.sum(w)
 
-    def scores(self, X):
+    def scores(self, X: ArrayLike) -> np.ndarray:
+        X = np.asarray(X)
         if X.ndim == 1:
             X = X.reshape(1, -1)
 
-        scores = []
-        for e in self.estimators:
-            scores.append(self._scores(X, e))
-        p = np.array(scores)
-        p = np.swapaxes(p, 0, 1)
-        return p
+        p = np.array([self._scores(X, e) for e in self.estimators])
+        return np.swapaxes(p, 0, 1)
 
     @property
-    def estimators(self):
+    def estimators(self) -> list[BaseEstimator]:
         if isinstance(self._base, GradientBoostingClassifier):
-            return self._base.estimators_[:, 0].ravel()
-        return self._base.estimators_
+            return self._base.estimators_[:, 0].ravel().tolist()
+        if isinstance(self._base, AdaBoostClassifier):
+            return list(self._base)
+        return list(self._base.estimators_)
 
     @property
     def n_classes(self) -> int:
-        assert isinstance(self._base.n_classes_, int)
+        if not isinstance(self._base.n_classes_, int):
+            msg = "n_classes must be an integer."
+            raise TypeError(msg)
         return self._base.n_classes_
 
     @property
@@ -70,7 +74,7 @@ class Ensemble(Iterable[Tree]):
     def __len__(self) -> int:
         return self.n_estimators
 
-    def _parse_trees(self, encoder: FeatureEncoder):
+    def _parse_trees(self, encoder: FeatureEncoder) -> None:
         self._trees = []
         if isinstance(self._base, AdaBoostClassifier):
             self._trees = []
@@ -85,14 +89,12 @@ class Ensemble(Iterable[Tree]):
         for e in self._base:
             self._trees.append(Tree(e.tree_, encoder))
 
-    def _scores(self, X, e):
+    def _scores(self, X: ArrayLike, e: BaseEstimator) -> ArrayLike:
+        if isinstance(e, DecisionTreeRegressor):
+            q = e.predict(X)
+            return np.array([-q, q]).T
         if isinstance(self._base, AdaBoostClassifier):
             q = e.predict(X)
-            k = e.n_classes_
-            p = np.eye(k)[q]
-            return p
-        if isinstance(self._base, GradientBoostingClassifier):
-            q = e.predict(X)
-            p = np.array([-q, q]).T
-            return p
+            k = self.n_classes
+            return np.eye(k)[q]
         return e.predict_proba(X)

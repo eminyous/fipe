@@ -6,11 +6,13 @@ build-backend = "setuptools.build_meta"
 name = "fipepy"
 dynamic = ["version"]
 description = "A simple Python package for Funcationally-Identical Pruning of Ensemble models"
-readme = "README.md"
+readme.content-type = "text/markdown"
+readme.file = "README.md"
 requires-python = ">=3.10"
 license = {file = "LICENSE"}
 authors = [
-    {name = "Youssouf Emine", email = "youssouf.emine@polymtl.ca"},{name = "Alexandre Forel", email = "alexandre.forel@polymtl.ca"}
+    { name = "Youssouf Emine", email = "youssouf.emine@polymtl.ca" },
+    { name = "Alexandre Forel", email = "alexandre.forel@polymtl.ca" }
 ]
 
 classifiers = [
@@ -22,6 +24,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3 :: Only",
 ]
 
@@ -32,33 +35,34 @@ dependencies = [
     "pandas"
 ]
 
+optional-dependencies.dev = [
+    "black",
+    "coverage",
+    "isort",
+    "pytest",
+    "pytest-cov",
+    "ruff",
+    "tox",
+]
+
+optional-dependencies.test = [
+    "black",
+    "coverage",
+    "isort",
+    "pytest",
+    "pytest-cov",
+    "ruff",
+    "tox",
+]
+
+urls.Homepage = "https://github.com/eminyous/fipe"
+urls.Repository = "https://github.com/eminyous/fipe"
+urls.Issues = "https://github.com/eminyous/fipe/issues"
+
 [tool.setuptools_scm]
 
-
-[project.optional-dependencies]
-dev = [
-    "black",
-    "coverage",
-    "isort",
-    "pylint",
-    "pytest",
-    "pytest-cov",
-    "tox",
-]
-test = [
-    "black",
-    "coverage",
-    "isort",
-    "pylint",
-    "pytest",
-    "pytest-cov",
-    "tox",
-]
-
-[project.urls]
-Homepage = "https://github.com/eminyous/fipe"
-Repository = "https://github.com/eminyous/fipe"
-Issues = "https://github.com/eminyous/fipe/issues"
+[tool.pyproject-fmt]
+max_supported_python = "3.13"
 
 [tool.black]
 line-length = 80
@@ -81,6 +85,48 @@ exclude = '''
 [tool.isort]
 profile = "black"
 line_length = 80
+
+[tool.ruff]
+cache-dir = ".ruff_cache/"
+target-version = "py310"
+line-length = 80
+fix = true
+show-fixes = true
+format.preview = true
+format.docstring-code-line-length = 100
+format.docstring-code-format = true
+lint.select = [
+    "ALL",
+]
+lint.ignore = [
+    "ANN003", # Missing type annotation for kwargs
+    "CPY", # No copyright header
+    "D100", # Missing docstring in public module
+    "D101", # Missing docstring in public class
+    "D102", # Missing docstring in public method
+    "D103", # Missing docstring in public function
+    "D104", # Missing docstring in public package
+    "D105", # Missing docstring in magic method
+    "D107", # Missing docstring in __init__
+    "D203", # 1 blank line required before class docstring
+    "D212", # Multi-line docstring summary should start at the first line
+    "N802", # Function name should be lowercase
+    "N803", # Argument name should be lowercase
+    "N806", # Variable in function should be lowercase
+    "TID252", # 
+]
+lint.per-file-ignores."tests/**/*.py" = [
+    "INP001", # No implicit namespace package
+    "PLR0913", # Too many arguments.
+    "PLR0917", # Too many positional arguments.
+    "S101", # Use of assert detected
+]
+lint.isort = { known-first-party = [
+    "fipe",
+    "tests",
+] }
+lint.preview = true
+lint.flake8-builtins.builtins-allowed-modules = ["typing"]
 
 [tool.coverage.report]
 exclude_lines = [
@@ -105,10 +151,8 @@ allowlist_externals = *
 commands =
     pip install -e .[test]
     black fipe tests
-    isort fipe tests
+    ruff check fipe tests
     coverage run -m pytest
     coverage report
     coverage xml
-    pylint fipe
-    pylint -d duplicate-code tests
 """

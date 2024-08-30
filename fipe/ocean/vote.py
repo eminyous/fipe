@@ -2,6 +2,7 @@ import gurobipy as gp
 
 from ..ensemble import Ensemble
 from ..feature.encoder import FeatureEncoder
+from ..typing import Weights
 from .base import BaseOCEAN
 
 
@@ -10,23 +11,27 @@ class VoteOCEAN(BaseOCEAN):
     _majority_class_constrs: gp.tupledict[int, gp.Constr]
 
     def __init__(
-        self, encoder: FeatureEncoder, ensemble: Ensemble, weights, **kwargs
-    ):
+        self,
+        encoder: FeatureEncoder,
+        ensemble: Ensemble,
+        weights: Weights,
+        **kwargs,
+    ) -> None:
         BaseOCEAN.__init__(self, encoder, ensemble, weights, **kwargs)
         self._eps = kwargs.get("eps", 1.0)
 
-    def set_majority_class(self, c: int):
+    def set_majority_class(self, c: int) -> None:
         self._majority_class_constrs = gp.tupledict()
         for k in range(self.n_classes):
             if k == c:
                 continue
             self._add_majority_class_constr(c, k)
 
-    def clear_majority_class(self):
+    def clear_majority_class(self) -> None:
         self.remove(self._majority_class_constrs)
         self._majority_class_constrs = gp.tupledict()
 
-    def _add_majority_class_constr(self, c: int, k: int):
+    def _add_majority_class_constr(self, c: int, k: int) -> None:
         rhs = self._eps if k < c else 0.0
 
         constr = self.addConstr(

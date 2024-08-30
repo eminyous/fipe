@@ -11,31 +11,42 @@ class LevelParser:
     _levels: dict[str, list[numeric]]
     _tol: float
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         self._levels = {}
         self._tol = kwargs.get("tol", 1e-6)
 
-    def parse_levels(self, ensembles: list[Ensemble], encoder: FeatureEncoder):
+    def parse_levels(
+        self,
+        ensembles: list[Ensemble],
+        encoder: FeatureEncoder,
+    ) -> None:
         for feature in encoder.continuous:
             levels = set()
             for ensemble in ensembles:
                 levels |= self._get_levels(feature, ensemble)
-            levels = list(sorted(levels))
-            if len(levels) >= 2 and np.diff(levels).min() < self._tol:
+            levels = sorted(levels)
+            MIN_NUM_LEVELS = 2
+            if (
+                len(levels) >= MIN_NUM_LEVELS
+                and np.diff(levels).min() < self._tol
+            ):
                 msg = (
                     f"The levels of the feature {feature}"
                     " are too close to each other."
                 )
-                warnings.warn(msg)
+                warnings.warn(msg, stacklevel=2)
             self._levels[feature] = levels
 
     @property
-    def levels(self):
+    def levels(self) -> dict[str, list[numeric]]:
         return self._levels
 
-    def _get_levels(self, feature: str, ensemble: Ensemble):
+    @staticmethod
+    def _get_levels(feature: str, ensemble: Ensemble) -> set[numeric]:
         levels = set()
         for tree in ensemble:
-            for n in tree.nodes_split_on(feature):
-                levels.add(tree.threshold[n])
+            tree_levels = {
+                tree.threshold[n] for n in tree.nodes_split_on(feature)
+            }
+            levels.update(tree_levels)
         return levels

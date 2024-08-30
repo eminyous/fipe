@@ -4,24 +4,24 @@ import numpy as np
 
 from ..feature.container import FeatureContainer
 from ..feature.encoder import FeatureEncoder
-from ..typing import Node, numeric
+from ..typing import BaseTree, Node, numeric
 
 
 class Tree(FeatureContainer, Iterable[Node]):
     """
     Class to represent a tree.
 
-    This class is a wrapper around the sklearn.tree._tree.Tree
+    This class is a wrapper around the sklearn.tree.BaseTree
 
-    Parameters:
-    ------------
+    Parameters
+    ----------
     tree: _Tree
         The tree to be represented.
     encoder: FeatureEncoder
         The encoder of the dataset.
 
-    Attributes:
-    ------------
+    Attributes
+    ----------
     root: Node
         The root node of the tree.
     n_nodes: int
@@ -48,6 +48,7 @@ class Tree(FeatureContainer, Iterable[Node]):
         This is only present for categorical encoder.
     prob: defaultdict[int, dict[Node, float]]
         The probability of each class at each leaf node.
+
     """
 
     n_nodes: int
@@ -68,7 +69,7 @@ class Tree(FeatureContainer, Iterable[Node]):
 
     n_classes: int
 
-    def __init__(self, tree, encoder: FeatureEncoder):
+    def __init__(self, tree: BaseTree, encoder: FeatureEncoder) -> None:
         FeatureContainer.__init__(self, encoder)
         self.internal_nodes = set()
         self.leaves = set()
@@ -86,48 +87,12 @@ class Tree(FeatureContainer, Iterable[Node]):
         self._parse_tree(tree)
 
     def nodes_at_depth(self, depth: int) -> set[Node]:
-        """
-        The set of nodes at a given depth.
-
-        Parameters:
-        ------------
-        depth: int
-            The depth of the nodes.
-        with_leaves: bool
-            Whether to include leaf nodes.
-
-        Returns:
-        ---------
-        set[Node]
-            The set of nodes at the given depth.
-        """
-
-        def fn(n):
-            return self.node_depth[n] == depth
-
-        return set(filter(fn, self.internal_nodes))
+        return {n for n in self.internal_nodes if self.node_depth[n] == depth}
 
     def nodes_split_on(self, feature: str) -> set[Node]:
-        """
-        The set of nodes that split on a given feature.
+        return {n for n in self.internal_nodes if self.feature[n] == feature}
 
-        Parameters:
-        ------------
-        feature: str
-            The feature to split on.
-
-        Returns:
-        ---------
-        set[Node]
-            The set of nodes that split on the feature.
-        """
-
-        def fn(n):
-            return self.feature[n] == feature
-
-        return set(filter(fn, self.internal_nodes))
-
-    def read_internal(self, tree, node: Node):
+    def read_internal(self, tree: BaseTree, node: Node) -> None:
         i = tree.feature[node]
         f = self.columns[i]
         if f in self.inverse_categories:
@@ -137,7 +102,7 @@ class Tree(FeatureContainer, Iterable[Node]):
         if f in self.continuous:
             self.threshold[node] = tree.threshold[node]
 
-    def read_leaf(self, tree, node: Node):
+    def read_leaf(self, tree: BaseTree, node: Node) -> None:
         self.value[node] = tree.value[node].flatten()
         if self.n_classes == -1:
             self.n_classes = len(self.value[node])
@@ -148,14 +113,14 @@ class Tree(FeatureContainer, Iterable[Node]):
     def __len__(self) -> int:
         return self.n_nodes
 
-    def _parse_tree(self, tree):
+    def _parse_tree(self, tree: BaseTree) -> None:
         self.root = 0
         self.n_nodes = tree.node_count
-        self.max_depth = tree.max_depth
         self.n_classes = -1
         self._dfs(tree, self.root, 0)
+        self.max_depth = max(self.node_depth.values())
 
-    def _dfs(self, tree, node: Node, depth: int):
+    def _dfs(self, tree: BaseTree, node: Node, depth: int) -> None:
         self.node_depth[node] = depth
         left = tree.children_left[node]
         right = tree.children_right[node]
