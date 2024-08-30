@@ -128,13 +128,13 @@ lint.isort = { known-first-party = [
 lint.preview = true
 lint.flake8-builtins.builtins-allowed-modules = ["typing"]
 
-[tool.coverage.report]
-exclude_lines = [
+[tool.coverage]
+run.omit = ["tests/*"]
+report.exclude_lines = [
     'return NotImplemented',
     'raise NotImplementedError()',
     'pragma: no cover',
 ]
-
 
 [tool.tox]
 legacy_tox_ini = """
