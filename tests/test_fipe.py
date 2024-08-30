@@ -2,6 +2,7 @@ from itertools import chain
 
 import numpy as np
 import pytest
+from numpy.typing import ArrayLike
 from sklearn.ensemble import (
     AdaBoostClassifier,
     GradientBoostingClassifier,
@@ -12,22 +13,20 @@ from utils import DATASETS, gb_skip, prune, train
 from fipe import FIPE
 
 
-def _test_predictions(X, pruner, weights):
-    """
-    Check that the predictions of the
-    initial and pruned ensemble are the same.
-    """
+def _test_predictions(X: ArrayLike, pruner: FIPE, weights: ArrayLike) -> None:
     ensemble = pruner.ensemble
     pred = ensemble.predict(X, weights)
     pruner_pred = pruner.predict(X)
     assert np.all(pred == pruner_pred)
 
 
-def _test_fidelity(model, pruner, weights):
-    """
-    Check that the pruned ensemble has 100% fidelity
-    on the training data.
-    """
+def _test_fidelity(
+    model: (
+        AdaBoostClassifier | GradientBoostingClassifier | RandomForestClassifier
+    ),
+    pruner: FIPE,
+    weights: ArrayLike,
+) -> None:
     ensemble = pruner.ensemble
     pruner_weights = pruner.weights
     for xd in chain(*pruner.counterfactuals):
@@ -40,15 +39,9 @@ def _test_fidelity(model, pruner, weights):
             assert np.all(pruner_pred == pred)
             assert np.all(sk_pred == pred)
         except AssertionError:
-            print(f"Failed for {x}")
-            print(f"scikit-learn's prediction: {sk_pred}")
-            print(f"My prediction: {pred}")
-            print(f"My new prediction: {pruner_pred}")
             # Show score prediction
-            prob = ensemble.score(x, weights)
-            print(f"Probabilities: {prob}")
-            pruner_prob = ensemble.score(x, pruner_weights)
-            print(f"New Probabilities: {pruner_prob}")
+            ensemble.score(x, weights)
+            ensemble.score(x, pruner_weights)
             raise
 
 
@@ -59,7 +52,7 @@ def _test_fidelity(model, pruner, weights):
 @pytest.mark.parametrize("n_estimators", [10])
 @pytest.mark.parametrize("seed", [41, 56, 78])
 @pytest.mark.parametrize(
-    "model_cls, options",
+    ("model_cls", "options"),
     [
         (RandomForestClassifier, {"max_depth": 1}),
         (AdaBoostClassifier, {"algorithm": "SAMME"}),
@@ -67,7 +60,14 @@ def _test_fidelity(model, pruner, weights):
     ],
 )
 @pytest.mark.parametrize("norm", [0, 1])
-def test_prune(dataset, n_estimators, model_cls, options, seed, norm):
+def test_prune(
+    dataset: str,
+    n_estimators: int,
+    seed: int,
+    model_cls: type,
+    options: dict[str, int | str | None],
+    norm: int,
+) -> None:
     gb_skip(dataset, model_cls)
     model, encoder, _, weights, (X_train, X_test, _, _) = train(
         dataset=dataset,

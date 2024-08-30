@@ -1,5 +1,6 @@
 from abc import ABCMeta
 
+import numpy as np
 import pandas as pd
 
 from ..typing import Sample
@@ -19,40 +20,38 @@ class FeatureContainer:
 
     _encoder: FeatureEncoder
 
-    def __init__(self, encoder: FeatureEncoder):
+    def __init__(self, encoder: FeatureEncoder) -> None:
         self._encoder = encoder
 
     @property
-    def columns(self):
+    def columns(self) -> list[str]:
         return self._encoder.columns
 
     @property
-    def binary(self):
+    def binary(self) -> set[str]:
         return self._encoder.binary
 
     @property
-    def continuous(self):
+    def continuous(self) -> set[str]:
         return self._encoder.continuous
 
     @property
-    def categorical(self):
+    def categorical(self) -> set[str]:
         return self._encoder.categorical
 
     @property
-    def n_features(self):
+    def n_features(self) -> int:
         return self._encoder.n_features
 
     @property
-    def categories(self):
+    def categories(self) -> dict[str, list[str]]:
         return self._encoder.categories
 
     @property
-    def inverse_categories(self):
+    def inverse_categories(self) -> dict[str, str]:
         return self._encoder.inverse_categories
 
-    def transform(self, X: Sample | list[Sample]):
+    def transform(self, X: Sample | list[Sample]) -> np.ndarray:
         if not isinstance(X, list):
             X = [X]
-
-        df = pd.DataFrame(X, columns=self.columns)
-        return df.values
+        return pd.DataFrame(X, columns=self.columns).to_numpy()

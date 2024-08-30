@@ -8,16 +8,16 @@ from .tree.tree import Node, Tree
 from .typing import FeatureType
 
 __all__ = [
-    "FeatureEncoder",
-    "Ensemble",
     "FIPE",
-    "Oracle",
-    "BasePruner",
-    "Pruner",
-    "BaseOCEAN",
-    "VoteOCEAN",
     "OCEAN",
-    "Node",
-    "Tree",
+    "BaseOCEAN",
+    "BasePruner",
+    "Ensemble",
+    "FeatureEncoder",
     "FeatureType",
+    "Node",
+    "Oracle",
+    "Pruner",
+    "Tree",
+    "VoteOCEAN",
 ]

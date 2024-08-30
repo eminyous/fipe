@@ -1,5 +1,5 @@
 from abc import ABC, ABCMeta, abstractmethod
-from typing import Any
+from typing import Any, NoReturn
 
 import gurobipy as gp
 
@@ -14,17 +14,11 @@ class MIP(gp.Model):
 
     __metaclass__ = ABCMeta
 
-    def __init__(self, name: str = "", env: gp.Env | None = None):
+    def __init__(self, name: str = "", env: gp.Env | None = None) -> None:
         gp.Model.__init__(self, name, env)
 
-    def __setattr__(self, name: str, value: Any) -> None:
+    def __setattr__(self, name: str, value: Any) -> None:  # noqa: ANN401
         return object.__setattr__(self, name, value)
-
-    def __getattribute__(self, name: str) -> Any:
-        try:
-            return gp.Model.__getattribute__(self, name)
-        except AttributeError:
-            return object.__getattribute__(self, name)
 
 
 class BaseVar(ABC):
@@ -45,22 +39,22 @@ class BaseVar(ABC):
     name: str
     msg = "Subclasses must implement the {name} {method}"
 
-    def __init__(self, name: str = ""):
+    def __init__(self, name: str = "") -> None:
         self.name = name
 
     @abstractmethod
-    def build(self, mip: MIP):
+    def build(self, mip: MIP) -> None:
         msg = self.msg.format(name="build", method="method")
         raise NotImplementedError(msg)
 
     @property
     @abstractmethod
-    def X(self):
+    def X(self) -> NoReturn:
         msg = self.msg.format(name="X", method="property")
         raise NotImplementedError(msg)
 
     @property
     @abstractmethod
-    def Xn(self):
+    def Xn(self) -> NoReturn:
         msg = self.msg.format(name="Xn", method="property")
         raise NotImplementedError(msg)

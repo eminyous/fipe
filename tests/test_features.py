@@ -1,4 +1,5 @@
 import unittest
+from typing import ClassVar
 
 from utils import load
 
@@ -6,27 +7,25 @@ from fipe import FeatureEncoder
 
 
 class TestFeatures(unittest.TestCase):
-    dataset = "Breast-Cancer-Wisconsin"
-    true_features = set(
-        [
-            "Clump-T",
-            "Uniformity-Size",
-            "Uniformity-Shape",
-            "Adhesion",
-            "Cell-Size",
-            "Bare-Nuclei",
-            "Bland-Chromatin",
-            "Normal-Nucleoli",
-            "Mitoses",
-        ]
-    )
+    dataset: ClassVar[str] = "Breast-Cancer-Wisconsin"
+    true_features: ClassVar[set] = {
+        "Clump-T",
+        "Uniformity-Size",
+        "Uniformity-Shape",
+        "Adhesion",
+        "Cell-Size",
+        "Bare-Nuclei",
+        "Bland-Chromatin",
+        "Normal-Nucleoli",
+        "Mitoses",
+    }
 
-    def test_fit(self):
+    def test_fit(self) -> None:
         data, _, _ = load(self.dataset)
         encoder = FeatureEncoder(data)
-        self.assertEqual(encoder.continuous, self.true_features)
-        self.assertEqual(encoder.categorical, set())
-        self.assertEqual(encoder.binary, set())
+        assert encoder.continuous == self.true_features
+        assert encoder.categorical == set()
+        assert encoder.binary == set()
 
 
 if __name__ == "__main__":

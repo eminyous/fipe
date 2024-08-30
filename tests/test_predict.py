@@ -1,11 +1,14 @@
 import numpy as np
 import pytest
+from numpy.typing import ArrayLike
 from sklearn.ensemble import (
     AdaBoostClassifier,
     GradientBoostingClassifier,
     RandomForestClassifier,
 )
 from utils import DATASETS, gb_skip, train
+
+from fipe import Ensemble
 
 
 @pytest.mark.parametrize(
@@ -25,15 +28,29 @@ from utils import DATASETS, gb_skip, train
 class TestPredict:
 
     @staticmethod
-    def _compare_predicts(model, ensemble, X, weights):
+    def _compare_predicts(
+        model: (
+            AdaBoostClassifier
+            | GradientBoostingClassifier
+            | RandomForestClassifier
+        ),
+        ensemble: Ensemble,
+        X: ArrayLike,
+        weights: ArrayLike,
+    ) -> None:
         expected_pred = model.predict(X)
         actual_pred = ensemble.predict(X, weights)
         assert (expected_pred == actual_pred).all()
         assert actual_pred.shape == expected_pred.shape
 
     def test_predict_vs_sklearn(
-        self, dataset, model_cls, n_estimators, seed, options
-    ):
+        self,
+        dataset: str,
+        model_cls: type,
+        n_estimators: int,
+        seed: int,
+        options: dict[str, int | str | None],
+    ) -> None:
         gb_skip(dataset, model_cls)
         model, _, ensemble, weights, (X_train, X_test, _, _) = train(
             dataset=dataset,
@@ -48,9 +65,14 @@ class TestPredict:
         # Test on test data
         self._compare_predicts(model, ensemble, X_test, weights)
 
+    @staticmethod
     def test_predict_classes(
-        self, dataset, model_cls, n_estimators, seed, options
-    ):
+        dataset: str,
+        model_cls: type,
+        n_estimators: int,
+        seed: int,
+        options: dict[str, int | str | None],
+    ) -> None:
         gb_skip(dataset, model_cls)
         model, _, ensemble, _, (X_train, _, _, _) = train(
             dataset=dataset,
@@ -61,7 +83,9 @@ class TestPredict:
         )
 
         classes = model.classes_
-        weights = np.random.uniform(size=(len(ensemble),)) * 100
+        generator = np.random.default_rng()
+        weights = generator.uniform(size=(len(ensemble),)) * 100
         actual_pred = ensemble.predict(X_train, weights)
+        X_train = np.asarray(X_train)
         assert len(actual_pred) == len(X_train)
         assert set(actual_pred).issubset(set(classes))
