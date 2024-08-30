@@ -50,7 +50,7 @@ A minimal working example to prune an AdaBoost ensemble is presented below.
     y = data.target
 
     encoder = FeatureEncoder(X)
-    X = encoder.X.values
+    X = encoder.X.to_numpy()
 
     # Train tree ensemble
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
