@@ -6,7 +6,7 @@
 versions](https://img.shields.io/pypi/pyversions/fipepy.svg)](https://pypi.org/project/fipepy/)
 ![test](https://github.com/eminyous/fipe/actions/workflows/main.yml/badge.svg)
 
-This repository provides methods for Functionally-Identical Pruning of Tree Ensembles (FIPE). Given a trained scikit-learn model, FIPE provides a pruned model that is certified to be equivalent to the original model on the entire feature space.
+This repository provides methods for Functionally-Identical Pruning of Tree Ensembles (FIPE). Given a trained scikit-learn model, FIPE provides a pruned model that is certified to be equivalent to the original model on the entire feature space. The algorithm is described in detail in the paper: https://arxiv.org/abs/2408.16167 .
 
 ## Installation
 
