@@ -26,7 +26,6 @@ from fipe import Ensemble
 @pytest.mark.parametrize("n_estimators", [40, 80])
 @pytest.mark.parametrize("seed", [42, 60])
 class TestPredict:
-
     @staticmethod
     def _compare_predicts(
         model: (

@@ -11,7 +11,6 @@ from ..typing import BaseEnsemble, BaseEstimator
 
 
 class Ensemble(Iterable[Tree]):
-
     _base: BaseEnsemble
     _trees: list[Tree]
 

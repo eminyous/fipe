@@ -27,7 +27,7 @@ class Pruner(BasePruner, MIP):
         MIP.__init__(
             self,
             name=kwargs.get("name", ""),
-            env=kwargs.get("env", None),
+            env=kwargs.get("env"),
         )
         self._norm = norm
         self._weight_vars = gp.tupledict()

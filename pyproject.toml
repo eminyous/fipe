@@ -113,7 +113,10 @@ lint.ignore = [
     "N802", # Function name should be lowercase
     "N803", # Argument name should be lowercase
     "N806", # Variable in function should be lowercase
-    "TID252", # 
+    "TID252", 
+    "EXE",
+    "COM812",
+    "ISC001",
 ]
 lint.per-file-ignores."tests/**/*.py" = [
     "INP001", # No implicit namespace package

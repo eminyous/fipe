@@ -20,7 +20,7 @@ class BaseOCEAN(MIP, EnsembleContainer, FeatureContainer, LevelParser):
         MIP.__init__(
             self,
             name=kwargs.get("name", ""),
-            env=kwargs.get("env", None),
+            env=kwargs.get("env"),
         )
         EnsembleContainer.__init__(self, ensemble=ensemble, weights=weights)
         FeatureContainer.__init__(self, encoder=encoder)
