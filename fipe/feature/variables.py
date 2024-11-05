@@ -184,6 +184,17 @@ class FeatureVars(BaseVar):
         var = CategoricalVar(categories, feature)
         self.categorical[feature] = var
 
+    def items(
+        self,
+    ) -> list[tuple[str, BinaryVar | ContinuousVar | CategoricalVar]]:
+        return list(
+            chain(
+                self.binary.items(),
+                self.continuous.items(),
+                self.categorical.items(),
+            )
+        )
+
     @property
     def X(self) -> Sample:
         v = {}
