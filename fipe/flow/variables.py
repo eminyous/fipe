@@ -1,5 +1,3 @@
-from itertools import chain
-
 import gurobipy as gp
 import numpy as np
 from gurobipy import GRB
@@ -70,11 +68,7 @@ class FlowVars(BaseVar, gp.tupledict[Node, gp.Var]):
         return left_constr, right_constr
 
     def add_feature_constrs(self, mip: MIP, feature_vars: FeatureVars) -> None:
-        for feature, var in chain(
-            feature_vars.binary.items(),
-            feature_vars.continuous.items(),
-            feature_vars.categorical.items(),
-        ):
+        for feature, var in feature_vars.items():
             self._add_feature_var(mip, feature, var)
 
     @property
