@@ -1,3 +1,4 @@
+from collections.abc import Generator
 from copy import deepcopy
 from itertools import chain
 
@@ -163,11 +164,7 @@ class FeatureVars(BaseVar):
         self.categorical = {}
 
     def build(self, mip: MIP) -> None:
-        for var in chain(
-            self.binary.values(),
-            self.continuous.values(),
-            self.categorical.values(),
-        ):
+        for var in self.values():
             var.build(mip)
 
     def add_binary(self, feature: str) -> None:
@@ -184,15 +181,22 @@ class FeatureVars(BaseVar):
         var = CategoricalVar(categories, feature)
         self.categorical[feature] = var
 
-    def items(
-        self,
-    ) -> list[tuple[str, BinaryVar | ContinuousVar | CategoricalVar]]:
-        return list(
-            chain(
-                self.binary.items(),
-                self.continuous.items(),
-                self.categorical.items(),
-            )
+    def values(self) -> Generator[
+        BinaryVar | ContinuousVar | CategoricalVar, None, None
+    ]:
+        yield from chain(
+            self.binary.values(),
+            self.continuous.values(),
+            self.categorical.values(),
+        )
+
+    def items(self) -> Generator[
+        tuple[str, BinaryVar | ContinuousVar | CategoricalVar], None, None
+    ]:
+        yield from chain(
+            self.binary.items(),
+            self.continuous.items(),
+            self.categorical.items(),
         )
 
     @property
