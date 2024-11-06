@@ -32,7 +32,8 @@ dependencies = [
     "numpy",
     "gurobipy",
     "scikit-learn",
-    "pandas"
+    "pandas",
+    "lightgbm",
 ]
 
 optional-dependencies.dev = [
