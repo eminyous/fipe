@@ -1,3 +1,4 @@
+from . import lgbm
 from .ensemble import Ensemble
 from .feature import FeatureEncoder
 from .fipe import FIPE
@@ -20,4 +21,5 @@ __all__ = [
     "Pruner",
     "Tree",
     "VoteOCEAN",
+    "lgbm",
 ]

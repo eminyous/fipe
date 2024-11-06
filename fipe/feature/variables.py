@@ -164,7 +164,6 @@ FeatureVarValue = numeric | dict[str, numeric]
 
 
 class FeatureVars(BaseVar, dict[str, FeatureVar]):
-
     def __init__(self, name: str = "") -> None:
         BaseVar.__init__(self, name=name)
         dict.__init__(self)

@@ -80,8 +80,7 @@ class FlowVars(BaseVar, gp.tupledict[Node, gp.Var]):
         value = {}
         for c in range(self.tree.n_classes):
             value[c] = gp.quicksum(
-                self.tree.value[n][c] * self[n]
-                for n in self.tree.leaves
+                self.tree.value[n][c] * self[n] for n in self.tree.leaves
             )
         return value
 
