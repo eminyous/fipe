@@ -1,4 +1,4 @@
-from collections.abc import Generator
+from collections.abc import Callable, Generator
 from copy import deepcopy
 from itertools import chain
 
@@ -181,16 +181,18 @@ class FeatureVars(BaseVar):
         var = CategoricalVar(categories, feature)
         self.categorical[feature] = var
 
-    def values(self) -> Generator[
-        BinaryVar | ContinuousVar | CategoricalVar, None, None
-    ]:
+    def values(
+        self,
+    ) -> Generator[BinaryVar | ContinuousVar | CategoricalVar, None, None]:
         yield from chain(
             self.binary.values(),
             self.continuous.values(),
             self.categorical.values(),
         )
 
-    def items(self) -> Generator[
+    def items(
+        self,
+    ) -> Generator[
         tuple[str, BinaryVar | ContinuousVar | CategoricalVar], None, None
     ]:
         yield from chain(
@@ -201,24 +203,26 @@ class FeatureVars(BaseVar):
 
     @property
     def X(self) -> Sample:
-        v = {}
-        for f, var in chain(
-            self.binary.items(),
-            self.continuous.items(),
-        ):
-            v[f] = var.X
-        for var in self.categorical.values():
-            v.update(var.X)
-        return v
+        def func(var: BaseVar) -> numeric | dict[str, numeric]:
+            return var.X
+
+        return self.apply(func)
 
     @property
     def Xn(self) -> Sample:
+        def func(var: BaseVar) -> numeric | dict[str, numeric]:
+            return var.Xn
+
+        return self.apply(func)
+
+    def apply(
+        self,
+        func: Callable[[BaseVar], numeric | dict[str, numeric]],
+    ) -> dict[str, numeric | dict[str, numeric]]:
         v = {}
-        for f, var in chain(
-            self.binary.items(),
-            self.continuous.items(),
-        ):
-            v[f] = var.Xn
-        for var in self.categorical.values():
-            v.update(var.Xn)
+        for f, var in self.items():
+            if isinstance(var, CategoricalVar):
+                v.update(func(var))
+            else:
+                v[f] = func(var)
         return v
