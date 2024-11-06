@@ -180,7 +180,7 @@ class FlowVars(BaseVar, gp.tupledict[Node, gp.Var]):
                 )
             elif isinstance(var, ContinuousVar):
                 th = self.tree.threshold[node]
-                j = var.levels.index(th)
+                j = np.where(var.levels == th)[0][0]
                 self.add_branch_rule(
                     mip=mip,
                     var=var[j],

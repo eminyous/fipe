@@ -1,8 +1,8 @@
 from collections.abc import Callable
-from copy import deepcopy
 
 import gurobipy as gp
 import numpy as np
+from numpy.typing import ArrayLike, NDArray
 
 from ..mip import MIP, BaseVar
 from ..typing import Sample, numeric
@@ -30,14 +30,14 @@ class BinaryVar(BaseVar):
 
 
 class ContinuousVar(BaseVar, gp.tupledict[int, gp.Var]):
-    levels: list[numeric]
+    levels: NDArray[np.float64]
 
     _logic_constrs: gp.tupledict[int, gp.Constr]
 
-    def __init__(self, levels: list[numeric], name: str = "") -> None:
+    def __init__(self, levels: ArrayLike, name: str = "") -> None:
         BaseVar.__init__(self, name)
         gp.tupledict.__init__(self)
-        self.levels = deepcopy(levels)
+        self.levels = np.asarray(levels)
         self._logic_constrs = gp.tupledict()
 
     def build(self, mip: MIP) -> None:
