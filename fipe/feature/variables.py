@@ -1,6 +1,5 @@
-from collections.abc import Callable, Generator
+from collections.abc import Callable
 from copy import deepcopy
-from itertools import chain
 
 import gurobipy as gp
 import numpy as np
@@ -47,15 +46,42 @@ class ContinuousVar(BaseVar, gp.tupledict[int, gp.Var]):
 
     @property
     def X(self) -> numeric:
-        n = len(self.levels)
-        mu = [self[j].X for j in range(n)]
-        return self._compute_value(mu)
+        def X(var: gp.Var) -> numeric:
+            return var.X
+
+        return self.apply(func=X)
 
     @property
     def Xn(self) -> numeric:
+        def Xn(var: gp.Var) -> numeric:
+            return var.Xn
+
+        return self.apply(func=Xn)
+
+    def apply(self, func: Callable[[gp.Var], numeric]) -> numeric:
         n = len(self.levels)
-        mu = [self[j].Xn for j in range(n)]
-        return self._compute_value(mu)
+        mu = [func(self[j]) for j in range(n)]
+        if n == 0:
+            return 0.0
+
+        nu = np.array(mu)
+        nu = np.floor(nu + 0.5)
+
+        if np.isclose(nu[0], 0.0):
+            return self.levels[0] - 1
+
+        if np.isclose(nu[-1], 1.0):
+            return self.levels[-1] + 1
+
+        levels = np.array(self.levels)
+        dl = np.diff(levels)
+        x = levels[0]
+        for j in range(1, n):
+            if np.isclose(nu[j], 0.0):
+                x += dl[j - 1] * 0.5
+                break
+            x += dl[j - 1]
+        return float(x)
 
     def __getitem__(self, j: int) -> gp.Var:
         return gp.tupledict.__getitem__(self, j)
@@ -81,30 +107,6 @@ class ContinuousVar(BaseVar, gp.tupledict[int, gp.Var]):
                 name=f"{self.name}_logic_{j}",
             )
 
-    def _compute_value(self, mu: list[numeric]) -> numeric:
-        n = len(self.levels)
-        if n == 0:
-            return 0.0
-
-        nu = np.array(mu)
-        nu = np.floor(nu + 0.5)
-
-        if np.isclose(nu[0], 0.0):
-            return self.levels[0] - 1
-
-        if np.isclose(nu[-1], 1.0):
-            return self.levels[-1] + 1
-
-        levels = np.array(self.levels)
-        dl = np.diff(levels)
-        x = levels[0]
-        for j in range(1, n):
-            if np.isclose(nu[j], 0.0):
-                x += dl[j - 1] * 0.5
-                break
-            x += dl[j - 1]
-        return x
-
 
 class CategoricalVar(BaseVar, gp.tupledict[str, gp.Var]):
     categories: list[str]
@@ -122,11 +124,20 @@ class CategoricalVar(BaseVar, gp.tupledict[str, gp.Var]):
 
     @property
     def X(self) -> dict[str, numeric]:
-        return {cat: self[cat].X for cat in self.categories}
+        def X(var: gp.Var) -> numeric:
+            return np.round(var.X)
+
+        return self.apply(func=X)
 
     @property
     def Xn(self) -> dict[str, numeric]:
-        return {cat: self[cat].Xn for cat in self.categories}
+        def Xn(var: gp.Var) -> numeric:
+            return np.round(var.Xn)
+
+        return self.apply(func=Xn)
+
+    def apply(self, func: Callable[[gp.Var], numeric]) -> dict[str, numeric]:
+        return {cat: func(var) for cat, var in self.items()}
 
     def __setitem__(self, cat: str, var: gp.Var) -> None:
         gp.tupledict.__setitem__(self, cat, var)
@@ -148,81 +159,58 @@ class CategoricalVar(BaseVar, gp.tupledict[str, gp.Var]):
         )
 
 
-class FeatureVars(BaseVar):
-    levels: dict[str, list[numeric]]
-    categories: dict[str, list[str]]
-    binary: dict[str, BinaryVar]
-    continuous: dict[str, ContinuousVar]
-    categorical: dict[str, CategoricalVar]
+FeatureVar = BinaryVar | ContinuousVar | CategoricalVar
+FeatureVarValue = numeric | dict[str, numeric]
+
+
+class FeatureVars(BaseVar, dict[str, FeatureVar]):
 
     def __init__(self, name: str = "") -> None:
         BaseVar.__init__(self, name=name)
-        self.levels = {}
-        self.categories = {}
-        self.binary = {}
-        self.continuous = {}
-        self.categorical = {}
+        dict.__init__(self)
 
     def build(self, mip: MIP) -> None:
         for var in self.values():
             var.build(mip)
 
     def add_binary(self, feature: str) -> None:
-        var = BinaryVar(feature)
-        self.binary[feature] = var
+        self[feature] = BinaryVar(name=feature)
 
     def add_continuous(self, feature: str, levels: list[numeric]) -> None:
-        self.levels[feature] = levels
-        var = ContinuousVar(levels, feature)
-        self.continuous[feature] = var
+        self[feature] = ContinuousVar(levels=levels, name=feature)
 
     def add_categorical(self, feature: str, categories: list[str]) -> None:
-        self.categories[feature] = categories
-        var = CategoricalVar(categories, feature)
-        self.categorical[feature] = var
+        self[feature] = CategoricalVar(categories=categories, name=feature)
 
-    def values(
-        self,
-    ) -> Generator[BinaryVar | ContinuousVar | CategoricalVar, None, None]:
-        yield from chain(
-            self.binary.values(),
-            self.continuous.values(),
-            self.categorical.values(),
-        )
+    def __setitem__(self, feature: str, var: FeatureVar) -> None:
+        dict.__setitem__(self, feature, var)
 
-    def items(
-        self,
-    ) -> Generator[
-        tuple[str, BinaryVar | ContinuousVar | CategoricalVar], None, None
-    ]:
-        yield from chain(
-            self.binary.items(),
-            self.continuous.items(),
-            self.categorical.items(),
-        )
+    def __getitem__(self, feature: str) -> FeatureVar:
+        return dict.__getitem__(self, feature)
 
     @property
     def X(self) -> Sample:
-        def func(var: BaseVar) -> numeric | dict[str, numeric]:
+        def X(var: FeatureVar) -> FeatureVarValue:
             return var.X
 
-        return self.apply(func)
+        return self.apply(X)
 
     @property
     def Xn(self) -> Sample:
-        def func(var: BaseVar) -> numeric | dict[str, numeric]:
+        def Xn(var: FeatureVar) -> FeatureVarValue:
             return var.Xn
 
-        return self.apply(func)
+        return self.apply(Xn)
 
     def apply(
         self,
-        func: Callable[[BaseVar], numeric | dict[str, numeric]],
-    ) -> dict[str, numeric | dict[str, numeric]]:
+        func: Callable[[FeatureVar], FeatureVarValue],
+    ) -> dict[str, numeric]:
         v = {}
         for f, var in self.items():
-            if isinstance(var, CategoricalVar):
-                v.update(func(var))
+            m = func(var)
+            if isinstance(m, dict):
+                v.update(m)
             else:
-                v[f] = func(var)
+                v[f] = m
         return v

@@ -1,11 +1,15 @@
+from collections.abc import Callable
+
 import gurobipy as gp
 import numpy as np
+import numpy.typing as npt
 from gurobipy import GRB
 
 from ..feature.variables import (
     BinaryVar,
     CategoricalVar,
     ContinuousVar,
+    FeatureVar,
     FeatureVars,
 )
 from ..mip import MIP, BaseVar
@@ -76,22 +80,32 @@ class FlowVars(BaseVar, gp.tupledict[Node, gp.Var]):
         value = {}
         for c in range(self.tree.n_classes):
             value[c] = gp.quicksum(
-                self.tree.value[n][c] * self[n] for n in self.tree.leaves
+                self.tree.value[n][c] * self[n]
+                for n in self.tree.leaves
             )
         return value
 
     @property
-    def X(self) -> np.ndarray:
-        v = np.zeros(self.tree.n_classes)
-        for n in self.tree.leaves:
-            v += self.tree.value[n] * np.round(self[n].X)
-        return v
+    def X(self) -> npt.NDArray[np.number]:
+        def X(var: gp.Var) -> numeric:
+            return np.round(var.X)
+
+        return self.apply(func=X)
 
     @property
-    def Xn(self) -> np.ndarray:
+    def Xn(self) -> npt.NDArray[np.number]:
+        def Xn(var: gp.Var) -> numeric:
+            return np.round(var.Xn)
+
+        return self.apply(func=Xn)
+
+    def apply(
+        self,
+        func: Callable[[gp.Var], numeric],
+    ) -> npt.NDArray[np.number]:
         v = np.zeros(self.tree.n_classes)
         for n in self.tree.leaves:
-            v += self.tree.value[n] * np.round(self[n].Xn)
+            v += self.tree.value[n] * func(self[n])
         return v
 
     @property
@@ -155,7 +169,7 @@ class FlowVars(BaseVar, gp.tupledict[Node, gp.Var]):
         self,
         mip: MIP,
         feature: str,
-        var: BinaryVar | ContinuousVar | CategoricalVar,
+        var: FeatureVar,
     ) -> None:
         for node in self.tree.nodes_split_on(feature):
             if isinstance(var, BinaryVar):
