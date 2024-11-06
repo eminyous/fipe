@@ -34,7 +34,7 @@ def load(dataset_name: str) -> tuple[pd.DataFrame, ArrayLike, list[str]]:
     return data, y, featurelist
 
 
-def train(
+def train_sklearn(
     dataset: str,
     model_cls: type,
     options: dict[str, int | str | None],

@@ -8,7 +8,7 @@ from sklearn.ensemble import (
     GradientBoostingClassifier,
     RandomForestClassifier,
 )
-from utils import DATASETS, gb_skip, separate, train
+from utils import DATASETS, gb_skip, separate, train_sklearn
 
 from fipe import Ensemble, FeatureEncoder, Oracle
 from fipe.typing import Sample, Weights
@@ -53,7 +53,7 @@ class TestOracle:
     ) -> None:
         """Call oracle with all trees set to active."""
         gb_skip(dataset, model_cls)
-        model, encoder, ensemble, weights, _ = train(
+        model, encoder, ensemble, weights, _ = train_sklearn(
             dataset=dataset,
             model_cls=model_cls,
             n_estimators=n_estimators,
@@ -97,7 +97,7 @@ class TestOracle:
     ) -> None:
         """Call oracle with a single tree set to inactive."""
         gb_skip(dataset, model_cls)
-        model, encoder, ensemble, weights, _ = train(
+        model, encoder, ensemble, weights, _ = train_sklearn(
             dataset=dataset,
             model_cls=model_cls,
             n_estimators=n_estimators,

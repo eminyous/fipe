@@ -6,7 +6,7 @@ from sklearn.ensemble import (
     GradientBoostingClassifier,
     RandomForestClassifier,
 )
-from utils import DATASETS, gb_skip, prune, train
+from utils import DATASETS, gb_skip, prune, train_sklearn
 
 from fipe import Ensemble, Pruner
 
@@ -47,7 +47,7 @@ def test_pruner_norm(
     norm: int,
 ) -> None:
     gb_skip(dataset, model_cls)
-    model, encoder, ensemble, weights, (X_train, _, _, _) = train(
+    model, encoder, ensemble, weights, (X_train, _, _, _) = train_sklearn(
         dataset=dataset,
         model_cls=model_cls,
         n_estimators=n_estimators,

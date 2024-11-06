@@ -6,7 +6,7 @@ from sklearn.ensemble import (
     GradientBoostingClassifier,
     RandomForestClassifier,
 )
-from utils import DATASETS, gb_skip, train
+from utils import DATASETS, gb_skip, train_sklearn
 
 from fipe import Ensemble
 
@@ -51,7 +51,7 @@ class TestPredict:
         options: dict[str, int | str | None],
     ) -> None:
         gb_skip(dataset, model_cls)
-        model, _, ensemble, weights, (X_train, X_test, _, _) = train(
+        model, _, ensemble, weights, (X_train, X_test, _, _) = train_sklearn(
             dataset=dataset,
             model_cls=model_cls,
             n_estimators=n_estimators,
@@ -73,7 +73,7 @@ class TestPredict:
         options: dict[str, int | str | None],
     ) -> None:
         gb_skip(dataset, model_cls)
-        model, _, ensemble, _, (X_train, _, _, _) = train(
+        model, _, ensemble, _, (X_train, _, _, _) = train_sklearn(
             dataset=dataset,
             model_cls=model_cls,
             n_estimators=n_estimators,
