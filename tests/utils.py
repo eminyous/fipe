@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from gurobipy import GurobiError
+from lightgbm import LGBMClassifier
 from numpy.typing import ArrayLike
 from sklearn.ensemble import (
     AdaBoostClassifier,
@@ -12,7 +13,7 @@ from sklearn.ensemble import (
 )
 from sklearn.model_selection import train_test_split
 
-from fipe import Ensemble, FeatureEncoder, Oracle, Pruner
+from fipe import Ensemble, FeatureEncoder, Oracle, Pruner, lgbm
 from fipe.typing import Sample, Weights
 
 ROOT = Path(__file__).parent
@@ -78,6 +79,51 @@ def train_sklearn(
         weights = np.ones(n_estimators)
 
     weights /= weights.max()
+    weights *= 10000.0
+
+    return (
+        model,
+        encoder,
+        ensemble,
+        weights,
+        (X_train, X_test, y_train, y_test),
+    )
+
+
+def train_lgbm(
+    dataset: str,
+    model_cls: type,
+    options: dict[str, int | str | None],
+    n_estimators: int = 50,
+    seed: int = 42,
+    test_size: float = 0.2,
+) -> tuple[
+    LGBMClassifier,
+    FeatureEncoder,
+    lgbm.Ensemble,
+    ArrayLike,
+    tuple[ArrayLike, ArrayLike, ArrayLike, ArrayLike],
+]:
+    if model_cls != LGBMClassifier:
+        msg = "Only LGBMClassifier supported"
+        raise ValueError(msg)
+
+    data, y, _ = load(dataset)
+
+    encoder = FeatureEncoder(data)
+    X = encoder.X.to_numpy()
+    X_train, X_test, y_train, y_test = train_test_split(
+        X,
+        y,
+        test_size=test_size,
+        random_state=seed,
+    )
+
+    model = model_cls(n_estimators=n_estimators, random_state=seed, **options)
+    model.fit(X_train, y_train)
+    ensemble = lgbm.Ensemble(model, encoder)
+
+    weights = np.ones(n_estimators)
     weights *= 10000.0
 
     return (
