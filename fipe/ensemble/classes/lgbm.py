@@ -5,10 +5,10 @@ from numpy.typing import ArrayLike, NDArray
 from ...feature import FeatureEncoder
 from ...tree import TreeLGBM
 from ...typing import ParsableTreeLGBM
-from ..base import BaseEnsemble
+from ..parser import EnsembleParser
 
 
-class EnsembleLGBM(BaseEnsemble[TreeLGBM, LGBMClassifier]):
+class EnsembleLGBM(EnsembleParser[TreeLGBM, LGBMClassifier]):
     TREE_INFO_KEY = "tree_info"
 
     @property

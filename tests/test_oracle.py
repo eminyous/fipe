@@ -9,10 +9,10 @@ from sklearn.ensemble import (
     GradientBoostingClassifier,
     RandomForestClassifier,
 )
-from utils import DATASETS, separate, train
+from utils import DATASETS, ENV, separate, train
 
-from fipe import Ensemble, FeatureEncoder, Oracle
-from fipe.typing import MNumber, SNumber
+from fipe import FeatureEncoder, Oracle
+from fipe.typing import BaseEnsemble, MNumber, SNumber
 
 
 @pytest.mark.parametrize(
@@ -35,11 +35,11 @@ class TestOracle:
     def _separate(
         new_weights: MNumber,
         encoder: FeatureEncoder,
-        ensemble: Ensemble,
+        model: BaseEnsemble,
         weights: npt.ArrayLike,
         eps: float = 1e-6,
     ) -> tuple[list[SNumber], Oracle]:
-        oracle = Oracle(encoder, ensemble, weights, eps=eps)
+        oracle = Oracle(model, encoder, weights, env=ENV, eps=eps)
         oracle.build()
         X = []
         separate(oracle, new_weights, X)
@@ -66,7 +66,7 @@ class TestOracle:
         X, oracle = self._separate(
             active_weights,
             encoder,
-            ensemble,
+            model,
             weights,
             eps=1e-6,
         )
@@ -110,7 +110,7 @@ class TestOracle:
         new_weights[0] = 0
         new_weights[3] = 30
         new_weights[4] = 2
-        X, oracle = self._separate(new_weights, encoder, ensemble, weights)
+        X, oracle = self._separate(new_weights, encoder, model, weights)
         assert len(X) > 0
         # Check that the new points have the same predictions
         # according to my predict and sklearn both using the initial ensemble

@@ -8,16 +8,18 @@ from .typing import MNumber, Number
 
 
 class LevelParser:
+    DEFAULT_TOL = 1e-6
+
     _levels: dict[str, MNumber]
     _tol: float
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, tol: float = DEFAULT_TOL) -> None:
         self._levels = {}
-        self._tol = kwargs.get("tol", 1e-6)
+        self._tol = tol
 
     def parse_levels(
         self,
-        ensembles: list[Ensemble],
+        *ensembles: Ensemble,
         encoder: FeatureEncoder,
     ) -> None:
         for feature in encoder.continuous:

@@ -28,13 +28,11 @@ class TreeSKL(BaseTree[LV, ParsableTreeSKL], Generic[LV]):
         depth: int,
     ) -> None:
         self.node_depth[node] = depth
-        left = tree.children_left[node]
-        right = tree.children_right[node]
+        left = int(tree.children_left[node])
+        right = int(tree.children_right[node])
         if left == right:
-            self.leaves.add(node)
             self._read_leaf(tree, node)
         else:
-            self.internal_nodes.add(node)
             self._read_internal(tree, node)
             children = (left, right)
             self._read_children(
@@ -47,7 +45,7 @@ class TreeSKL(BaseTree[LV, ParsableTreeSKL], Generic[LV]):
     def _read_internal(self, tree: ParsableTreeSKL, node: int) -> None:
         index = int(tree.feature[node])
         threshold = float(tree.threshold[node])
-        self._set_internal(node=node, index=index, threshold=threshold)
+        self._set_internal_node(node=node, index=index, threshold=threshold)
 
     def _read_children(
         self,

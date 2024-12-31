@@ -1,16 +1,19 @@
 import warnings
 
+import gurobipy as gp
 import numpy as np
 import numpy.typing as npt
 
-from .ensemble import Ensemble
 from .feature import FeatureContainer, FeatureEncoder
 from .oracle import Oracle
 from .prune import Pruner
-from .typing import ParsableEnsemble, SNumber
+from .typing import BaseEnsemble, SNumber
 
 
 class FIPE(Pruner, FeatureContainer):
+    PRUNER_NAME_FMT = "{name}_Pruner"
+    ORACLE_NAME_FMT = "{name}_Oracle"
+
     oracle: Oracle
 
     _n_oracle_calls: int
@@ -19,30 +22,39 @@ class FIPE(Pruner, FeatureContainer):
 
     def __init__(
         self,
-        base: ParsableEnsemble,
-        weights: npt.ArrayLike,
+        base: BaseEnsemble,
         encoder: FeatureEncoder,
+        weights: npt.ArrayLike,
         norm: int = 1,
-        **kwargs,
+        *,
+        name: str = "FIPE",
+        env: gp.Env | None = None,
+        eps: float = Oracle.DEFAULT_EPS,
+        tol: float = Oracle.DEFAULT_TOL,
+        max_oracle_calls: int = 100,
     ) -> None:
-        ensemble = Ensemble(base=base, encoder=encoder)
         Pruner.__init__(
             self,
-            ensemble=ensemble,
+            base=base,
+            encoder=encoder,
             weights=weights,
             norm=norm,
-            **kwargs,
+            name=self.PRUNER_NAME_FMT.format(name=name),
+            env=env,
         )
         FeatureContainer.__init__(self, encoder=encoder)
         self.oracle = Oracle(
+            base=base,
             encoder=encoder,
-            ensemble=ensemble,
             weights=weights,
-            **kwargs,
+            name=self.ORACLE_NAME_FMT.format(name=name),
+            env=env,
+            tol=tol,
+            eps=eps,
         )
         self._counter_factuals = []
         self._n_oracle_calls = 0
-        self._max_oracle_calls = kwargs.get("max_oracle_calls", 100)
+        self._max_oracle_calls = max_oracle_calls
 
     def build(self) -> None:
         Pruner.build(self)

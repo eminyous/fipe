@@ -27,8 +27,7 @@ class BaseTree(FeatureContainer, Iterable[int], Generic[LV, PT]):
     - category: dictionary with split categories
     - value: dictionary with leaf values (LT)
 
-    Each tree can be iterated over its nodes and has a
-    predict method that returns the value of a leaf node.
+    Each tree can be iterated over its nodes.
 
     An implementation of this class should implement the
     _parse_tree method to parse a tree.
@@ -99,10 +98,6 @@ class BaseTree(FeatureContainer, Iterable[int], Generic[LV, PT]):
     def n_nodes(self) -> int:
         return 2 * self.n_leaves - 1
 
-    def predict(self, leaf_index: int) -> LV:
-        leaf_id = leaf_index + self.leaf_offset
-        return self.leaf_value[leaf_id]
-
     def __iter__(self) -> Iterator[int]:
         return iter(range(self.n_nodes))
 
@@ -127,12 +122,13 @@ class BaseTree(FeatureContainer, Iterable[int], Generic[LV, PT]):
             msg = "Invalid child name."
             raise ValueError(msg)
 
-    def _set_internal(
+    def _set_internal_node(
         self,
         node: int,
         index: int,
         threshold: Number | None,
     ) -> None:
+        self.internal_nodes.add(node)
         column = self.columns[index]
         if column in self.inverse_categories:
             self.category[node] = column
@@ -140,3 +136,7 @@ class BaseTree(FeatureContainer, Iterable[int], Generic[LV, PT]):
         self.node_feature[node] = feature
         if feature in self.continuous:
             self.threshold[node] = threshold
+
+    def _set_leaf(self, node: int, value: LV) -> None:
+        self.leaves.add(node)
+        self.leaf_value[node] = value

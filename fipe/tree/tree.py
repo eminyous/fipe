@@ -1,14 +1,15 @@
 from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Generic
 
-from ..typing import LV, FeatureType, Number, ParsableTree
+from ..typing import FeatureType, LeafValue, Number, ParsableTree
 from .base import BaseTree
+
+Tree = BaseTree[LeafValue, ParsableTree]
 
 
 @dataclass
-class TreeContainer(Generic[LV]):
-    tree: BaseTree[LV, ParsableTree]
+class TreeContainer:
+    tree: Tree
 
     @property
     def n_nodes(self) -> int:
@@ -49,7 +50,7 @@ class TreeContainer(Generic[LV]):
         return self.tree.right
 
     @property
-    def node_value(self) -> Mapping[int, LV]:
+    def node_value(self) -> Mapping[int, LeafValue]:
         return self.tree.leaf_value
 
     @property

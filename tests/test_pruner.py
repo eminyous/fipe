@@ -56,8 +56,7 @@ def test_pruner_norm(
         options=options,
     )
     # Test that pruner runs without error
-    ensemble = Ensemble(model, encoder)
-    pruner = Pruner(ensemble, weights, norm=norm)
+    pruner = Pruner(model, encoder, weights, norm=norm)
     pruner.build()
     pruner.setParam("OutputFlag", 0)
     pruner.add_samples(X_train)

@@ -3,13 +3,23 @@ from abc import ABC, abstractmethod
 import numpy as np
 import numpy.typing as npt
 
-from ..ensemble import Ensemble, EnsembleContainer
-from ..typing import MNumber, Number
+from ..ensemble import EnsembleContainer
+from ..feature import FeatureEncoder
+from ..typing import BaseEnsemble, MNumber, Number
 
 
 class BasePruner(ABC, EnsembleContainer):
-    def __init__(self, ensemble: Ensemble, weights: npt.ArrayLike) -> None:
-        EnsembleContainer.__init__(self, ensemble=ensemble, weights=weights)
+    def __init__(
+        self,
+        base: BaseEnsemble,
+        encoder: FeatureEncoder,
+        weights: npt.ArrayLike,
+    ) -> None:
+        EnsembleContainer.__init__(
+            self,
+            ensemble=(base, encoder),
+            weights=weights,
+        )
 
     @abstractmethod
     def prune(self, threshold: Number) -> None:

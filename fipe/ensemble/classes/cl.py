@@ -9,13 +9,13 @@ from sklearn.tree import DecisionTreeClassifier
 from ...feature import FeatureEncoder
 from ...tree import TreeCL
 from ...typing import HV
-from ..base import BaseEnsemble
+from ..parser import EnsembleParser
 
 Classifier = RandomForestClassifier | AdaBoostClassifier
 CL = TypeVar("CL", bound=Classifier)
 
 
-class EnsembleCL(BaseEnsemble[TreeCL[HV], CL], Generic[CL, HV]):
+class EnsembleCL(EnsembleParser[TreeCL[HV], CL], Generic[CL, HV]):
     __metaclass__ = ABCMeta
 
     _voting: HV

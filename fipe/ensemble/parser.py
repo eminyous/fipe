@@ -1,26 +1,24 @@
 from abc import ABCMeta, abstractmethod
 from collections.abc import Iterator, Sequence
-from typing import Generic, TypeVar
+from typing import Generic
 
 import numpy as np
 import numpy.typing as npt
 
 from ..feature import FeatureEncoder
-from ..tree import BaseTree
-from ..typing import PE
-
-BT = TypeVar("BT", bound=BaseTree)
+from ..tree import BT
+from ..typing import BE
 
 
-class BaseEnsemble(Sequence[BT], Generic[BT, PE]):
+class EnsembleParser(Sequence[BT], Generic[BT, BE]):
     __metaclass__ = ABCMeta
 
     NUM_BINARY_CLASSES = 2
 
-    _base: PE
+    _base: BE
     _trees: list[BT]
 
-    def __init__(self, base: PE, encoder: FeatureEncoder) -> None:
+    def __init__(self, base: BE, encoder: FeatureEncoder) -> None:
         self._base = base
         self._parse_trees(encoder=encoder)
 

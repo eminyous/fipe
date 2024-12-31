@@ -36,11 +36,25 @@ class TreeXGB(BaseTree[Number, ParsableTreeXGB]):
             self._read_leaf(node=node, node_id=node_id)
         else:
             self._read_internal(node=node, node_id=node_id, feature=feature)
-            self._read_children(node, node_id, depth)
+
+            left_id = str(node[self.LEFT_CHILD_KEY])
+            right_id = str(node[self.RIGHT_CHILD_KEY])
+            left = tree.xs(left_id, level=self.ID_KEY).iloc[0]
+            right = tree.xs(right_id, level=self.ID_KEY).iloc[0]
+            left_id = int(left.name)
+            right_id = int(right.name)
+            children = (left_id, right_id)
+
+            self._read_children(
+                tree=tree,
+                node=node_id,
+                children=children,
+                depth=depth,
+            )
 
     def _read_leaf(self, node: pd.Series, node_id: int) -> None:
-        self.leaves.add(node_id)
-        self.leaf_value[node_id] = float(node[self.VALUE_KEY])
+        value = float(node[self.VALUE_KEY])
+        self._set_leaf(node=node_id, value=value)
 
     def _read_internal(
         self,
@@ -48,32 +62,23 @@ class TreeXGB(BaseTree[Number, ParsableTreeXGB]):
         node_id: int,
         feature: str,
     ) -> None:
-        self.internal_nodes.add(node_id)
         index = self._get_feature_index(feature)
         threshold = float(node[self.THRESHOLD_KEY])
-        self._set_internal(node=node_id, index=index, threshold=threshold)
+        self._set_internal_node(node=node_id, index=index, threshold=threshold)
 
     def _read_children(
         self,
         tree: ParsableTreeXGB,
-        node: pd.Series,
-        node_id: int,
+        node: int,
+        children: tuple[int, int],
         depth: int,
     ) -> None:
-        left_id = node[self.LEFT_CHILD_KEY]
-        right_id = node[self.RIGHT_CHILD_KEY]
-        left = tree.xs(left_id, level=self.ID_KEY).iloc[0]
-        right = tree.xs(right_id, level=self.ID_KEY).iloc[0]
-        left_id = int(left.name)
-        right_id = int(right.name)
-
-        children = (left_id, right_id)
         whichs = (self.LEFT_NAME, self.RIGHT_NAME)
         for which, child in zip(whichs, children, strict=True):
-            self._set_child(node_id, child, which)
+            self._set_child(node=node, child=child, which=which)
 
         for child in children:
-            self._parse_node(tree, child, depth + 1)
+            self._parse_node(tree=tree, node_id=child, depth=depth + 1)
 
     @staticmethod
     def _get_feature_index(feature: str) -> int:

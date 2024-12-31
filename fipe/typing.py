@@ -26,7 +26,7 @@ ParsableTreeLGBM = Mapping[str, Any]
 ParsableTreeXGB = pd.DataFrame
 ParsableTree = ParsableTreeSKL | ParsableTreeLGBM | ParsableTreeXGB
 
-ParsableEnsemble = (
+BaseEnsemble = (
     RandomForestClassifier
     | AdaBoostClassifier
     | GradientBoostingClassifier
@@ -34,7 +34,7 @@ ParsableEnsemble = (
     | Booster
 )
 
-Number = np.number
+Number = np.float64
 MNumber = npt.NDArray[Number]
 SNumber = pd.Series
 DNumber = pd.DataFrame
@@ -45,8 +45,8 @@ LeafValue = Number | MNumber
 Variable = Number | MNumber | SNumber
 Transformable = SNumber | list[SNumber] | DNumber
 
+BE = TypeVar("BE", bound=BaseEnsemble)
 PT = TypeVar("PT", bound=ParsableTree)
 LV = TypeVar("LV", bound=LeafValue)
 VT = TypeVar("VT", bound=Variable)
-PE = TypeVar("PE", bound=ParsableEnsemble)
 HV = TypeVar("HV", bound=bool)

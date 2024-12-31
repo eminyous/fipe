@@ -5,10 +5,10 @@ from sklearn.tree import DecisionTreeRegressor
 
 from ...feature import FeatureEncoder
 from ...tree import TreeGB
-from ..base import BaseEnsemble
+from ..parser import EnsembleParser
 
 
-class EnsembleGB(BaseEnsemble[TreeGB, GradientBoostingClassifier]):
+class EnsembleGB(EnsembleParser[TreeGB, GradientBoostingClassifier]):
     @property
     def m_valued(self) -> bool:
         return True

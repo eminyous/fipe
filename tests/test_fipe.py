@@ -9,7 +9,7 @@ from sklearn.ensemble import (
     GradientBoostingClassifier,
     RandomForestClassifier,
 )
-from utils import DATASETS, prune, train
+from utils import DATASETS, ENV, prune, train
 
 from fipe import FIPE
 
@@ -86,10 +86,8 @@ def test_prune(
     )
 
     # Test that FIPE pruning runs without error
-    pruner = FIPE(model, weights, encoder, norm=norm, eps=1e-4)
+    pruner = FIPE(model, encoder, weights, norm=norm, env=ENV, eps=1e-4)
     pruner.build()
-    pruner.setParam("OutputFlag", 0)
-    pruner.oracle.setParam("OutputFlag", 0)
     pruner.add_samples(X_train)
     prune(pruner)
 

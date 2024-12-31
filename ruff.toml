@@ -45,6 +45,8 @@ ignore = [
     "ISC001",
 ]
 preview = true
+[lint.pylint]
+max-args = 10
 
 [lint.per-file-ignores]
 "tests/**/*.py" = [

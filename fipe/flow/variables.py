@@ -1,17 +1,16 @@
 from abc import ABCMeta
 from dataclasses import dataclass
-from typing import Generic
 
 import gurobipy as gp
 import numpy as np
 
 from ..feature import FeatureVar, FeatureVars
 from ..mip import MIP, BaseVar
-from ..tree import BaseTree, TreeContainer
-from ..typing import LV, MNumber, ParsableTree
+from ..tree import Tree, TreeContainer
+from ..typing import LeafValue, MNumber
 
 
-class FlowVars(BaseVar[LV], TreeContainer[LV], Generic[LV]):
+class FlowVars(BaseVar[LeafValue], TreeContainer):
     __metaclass__ = ABCMeta
 
     FLOW_VAR_FMT = "{name}_flow"
@@ -66,7 +65,7 @@ class FlowVars(BaseVar[LV], TreeContainer[LV], Generic[LV]):
 
     def __init__(
         self,
-        tree: BaseTree[LV, ParsableTree],
+        tree: Tree,
         name: str = "",
     ) -> None:
         TreeContainer.__init__(self, tree=tree)
@@ -106,7 +105,7 @@ class FlowVars(BaseVar[LV], TreeContainer[LV], Generic[LV]):
     # Protected methods:
     # ------------------
     #  * _apply (override): BaseVar
-    def _apply(self, prop_name: str) -> LV:
+    def _apply(self, prop_name: str) -> LeafValue:
         flow = self._apply_m_prop(mvar=self._flow_vars, prop_name=prop_name)
         node_value = self.node_value
         values = [flow[node] * node_value[node] for node in self.leaves]

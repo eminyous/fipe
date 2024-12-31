@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import gurobipy as gp
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
@@ -19,6 +20,8 @@ from fipe.typing import MNumber, SNumber
 
 ROOT = Path(__file__).parent
 DATASETS = ROOT / "datasets-for-tests"
+ENV = gp.Env()
+ENV.setParam("OutputFlag", 0)
 
 
 def load(

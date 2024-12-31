@@ -14,6 +14,8 @@ class FeatureEncoder:
     This class is used to encode the features of a dataset.
     """
 
+    DEFAULT_TOL = 1e-4
+    DEFAULT_SCALE = 1e4
     NUM_BINARY_VALUES = 2
 
     columns: list[str]
@@ -26,9 +28,15 @@ class FeatureEncoder:
     _tol: float
     _scale: float
 
-    def __init__(self, X: pd.DataFrame, **kwargs) -> None:
-        self._tol = kwargs.get("tol", 1e-4)
-        self._scale = kwargs.get("scale", 1e4)
+    def __init__(
+        self,
+        X: pd.DataFrame,
+        *,
+        tol: float = 1e-4,
+        scale: float = 1e4,
+    ) -> None:
+        self._tol = tol
+        self._scale = scale
 
         self.X = deepcopy(X)
 

@@ -6,7 +6,7 @@ from ..feature import FeatureContainer, FeatureEncoder, FeatureVars
 from ..flow import FlowVars
 from ..mip import MIP
 from ..parsers import LevelParser
-from ..typing import LeafValue, MNumber
+from ..typing import BaseEnsemble, MNumber
 
 
 class BaseOCEAN(
@@ -19,22 +19,27 @@ class BaseOCEAN(
     FLOW_VAR_FMT = "tree_{t}"
 
     _feature_vars: FeatureVars
-    _flow_vars: dict[int, FlowVars[LeafValue]]
+    _flow_vars: dict[int, FlowVars]
 
     def __init__(
         self,
+        base: BaseEnsemble,
         encoder: FeatureEncoder,
-        ensemble: Ensemble,
         weights: npt.ArrayLike,
-        **kwargs,
+        *,
+        name: str = "OCEAN",
+        env: gp.Env | None = None,
+        tol: float = LevelParser.DEFAULT_TOL,
     ) -> None:
-        name = kwargs.get("name", "OCEAN")
-        env = kwargs.get("env")
         MIP.__init__(self, name=name, env=env)
-        EnsembleContainer.__init__(self, ensemble=ensemble, weights=weights)
+        EnsembleContainer.__init__(
+            self,
+            ensemble=(base, encoder),
+            weights=weights,
+        )
         FeatureContainer.__init__(self, encoder=encoder)
-        LevelParser.__init__(self, **kwargs)
-        self.parse_levels(ensembles=[ensemble], encoder=encoder)
+        LevelParser.__init__(self, tol=tol)
+        self.parse_levels(self._ensemble, encoder=encoder)
         self._add_feature_vars()
         self._add_flow_vars()
 

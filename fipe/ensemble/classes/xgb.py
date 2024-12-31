@@ -2,10 +2,10 @@ from xgboost import Booster
 
 from ...feature import FeatureEncoder
 from ...tree import TreeXGB
-from ..base import BaseEnsemble
+from ..parser import EnsembleParser
 
 
-class EnsembleXGB(BaseEnsemble[TreeXGB, Booster]):
+class EnsembleXGB(EnsembleParser[TreeXGB, Booster]):
     TREE_KEY = "Tree"
 
     INDEX = (

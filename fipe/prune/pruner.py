@@ -2,9 +2,9 @@ import gurobipy as gp
 import numpy as np
 import numpy.typing as npt
 
-from ..ensemble import Ensemble
+from ..feature import FeatureEncoder
 from ..mip import MIP
-from ..typing import MNumber
+from ..typing import BaseEnsemble, MNumber
 from .base import BasePruner
 
 
@@ -17,14 +17,20 @@ class Pruner(BasePruner, MIP):
 
     def __init__(
         self,
-        ensemble: Ensemble,
+        base: BaseEnsemble,
+        encoder: FeatureEncoder,
         weights: npt.ArrayLike,
         norm: int = 1,
-        **kwargs,
+        *,
+        name: str = "Pruner",
+        env: gp.Env | None = None,
     ) -> None:
-        BasePruner.__init__(self, ensemble=ensemble, weights=weights)
-        name = kwargs.get("name", "Pruner")
-        env = kwargs.get("env")
+        BasePruner.__init__(
+            self,
+            base=base,
+            encoder=encoder,
+            weights=weights,
+        )
         MIP.__init__(self, name=name, env=env)
         self._norm = norm
         self._weight_vars = gp.tupledict()

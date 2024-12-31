@@ -21,8 +21,9 @@ class TreeCL(TreeSKL[MNumber], Generic[HV]):
 
     def _read_leaf(self, tree: ParsableTreeSKL, node: int) -> None:
         value = tree.value[node].flatten()
-        self.leaf_value[node] = np.asarray(value)
+        value = np.asarray(value)
         if self._voting:
-            k = self.leaf_value[node].size
-            q = np.argmax(self.leaf_value[node])
-            self.leaf_value[node] = np.eye(k)[q]
+            k = value.size
+            q = np.argmax(value)
+            value = np.eye(k)[q]
+        self._set_leaf(node=node, value=value)
