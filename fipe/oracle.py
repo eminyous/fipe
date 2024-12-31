@@ -65,8 +65,8 @@ class Oracle(OCEAN):
         )
         obj = class_score - majority_score
         self.setObjective(obj, gp.GRB.MAXIMIZE)
-        _callback = self._optimize_callback()
-        self.optimize(_callback)
+        cb = self._optimize_callback()
+        self.optimize(cb)
 
     @staticmethod
     def _optimize_callback() -> Callable[[gp.Model, int], None]:
