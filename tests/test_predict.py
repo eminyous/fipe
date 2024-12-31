@@ -13,7 +13,7 @@ from fipe import Ensemble
 
 
 @pytest.mark.parametrize(
-    "model_cls, options",
+    ("model_cls", "options"),
     [
         (RandomForestClassifier, {"max_depth": 5}),
         (AdaBoostClassifier, {"algorithm": "SAMME"}),

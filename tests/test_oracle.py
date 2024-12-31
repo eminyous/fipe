@@ -22,7 +22,7 @@ from fipe.typing import MNumber, SNumber
 @pytest.mark.parametrize("n_estimators", [50])
 @pytest.mark.parametrize("seed", [42, 60])
 @pytest.mark.parametrize(
-    "model_cls, options",
+    ("model_cls", "options"),
     [
         (RandomForestClassifier, {"max_depth": 2}),
         (AdaBoostClassifier, {"algorithm": "SAMME"}),
