@@ -19,18 +19,24 @@ class Oracle(OCEAN):
 
     def _separate(self) -> Generator[SNumber, None, None]:
         for class_ in range(self.n_classes):
-            yield from self._separate_class(class_=class_)
+            yield from self._separate_class(majority_class=class_)
 
-    def _separate_class(self, class_: int) -> Generator[SNumber, None, None]:
-        self.set_majority_class(class_=class_)
-        for c in range(self.n_classes):
-            if c == class_:
+    def _separate_class(
+        self,
+        majority_class: int,
+    ) -> Generator[SNumber, None, None]:
+        self.set_majority_class(class_=majority_class)
+        for class_ in range(self.n_classes):
+            if class_ == majority_class:
                 continue
-            self._separate_pair(majority_class=class_, class_=c)
-            yield from self._get_samples(majority_class=class_, class_=c)
+            self._separate_pair(majority_class=majority_class, class_=class_)
+            yield from self._extract_valid_samples(
+                majority_class=majority_class,
+                class_=class_,
+            )
         self.clear_majority_class()
 
-    def _get_samples(
+    def _extract_valid_samples(
         self,
         majority_class: int,
         class_: int,
@@ -59,11 +65,11 @@ class Oracle(OCEAN):
             class_=class_,
             weights=self._new_weights,
         )
-        majority_score = self.weighted_function(
+        majority_class_score = self.weighted_function(
             class_=majority_class,
             weights=self._new_weights,
         )
-        obj = class_score - majority_score
+        obj = class_score - majority_class_score
         self.setObjective(obj, gp.GRB.MAXIMIZE)
         cb = self._optimize_callback()
         self.optimize(cb)
