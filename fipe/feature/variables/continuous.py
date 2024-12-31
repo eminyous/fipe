@@ -64,7 +64,7 @@ class ContinuousVar(BaseVar[Number]):
     def _add_vars(self, mip: MIP) -> None:
         n = self.levels.size
         self._vars = mip.addMVar(
-            n,
+            shape=n,
             lb=0.0,
             ub=1.0,
             vtype=gp.GRB.CONTINUOUS,
