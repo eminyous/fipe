@@ -171,3 +171,4 @@ cython_debug/
 .vscode/
 
 *_cache/
+.test/
