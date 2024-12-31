@@ -1,7 +1,10 @@
 from abc import ABC, ABCMeta, abstractmethod
-from typing import Any, NoReturn
+from typing import Any, Generic
 
 import gurobipy as gp
+import numpy as np
+
+from .typing import VT, MNumber, Number
 
 
 class MIP(gp.Model):
@@ -15,46 +18,54 @@ class MIP(gp.Model):
     __metaclass__ = ABCMeta
 
     def __init__(self, name: str = "", env: gp.Env | None = None) -> None:
-        gp.Model.__init__(self, name, env)
+        gp.Model.__init__(self, name=name, env=env)
 
     def __setattr__(self, name: str, value: Any) -> None:  # noqa: ANN401
         return object.__setattr__(self, name, value)
 
 
-class BaseVar(ABC):
+class BaseVar(ABC, Generic[VT]):
     """
     Base class for variables.
 
     This class is an abstract class that defines the
     interface for variables in a MIP model.
-    When subclassing this class, the following methods and properties:
+    When subclassing this class, the following methods:
         - build: add the variable to the MIP model,
-        - X: get the value of the variable,
-        - Xn: get the value of the variable in the current node,
+        - apply: apply a function to the variable,
     must be implemented.
     """
 
     __metaclass__ = ABCMeta
 
     name: str
-    msg = "Subclasses must implement the {name} {method}"
+    MSG_FMT = "Subclasses must implement the {name} {method}"
 
     def __init__(self, name: str = "") -> None:
         self.name = name
 
     @abstractmethod
     def build(self, mip: MIP) -> None:
-        msg = self.msg.format(name="build", method="method")
+        msg = self.MSG_FMT.format(name="build", method="method")
         raise NotImplementedError(msg)
 
-    @property
     @abstractmethod
-    def X(self) -> NoReturn:
-        msg = self.msg.format(name="X", method="property")
+    def _apply(self, prop_name: str) -> VT:
+        msg = self.MSG_FMT.format(name="apply", method="method")
         raise NotImplementedError(msg)
 
+    @staticmethod
+    def _apply_prop(var: gp.Var, prop_name: str) -> Number:
+        return np.float64(getattr(var, prop_name))
+
+    @staticmethod
+    def _apply_m_prop(mvar: gp.MVar, prop_name: str) -> MNumber:
+        return np.array(getattr(mvar, prop_name))
+
     @property
-    @abstractmethod
-    def Xn(self) -> NoReturn:
-        msg = self.msg.format(name="Xn", method="property")
-        raise NotImplementedError(msg)
+    def X(self) -> VT:
+        return self._apply(prop_name=gp.GRB.Attr.X)
+
+    @property
+    def Xn(self) -> VT:
+        return self._apply(prop_name=gp.GRB.Attr.Xn)

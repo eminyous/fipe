@@ -1,17 +1,18 @@
 import warnings
 
 import numpy as np
+import numpy.typing as npt
 import pytest
-from numpy.typing import ArrayLike
+from lightgbm import LGBMClassifier
 from sklearn.ensemble import (
     AdaBoostClassifier,
     GradientBoostingClassifier,
     RandomForestClassifier,
 )
-from utils import DATASETS, gb_skip, separate, train_sklearn
+from utils import DATASETS, separate, train
 
 from fipe import Ensemble, FeatureEncoder, Oracle
-from fipe.typing import Sample, Weights
+from fipe.typing import MNumber, SNumber
 
 
 @pytest.mark.parametrize(
@@ -26,17 +27,18 @@ from fipe.typing import Sample, Weights
         (RandomForestClassifier, {"max_depth": 2}),
         (AdaBoostClassifier, {"algorithm": "SAMME"}),
         (GradientBoostingClassifier, {"max_depth": 2, "init": "zero"}),
+        (LGBMClassifier, {"max_depth": 2}),
     ],
 )
 class TestOracle:
     @staticmethod
     def _separate(
-        new_weights: Weights,
+        new_weights: MNumber,
         encoder: FeatureEncoder,
         ensemble: Ensemble,
-        weights: ArrayLike,
+        weights: npt.ArrayLike,
         eps: float = 1e-6,
-    ) -> tuple[list[Sample], Oracle]:
+    ) -> tuple[list[SNumber], Oracle]:
         oracle = Oracle(encoder, ensemble, weights, eps=eps)
         oracle.build()
         X = []
@@ -52,8 +54,7 @@ class TestOracle:
         options: dict[str, int | str | None],
     ) -> None:
         """Call oracle with all trees set to active."""
-        gb_skip(dataset, model_cls)
-        model, encoder, ensemble, weights, _ = train_sklearn(
+        model, encoder, ensemble, weights, _ = train(
             dataset=dataset,
             model_cls=model_cls,
             n_estimators=n_estimators,
@@ -61,7 +62,7 @@ class TestOracle:
             options=options,
         )
         weights = np.asarray(weights)
-        active_weights = {t: weights[t] for t in range(len(model))}
+        active_weights = np.copy(weights)
         X, oracle = self._separate(
             active_weights,
             encoder,
@@ -83,8 +84,8 @@ class TestOracle:
             for item in X:
                 x = item.reshape(1, -1)
                 model.predict(x)
-                ensemble.predict(x, weights)
-                ensemble.score(x, weights)
+                ensemble.predict(x, w=weights)
+                ensemble.score(x, w=weights)
         assert len(X) == 0
 
     def test_oracle_separate(
@@ -96,8 +97,7 @@ class TestOracle:
         options: dict[str, int | str | None],
     ) -> None:
         """Call oracle with a single tree set to inactive."""
-        gb_skip(dataset, model_cls)
-        model, encoder, ensemble, weights, _ = train_sklearn(
+        model, encoder, ensemble, weights, _ = train(
             dataset=dataset,
             model_cls=model_cls,
             n_estimators=n_estimators,
@@ -105,12 +105,11 @@ class TestOracle:
             options=options,
         )
         weights = np.asarray(weights)
-        new_weights = {t: weights[t] for t in range(len(model))}
+        new_weights = np.copy(weights)
         # Change the weight of some trees
         new_weights[0] = 0
         new_weights[3] = 30
         new_weights[4] = 2
-        new_weights = np.array([new_weights[t] for t in range(len(model))])
         X, oracle = self._separate(new_weights, encoder, ensemble, weights)
         assert len(X) > 0
         # Check that the new points have the same predictions
@@ -118,8 +117,8 @@ class TestOracle:
         X = oracle.transform(X)
         for item in X:
             x = item.reshape(1, -1)
-            sk_pred = model.predict(x)
-            pred = ensemble.predict(x, weights)
-            new_pred = ensemble.predict(x, new_weights)
+            model_pred = model.predict(x)
+            pred = ensemble.predict(x, w=weights)
+            new_pred = ensemble.predict(x, w=new_weights)
             assert not np.any(new_pred == pred)
-            assert np.all(sk_pred == pred)
+            assert np.all(model_pred == pred)

@@ -1,8 +1,8 @@
 import gurobipy as gp
+import numpy.typing as npt
 
 from ..ensemble import Ensemble
-from ..feature.encoder import FeatureEncoder
-from ..typing import Weights
+from ..feature import FeatureEncoder
 from .base import BaseOCEAN
 
 
@@ -14,36 +14,39 @@ class VoteOCEAN(BaseOCEAN):
         self,
         encoder: FeatureEncoder,
         ensemble: Ensemble,
-        weights: Weights,
+        weights: npt.ArrayLike,
         **kwargs,
     ) -> None:
-        BaseOCEAN.__init__(self, encoder, ensemble, weights, **kwargs)
-        self._eps = kwargs.get("eps", 1.0)
-
-    def set_majority_class(self, c: int) -> None:
+        BaseOCEAN.__init__(
+            self,
+            encoder=encoder,
+            ensemble=ensemble,
+            weights=weights,
+            **kwargs,
+        )
+        self._eps = kwargs.get("eps", 1e-6)
         self._majority_class_constrs = gp.tupledict()
-        for k in range(self.n_classes):
-            if k == c:
+
+    def set_majority_class(self, class_: int) -> None:
+        self._majority_class_constrs = gp.tupledict()
+        for c in range(self.n_classes):
+            if c == class_:
                 continue
-            self._add_majority_class_constr(c, k)
+            self._add_majority_class_constr(majority_class=class_, class_=c)
 
     def clear_majority_class(self) -> None:
         self.remove(self._majority_class_constrs)
         self._majority_class_constrs = gp.tupledict()
 
-    def _add_majority_class_constr(self, c: int, k: int) -> None:
-        rhs = self._eps if k < c else 0.0
-
+    def _add_majority_class_constr(
+        self,
+        majority_class: int,
+        class_: int,
+    ) -> None:
+        rhs = self._eps if majority_class > class_ else 0.0
         constr = self.addConstr(
-            gp.quicksum(
-                self._weights[t] * self._flow_vars[t].value[c]
-                for t in range(self.n_estimators)
-            )
-            >= gp.quicksum(
-                self._weights[t] * self._flow_vars[t].value[k]
-                for t in range(self.n_estimators)
-            )
-            + rhs,
-            name=f"majority_class_{c}_{k}",
+            self.function(class_=majority_class)
+            >= self.function(class_=class_) + rhs,
+            name=f"majority_class_constr_{majority_class}_class_{class_}",
         )
-        self._majority_class_constrs[k] = constr
+        self._majority_class_constrs[class_] = constr

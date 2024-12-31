@@ -2,103 +2,78 @@ from collections.abc import Callable, Generator
 
 import gurobipy as gp
 import numpy as np
-from gurobipy import GRB
+import numpy.typing as npt
 
-from .ensemble import Ensemble
-from .feature import FeatureEncoder
 from .ocean import OCEAN
-from .typing import Sample, Weights
+from .typing import SNumber
 
 
 class Oracle(OCEAN):
-    def __init__(
+    def separate(
         self,
-        encoder: FeatureEncoder,
-        ensemble: Ensemble,
-        weights: Weights,
-        **kwargs,
-    ) -> None:
-        """Initialize oracle mip from parent class."""
-        OCEAN.__init__(
-            self,
-            encoder=encoder,
-            ensemble=ensemble,
-            weights=weights,
-            **kwargs,
-        )
+        new_weights: npt.ArrayLike,
+    ) -> Generator[SNumber, None, None]:
+        new_weights = np.copy(new_weights)
+        self.new_weights = new_weights
+        yield from self._separate()
 
-    def separate(self, new_weights: Weights) -> Generator[Sample, None, None]:
-        self._set_new_weights(new_weights)
+    def _separate(self) -> Generator[SNumber, None, None]:
+        for class_ in range(self.n_classes):
+            yield from self._separate_class(class_=class_)
+
+    def _separate_class(self, class_: int) -> Generator[SNumber, None, None]:
+        self.set_majority_class(class_=class_)
         for c in range(self.n_classes):
-            yield from self._run_on_single_class(c)
+            if c == class_:
+                continue
+            self._separate_pair(majority_class=class_, class_=c)
+            yield from self._get_samples(majority_class=class_, class_=c)
+        self.clear_majority_class()
 
-    def _get_counterfactuals(
+    def _get_samples(
         self,
-        c: int,
-        k: int,
-    ) -> Generator[Sample, None, None]:
-        param = GRB.Param.SolutionNumber
+        majority_class: int,
+        class_: int,
+    ) -> Generator[SNumber, None, None]:
+        param = gp.GRB.Param.SolutionNumber
         for i in range(self.SolCount):
             self.setParam(param, i)
-            x = self._feature_vars.Xn
 
             if self.PoolObjVal < 0.0:
                 continue
 
-            if self.PoolObjVal == 0.0 and c < k:
+            if self.PoolObjVal == 0.0 and majority_class < class_:
                 continue
 
-            # This is to avoid the same prediction
+            x = self._feature_vars.Xn
             X = self.transform(x)
-            # Read weights
-            w = np.array([self._weights[t] for t in range(self.n_estimators)])
-            new_w = np.array(
-                [self._new_weights[t] for t in range(self.n_estimators)],
-            )
-            # Predict class according to two ensembles
-            pred = self._ensemble.predict(X, w)
-            new_pred = self._ensemble.predict(X, new_w)
-            if np.all(pred == new_pred):
+            y_pred = self.ensemble.predict(X=X, w=self._new_weights)
+            y_true = self.ensemble.predict(X=X, w=self._weights)
+            if np.all(y_pred == y_true):
                 continue
             yield x
         self.setParam(param, 0)
 
-    def _run_on_single_class(self, c: int) -> Generator[Sample, None, None]:
-        # Set as constraint that original mip
-        # classifies as c
-        self.set_majority_class(c)
-        # For all other classes,
-        # maximize misclassification
-        for k in range(self.n_classes):
-            if c == k:
-                continue
-            self._run_on_pair_of_classes(c, k)
-            yield from self._get_counterfactuals(c, k)
-        # Remove constraint that original
-        # model classifies as c
-        self.clear_majority_class()
-
-    def _run_on_pair_of_classes(self, c1: int, c2: int) -> None:
-        # Adapt objective: maximize the difference
-        # between the two classes
-        obj = gp.quicksum(
-            self._new_weights[t] * self._flow_vars[t].value[c2]
-            for t in range(self.n_estimators)
-        ) - gp.quicksum(
-            self._new_weights[t] * self._flow_vars[t].value[c1]
-            for t in range(self.n_estimators)
+    def _separate_pair(self, majority_class: int, class_: int) -> None:
+        class_score = self.weighted_function(
+            class_=class_,
+            weights=self._new_weights,
         )
-        self.setObjective(obj, sense=gp.GRB.MAXIMIZE)
-        # Solve with early termination callback
-        termination_callback = self._get_termination_callback()
-        self.optimize(termination_callback)
+        majority_score = self.weighted_function(
+            class_=majority_class,
+            weights=self._new_weights,
+        )
+        obj = class_score - majority_score
+        self.setObjective(obj, gp.GRB.MAXIMIZE)
+        _callback = self._optimize_callback()
+        self.optimize(_callback)
 
     @staticmethod
-    def _get_termination_callback() -> Callable[[gp.Model, int], None]:
-        def callback(model: gp.Model, where: int) -> None:
+    def _optimize_callback() -> Callable[[gp.Model, int], None]:
+        def cb(model: gp.Model, where: int) -> None:
             if where == gp.GRB.Callback.MIPSOL:
                 val = model.cbGet(gp.GRB.Callback.MIPSOL_OBJBND)
                 if val <= 0.0:
                     model.terminate()
 
-        return callback
+        return cb

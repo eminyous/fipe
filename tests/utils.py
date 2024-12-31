@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 import pytest
 from gurobipy import GurobiError
@@ -13,14 +14,16 @@ from sklearn.ensemble import (
 )
 from sklearn.model_selection import train_test_split
 
-from fipe import Ensemble, FeatureEncoder, Oracle, Pruner, lgbm
-from fipe.typing import Sample, Weights
+from fipe import Ensemble, FeatureEncoder, Oracle, Pruner
+from fipe.typing import MNumber, SNumber
 
 ROOT = Path(__file__).parent
 DATASETS = ROOT / "datasets-for-tests"
 
 
-def load(dataset_name: str) -> tuple[pd.DataFrame, ArrayLike, list[str]]:
+def load(
+    dataset_name: str,
+) -> tuple[pd.DataFrame, npt.NDArray[np.intp], list[str]]:
     dataset_path = DATASETS / f"{dataset_name}"
     data = pd.read_csv(dataset_path / f"{dataset_name}.full.csv")
     labels = data.iloc[:, -1:]
@@ -35,7 +38,7 @@ def load(dataset_name: str) -> tuple[pd.DataFrame, ArrayLike, list[str]]:
     return data, y, featurelist
 
 
-def train_sklearn(
+def train(
     dataset: str,
     model_cls: type,
     options: dict[str, int | str | None],
@@ -43,10 +46,13 @@ def train_sklearn(
     seed: int = 42,
     test_size: float = 0.2,
 ) -> tuple[
-    AdaBoostClassifier | GradientBoostingClassifier | RandomForestClassifier,
+    AdaBoostClassifier
+    | GradientBoostingClassifier
+    | RandomForestClassifier
+    | LGBMClassifier,
     FeatureEncoder,
     Ensemble,
-    ArrayLike,
+    MNumber,
     tuple[ArrayLike, ArrayLike, ArrayLike, ArrayLike],
 ]:
     data, y, _ = load(dataset)
@@ -64,6 +70,7 @@ def train_sklearn(
         RandomForestClassifier,
         AdaBoostClassifier,
         GradientBoostingClassifier,
+        LGBMClassifier,
     }:
         msg = "Ensemble not supported"
         raise ValueError(msg)
@@ -73,7 +80,7 @@ def train_sklearn(
     model.fit(X_train, y_train)
     ensemble = Ensemble(model, encoder)
 
-    if model_cls == AdaBoostClassifier:
+    if isinstance(model, AdaBoostClassifier):
         weights = model.estimator_weights_
     else:
         weights = np.ones(n_estimators)
@@ -90,52 +97,7 @@ def train_sklearn(
     )
 
 
-def train_lgbm(
-    dataset: str,
-    model_cls: type,
-    options: dict[str, int | str | None],
-    n_estimators: int = 50,
-    seed: int = 42,
-    test_size: float = 0.2,
-) -> tuple[
-    LGBMClassifier,
-    FeatureEncoder,
-    lgbm.Ensemble,
-    ArrayLike,
-    tuple[ArrayLike, ArrayLike, ArrayLike, ArrayLike],
-]:
-    if model_cls != LGBMClassifier:
-        msg = "Only LGBMClassifier supported"
-        raise ValueError(msg)
-
-    data, y, _ = load(dataset)
-
-    encoder = FeatureEncoder(data)
-    X = encoder.X.to_numpy()
-    X_train, X_test, y_train, y_test = train_test_split(
-        X,
-        y,
-        test_size=test_size,
-        random_state=seed,
-    )
-
-    model = model_cls(n_estimators=n_estimators, random_state=seed, **options)
-    model.fit(X_train, y_train)
-    ensemble = lgbm.Ensemble(model, encoder)
-
-    weights = np.ones(n_estimators)
-    weights *= 10000.0
-
-    return (
-        model,
-        encoder,
-        ensemble,
-        weights,
-        (X_train, X_test, y_train, y_test),
-    )
-
-
-def separate(oracle: Oracle, weights: Weights, out: list[Sample]) -> None:
+def separate(oracle: Oracle, weights: MNumber, out: list[SNumber]) -> None:
     try:
         X = list(oracle.separate(weights))
         out.extend(X)
@@ -154,10 +116,3 @@ def prune(pruner: Pruner) -> None:
         pytest.skip(f"Skipping test: {msg}")
     except Exception:
         raise
-
-
-def gb_skip(dataset: str, model_cls: type) -> None:
-    if model_cls == GradientBoostingClassifier and dataset == "Seeds":
-        pytest.skip(
-            "GradientBoostingClassifier not supported for more than 2 classes",
-        )

@@ -1,25 +1,26 @@
 import numpy as np
+import numpy.typing as npt
 import pytest
-from numpy.typing import ArrayLike
+from lightgbm import LGBMClassifier
 from sklearn.ensemble import (
     AdaBoostClassifier,
     GradientBoostingClassifier,
     RandomForestClassifier,
 )
-from utils import DATASETS, gb_skip, prune, train_sklearn
+from utils import DATASETS, prune, train
 
 from fipe import Ensemble, Pruner
 
 
 def _test_predictions(
-    X: ArrayLike,
+    X: npt.ArrayLike,
     ensemble: Ensemble,
-    weights: ArrayLike,
+    weights: npt.ArrayLike,
     pruner: Pruner,
 ) -> None:
     pred = ensemble.predict(X, weights)
     prune_pred = pruner.predict(X)
-    assert len(pruner.activated) > 0
+    assert len(pruner.active_estimators) > 0
     assert np.all(pred == prune_pred)
 
 
@@ -36,6 +37,7 @@ def _test_predictions(
         (RandomForestClassifier, {"max_depth": 1}),
         (AdaBoostClassifier, {"algorithm": "SAMME"}),
         (GradientBoostingClassifier, {"max_depth": 1, "init": "zero"}),
+        (LGBMClassifier, {"max_depth": 2}),
     ],
 )
 def test_pruner_norm(
@@ -46,8 +48,7 @@ def test_pruner_norm(
     seed: int,
     norm: int,
 ) -> None:
-    gb_skip(dataset, model_cls)
-    model, encoder, ensemble, weights, (X_train, _, _, _) = train_sklearn(
+    model, encoder, ensemble, weights, (X_train, _, _, _) = train(
         dataset=dataset,
         model_cls=model_cls,
         n_estimators=n_estimators,

@@ -1,23 +1,16 @@
-from ..ensemble import Ensemble
-from ..feature.encoder import FeatureEncoder
-from ..typing import Weights
+import numpy as np
+
+from ..typing import MNumber
 from .vote import VoteOCEAN
 
 
 class OCEAN(VoteOCEAN):
-    _new_weights: dict[int, float]
+    _new_weights: MNumber
 
-    def __init__(
-        self,
-        encoder: FeatureEncoder,
-        ensemble: Ensemble,
-        weights: Weights,
-        **kwargs,
-    ) -> None:
-        VoteOCEAN.__init__(self, encoder, ensemble, weights, **kwargs)
+    @property
+    def new_weights(self) -> MNumber:
+        return self._new_weights
 
-    def _set_new_weights(self, weights: Weights) -> None:
-        self._new_weights = self._to_dict(weights)
-
-    # def _check_counter_factual(self, x: Sample) -> None:
-    #     pass
+    @new_weights.setter
+    def new_weights(self, new_weights: MNumber) -> None:
+        self._new_weights = np.copy(new_weights)

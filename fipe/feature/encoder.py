@@ -1,9 +1,10 @@
 from copy import deepcopy
 
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 
-from ..typing import FeatureType
+from .types import Categories, FeatureType
 
 
 class FeatureEncoder:
@@ -13,11 +14,13 @@ class FeatureEncoder:
     This class is used to encode the features of a dataset.
     """
 
+    NUM_BINARY_VALUES = 2
+
     columns: list[str]
     X: pd.DataFrame
 
     types: dict[str, FeatureType]
-    categories: dict[str, list[str]]
+    categories: dict[str, Categories]
     inverse_categories: dict[str, str]
 
     _tol: float
@@ -32,7 +35,11 @@ class FeatureEncoder:
         self.types = {}
         self.categories = {}
         self.inverse_categories = {}
-        self._parse()
+        self._encode()
+
+    @property
+    def features(self) -> set[str]:
+        return set(self.types.keys())
 
     @property
     def n_features(self) -> int:
@@ -50,13 +57,13 @@ class FeatureEncoder:
     def continuous(self) -> set[str]:
         return {f for f, t in self.types.items() if t == FeatureType.CON}
 
-    def _parse(self) -> None:
+    def _encode(self) -> None:
         self._clean_data()
 
         self.columns = list(self.X.columns)
-        self._parse_binary_features()
-        self._parse_continuous_features()
-        self._parse_categorical_features()
+        self._encode_binary_features()
+        self._encode_continuous_features()
+        self._encode_categorical_features()
         self._save_columns()
 
     def _clean_data(self) -> None:
@@ -64,27 +71,25 @@ class FeatureEncoder:
         self.X = self.X.dropna()
         # Drop columns with only one unique value
         X = self.X.to_numpy()
-        contains_unique = np.apply_along_axis(
-            lambda x: len(np.unique(x)) > 1,
-            0,
-            X,
-        )
-        self.X = self.X.loc[:, contains_unique]
 
-    def _parse_binary_features(self) -> None:
+        def nunique(x: npt.NDArray) -> int:
+            return len(np.unique(x))
+
+        num = np.apply_along_axis(nunique, 0, X)
+        self.X = self.X.loc[:, num > 1]
+
+    def _encode_binary_features(self) -> None:
         # For each column in the data
         # if the number of unique values is 2
         # then the feature is binary.
         # Replace the values with 0 and 1.
-        for c in self.columns:
-            NUM_UNIQUE_VALUES = 2
-            if self.X[c].nunique() == NUM_UNIQUE_VALUES:
-                self.types[c] = FeatureType.BIN
-                x = pd.get_dummies(self.X[c], drop_first=True)
-                self.X = self.X.drop(columns=c)
-                self.X[c] = x.iloc[:, 0]
+        for column in self.columns:
+            if self.X[column].nunique() == self.NUM_BINARY_VALUES:
+                self.types[column] = FeatureType.BIN
+                x = pd.get_dummies(self.X[column], drop_first=True)
+                self.X[column] = x.iloc[:, 0]
 
-    def _parse_continuous_features(self) -> None:
+    def _encode_continuous_features(self) -> None:
         # For each column in the data
         # if the column has been identified as binary
         # then skip it. Otherwise, check if the column
@@ -111,24 +116,24 @@ class FeatureEncoder:
                     x = np.round(x * self._scale)
                 self.X[c] = x
 
-    def _parse_categorical_features(self) -> None:
+    def _encode_categorical_features(self) -> None:
         # For each column in the data
         # if the column has been identified as binary
         # or numerical, then skip it. Otherwise, the column
         # is categorical. Store the categories and
         # the inverse categories. Replace the column
         # with the encoded columns.
-        for c in self.columns:
-            if c in self.types:
+        for column in self.columns:
+            if column in self.types:
                 continue
 
-            self.types[c] = FeatureType.CAT
-            x = pd.get_dummies(self.X[c], prefix=c)
-            self.categories[c] = list(x.columns)
-            for v in self.categories[c]:
-                self.inverse_categories[v] = c
+            self.types[column] = FeatureType.CAT
+            x = pd.get_dummies(self.X[column], prefix=column)
+            self.categories[column] = list(x.columns)
+            for v in self.categories[column]:
+                self.inverse_categories[v] = column
             # Drop the original column
-            self.X = self.X.drop(columns=c)
+            self.X = self.X.drop(columns=column)
             # Add the encoded columns
             self.X = pd.concat([self.X, x], axis=1)
 

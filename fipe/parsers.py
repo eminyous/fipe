@@ -3,12 +3,12 @@ import warnings
 import numpy as np
 
 from .ensemble import Ensemble
-from .feature.encoder import FeatureEncoder
-from .typing import numeric
+from .feature import FeatureEncoder
+from .typing import MNumber, Number
 
 
 class LevelParser:
-    _levels: dict[str, list[numeric]]
+    _levels: dict[str, MNumber]
     _tol: float
 
     def __init__(self, **kwargs) -> None:
@@ -23,30 +23,27 @@ class LevelParser:
         for feature in encoder.continuous:
             levels = set()
             for ensemble in ensembles:
-                levels |= self._get_levels(feature, ensemble)
+                levels |= self._get_levels(feature=feature, ensemble=ensemble)
             levels = sorted(levels)
             MIN_NUM_LEVELS = 2
-            if (
-                len(levels) >= MIN_NUM_LEVELS
-                and np.diff(levels).min() < self._tol
+            if len(levels) > MIN_NUM_LEVELS and np.any(
+                np.diff(levels) < self._tol
             ):
-                msg = (
-                    f"The levels of the feature {feature}"
-                    " are too close to each other."
-                )
+                msg = f"Feature '{feature}' has duplicate levels"
                 warnings.warn(msg, stacklevel=2)
-            self._levels[feature] = levels
+            self._levels[feature] = np.array(levels)
 
     @property
-    def levels(self) -> dict[str, list[numeric]]:
+    def levels(self) -> dict[str, MNumber]:
         return self._levels
 
     @staticmethod
-    def _get_levels(feature: str, ensemble: Ensemble) -> set[numeric]:
+    def _get_levels(feature: str, ensemble: Ensemble) -> set[Number]:
         levels = set()
         for tree in ensemble:
             tree_levels = {
-                tree.threshold[n] for n in tree.nodes_split_on(feature)
+                tree.threshold[node]
+                for node in tree.nodes_split_on(feature=feature)
             }
             levels.update(tree_levels)
         return levels

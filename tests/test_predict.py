@@ -1,12 +1,13 @@
 import numpy as np
+import numpy.typing as npt
 import pytest
-from numpy.typing import ArrayLike
+from lightgbm import LGBMClassifier
 from sklearn.ensemble import (
     AdaBoostClassifier,
     GradientBoostingClassifier,
     RandomForestClassifier,
 )
-from utils import DATASETS, gb_skip, train_sklearn
+from utils import DATASETS, train
 
 from fipe import Ensemble
 
@@ -17,6 +18,7 @@ from fipe import Ensemble
         (RandomForestClassifier, {"max_depth": 5}),
         (AdaBoostClassifier, {"algorithm": "SAMME"}),
         (GradientBoostingClassifier, {"max_depth": 3, "init": "zero"}),
+        (LGBMClassifier, {"max_depth": 2}),
     ],
 )
 @pytest.mark.parametrize(
@@ -32,10 +34,11 @@ class TestPredict:
             AdaBoostClassifier
             | GradientBoostingClassifier
             | RandomForestClassifier
+            | LGBMClassifier
         ),
         ensemble: Ensemble,
-        X: ArrayLike,
-        weights: ArrayLike,
+        X: npt.ArrayLike,
+        weights: npt.ArrayLike,
     ) -> None:
         expected_pred = model.predict(X)
         actual_pred = ensemble.predict(X, weights)
@@ -50,8 +53,7 @@ class TestPredict:
         seed: int,
         options: dict[str, int | str | None],
     ) -> None:
-        gb_skip(dataset, model_cls)
-        model, _, ensemble, weights, (X_train, X_test, _, _) = train_sklearn(
+        model, _, ensemble, weights, (X_train, X_test, _, _) = train(
             dataset=dataset,
             model_cls=model_cls,
             n_estimators=n_estimators,
@@ -72,8 +74,7 @@ class TestPredict:
         seed: int,
         options: dict[str, int | str | None],
     ) -> None:
-        gb_skip(dataset, model_cls)
-        model, _, ensemble, _, (X_train, _, _, _) = train_sklearn(
+        model, _, ensemble, _, (X_train, _, _, _) = train(
             dataset=dataset,
             model_cls=model_cls,
             n_estimators=n_estimators,

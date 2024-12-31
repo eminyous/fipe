@@ -34,12 +34,11 @@ dependencies = [
     "scikit-learn",
     "pandas",
     "lightgbm",
+    "xgboost",
 ]
 
 optional-dependencies.dev = [
-    "black",
     "coverage",
-    "isort",
     "pytest",
     "pytest-cov",
     "ruff",
@@ -47,9 +46,7 @@ optional-dependencies.dev = [
 ]
 
 optional-dependencies.test = [
-    "black",
     "coverage",
-    "isort",
     "pytest",
     "pytest-cov",
     "ruff",
@@ -65,72 +62,6 @@ urls.Issues = "https://github.com/eminyous/fipe/issues"
 [tool.pyproject-fmt]
 max_supported_python = "3.13"
 
-[tool.black]
-line-length = 80
-target-version = ['py310']
-include = '\.pyi?$'
-exclude = '''
-/(
-    .eggs/
-  | .conda/
-  | .git/
-  | .mypy_cache/
-  | .venv/
-  | .tox/
-  | .vscode/
-  | .pytest_cache/
-  | dist/
-)/
-'''
-
-[tool.isort]
-profile = "black"
-line_length = 80
-
-[tool.ruff]
-cache-dir = ".ruff_cache/"
-target-version = "py310"
-line-length = 80
-fix = true
-show-fixes = true
-format.preview = true
-format.docstring-code-line-length = 100
-format.docstring-code-format = true
-lint.select = [
-    "ALL",
-]
-lint.ignore = [
-    "ANN003", # Missing type annotation for kwargs
-    "CPY", # No copyright header
-    "D100", # Missing docstring in public module
-    "D101", # Missing docstring in public class
-    "D102", # Missing docstring in public method
-    "D103", # Missing docstring in public function
-    "D104", # Missing docstring in public package
-    "D105", # Missing docstring in magic method
-    "D107", # Missing docstring in __init__
-    "D203", # 1 blank line required before class docstring
-    "D212", # Multi-line docstring summary should start at the first line
-    "N802", # Function name should be lowercase
-    "N803", # Argument name should be lowercase
-    "N806", # Variable in function should be lowercase
-    "TID252", 
-    "EXE",
-    "COM812",
-    "ISC001",
-]
-lint.per-file-ignores."tests/**/*.py" = [
-    "INP001", # No implicit namespace package
-    "PLR0913", # Too many arguments.
-    "PLR0917", # Too many positional arguments.
-    "S101", # Use of assert detected
-]
-lint.isort = { known-first-party = [
-    "fipe",
-    "tests",
-] }
-lint.preview = true
-lint.flake8-builtins.builtins-allowed-modules = ["typing"]
 
 [tool.coverage]
 run.omit = ["tests/*"]

@@ -1,10 +1,13 @@
 from abc import ABCMeta
+from collections.abc import Mapping
 
-import numpy as np
 import pandas as pd
 
-from ..typing import Sample
+from ..typing import MNumber
 from .encoder import FeatureEncoder
+from .types import Categories, FeatureType
+
+Transformable = pd.Series | list[pd.Series] | pd.DataFrame
 
 
 class FeatureContainer:
@@ -40,18 +43,27 @@ class FeatureContainer:
         return self._encoder.categorical
 
     @property
+    def types(self) -> Mapping[str, FeatureType]:
+        return self._encoder.types
+
+    @property
+    def features(self) -> set[str]:
+        return self._encoder.features
+
+    @property
     def n_features(self) -> int:
         return self._encoder.n_features
 
     @property
-    def categories(self) -> dict[str, list[str]]:
+    def categories(self) -> Mapping[str, Categories]:
         return self._encoder.categories
 
     @property
-    def inverse_categories(self) -> dict[str, str]:
+    def inverse_categories(self) -> Mapping[str, str]:
         return self._encoder.inverse_categories
 
-    def transform(self, X: Sample | list[Sample]) -> np.ndarray:
-        if not isinstance(X, list):
+    def transform(self, X: Transformable) -> MNumber:
+        if isinstance(X, pd.Series):
             X = [X]
-        return pd.DataFrame(X, columns=self.columns).to_numpy()
+        data = pd.concat(X, axis=1).T if isinstance(X, list) else X.T
+        return data[self.columns].to_numpy()

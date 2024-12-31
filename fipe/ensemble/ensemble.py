@@ -1,99 +1,74 @@
 from collections.abc import Iterable, Iterator
+from typing import ClassVar
 
 import numpy as np
-from numpy.typing import ArrayLike
-from sklearn.ensemble import AdaBoostClassifier, GradientBoostingClassifier
-from sklearn.tree import DecisionTreeRegressor
+import numpy.typing as npt
 
 from ..feature import FeatureEncoder
-from ..tree import Tree, TreeClassifier, TreeRegressor
-from ..typing import BaseEnsemble, BaseEstimator
+from ..tree import BaseTree
+from ..typing import LeafValue, ParsableEnsemble, ParsableTree
+from .base import BaseEnsemble
+from .classes import CLASSES
+
+Tree = BaseTree[LeafValue, ParsableTree]
 
 
 class Ensemble(Iterable[Tree]):
-    _base: BaseEnsemble
-    _trees: list[Tree]
+    NUM_BINARY_CLASSES = BaseEnsemble.NUM_BINARY_CLASSES
+    CLASSES: ClassVar[dict[type, type]] = CLASSES
 
-    def __init__(
+    _base: BaseEnsemble[Tree, ParsableEnsemble]
+
+    def __init__(self, base: ParsableEnsemble, encoder: FeatureEncoder) -> None:
+        cls = self.fetch_cls(base=base)
+        self._base = cls(base=base, encoder=encoder)
+
+    def predict(
         self,
-        base: BaseEnsemble,
-        encoder: FeatureEncoder,
-    ) -> None:
-        self._base = base
-        self._parse_trees(encoder)
+        X: npt.ArrayLike,
+        w: npt.ArrayLike,
+    ) -> npt.NDArray[np.intp]:
+        return self._base.predict(X=X, w=w)
 
-    def predict(self, X: ArrayLike, w: ArrayLike) -> np.ndarray:
-        p = self.score(X, w)
-        return np.argmax(p, axis=-1)
+    def score(
+        self,
+        X: npt.ArrayLike,
+        w: npt.ArrayLike,
+    ) -> npt.NDArray[np.float64]:
+        return self._base.score(X=X, w=w)
 
-    def score(self, X: ArrayLike, w: ArrayLike) -> np.ndarray:
-        w = np.asarray(w)
-        p = self.scores(X)
-        for i in range(len(self)):
-            p[:, i, :] *= w[i]
-        return np.sum(p, axis=1) / np.sum(w)
-
-    def scores(self, X: ArrayLike) -> np.ndarray:
-        X = np.asarray(X)
-        if X.ndim == 1:
-            X = X.reshape(1, -1)
-
-        p = np.array([self._scores(X, e) for e in self.estimators])
-        return np.swapaxes(p, 0, 1)
-
-    @property
-    def estimators(self) -> list[BaseEstimator]:
-        if isinstance(self._base, GradientBoostingClassifier):
-            return self._base.estimators_[:, 0].ravel().tolist()
-        if isinstance(self._base, AdaBoostClassifier):
-            return list(self._base)
-        return list(self._base.estimators_)
+    def scores(self, X: npt.ArrayLike) -> npt.NDArray[np.float64]:
+        return self._base.scores(X=X)
 
     @property
     def n_classes(self) -> int:
-        if not isinstance(self._base.n_classes_, int):
-            msg = "n_classes must be an integer."
-            raise TypeError(msg)
-        return self._base.n_classes_
+        return self._base.n_classes
 
     @property
     def n_estimators(self) -> int:
-        return len(self._trees)
+        return self._base.n_estimators
 
     @property
     def max_depth(self) -> int:
-        return max(tree.max_depth for tree in self)
+        return self._base.max_depth
 
-    def __getitem__(self, t: int) -> Tree:
-        return self._trees[t]
+    @property
+    def m_valued(self) -> bool:
+        return self._base.m_valued
 
-    def __iter__(self) -> Iterator[Tree]:
-        return iter(self._trees)
+    def __getitem__(self, t: int) -> BaseTree[LeafValue, ParsableTree]:
+        return self._base[t]
+
+    def __iter__(self) -> Iterator[BaseTree[LeafValue, ParsableTree]]:
+        return iter(self._base)
 
     def __len__(self) -> int:
-        return self.n_estimators
+        return len(self._base)
 
-    def _parse_trees(self, encoder: FeatureEncoder) -> None:
-        self._trees = []
-        if isinstance(self._base, AdaBoostClassifier):
-            self._trees = []
-            for e in self._base:
-                self._trees.append(TreeClassifier(e.tree_, encoder))
-            return
-        if isinstance(self._base, GradientBoostingClassifier):
-            self._trees = []
-            for e in self._base.estimators_[:, 0].ravel():
-                self._trees.append(TreeRegressor(e.tree_, encoder))
-            return
-        for e in self._base:
-            self._trees.append(Tree(e.tree_, encoder))
-
-    def _scores(self, X: ArrayLike, e: BaseEstimator) -> ArrayLike:
-        if isinstance(e, DecisionTreeRegressor):
-            q = e.predict(X)
-            return np.array([-q, q]).T
-        if isinstance(self._base, AdaBoostClassifier):
-            q = e.predict(X)
-            k = self.n_classes
-            return np.eye(k)[q]
-        return e.predict_proba(X)
+    @staticmethod
+    def fetch_cls(base: ParsableEnsemble) -> type[BaseEnsemble]:
+        for base_cls, cls in Ensemble.CLASSES.items():
+            if isinstance(base, base_cls):
+                return cls
+        msg = f"Unknown ensemble class: {type(base).__name__}"
+        raise ValueError(msg)

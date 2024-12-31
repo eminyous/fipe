@@ -1,40 +1,36 @@
 from abc import ABC, abstractmethod
 
-from numpy.typing import ArrayLike
+import numpy as np
+import numpy.typing as npt
 
-from ..ensemble.container import EnsembleContainer
-from ..ensemble.ensemble import Ensemble
-from ..typing import Weights, numeric
+from ..ensemble import Ensemble, EnsembleContainer
+from ..typing import MNumber, Number
 
 
 class BasePruner(ABC, EnsembleContainer):
-    msg = "Subclasses must implement the {name} {method}"
-
-    def __init__(self, ensemble: Ensemble, weights: Weights) -> None:
+    def __init__(self, ensemble: Ensemble, weights: npt.ArrayLike) -> None:
         EnsembleContainer.__init__(self, ensemble=ensemble, weights=weights)
 
     @abstractmethod
-    def prune(self) -> None:
-        msg = self.msg.format(name="prune", method="method")
+    def prune(self, threshold: Number) -> None:
+        msg = "Method 'prune' must be implemented in a child class"
         raise NotImplementedError(msg)
 
     @property
     @abstractmethod
-    def _prune_weights(self) -> dict[int, numeric]:
-        msg = self.msg.format(name="_prune_weights", method="property")
+    def _pruned_weights(self) -> MNumber:
+        msg = "Property '_pruned_weights' must be implemented in a child class"
         raise NotImplementedError(msg)
 
     @property
-    def weights(self) -> ArrayLike:
-        w = self._prune_weights
-        return self._to_array(w)
+    def weights(self) -> MNumber:
+        return self._pruned_weights
 
     @property
-    def activated(self) -> set[int]:
-        w = self._prune_weights
+    def active_estimators(self) -> set[int]:
         THRESHOLD = 1e-6
-        return {t for t, v in w.items() if v > THRESHOLD}
+        return set(np.where(self.weights > THRESHOLD)[0])
 
     @property
-    def n_activated(self) -> int:
-        return len(self.activated)
+    def n_active_estimators(self) -> int:
+        return len(self.active_estimators)

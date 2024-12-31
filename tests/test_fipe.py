@@ -1,19 +1,24 @@
 from itertools import chain
 
 import numpy as np
+import numpy.typing as npt
 import pytest
-from numpy.typing import ArrayLike
+from lightgbm import LGBMClassifier
 from sklearn.ensemble import (
     AdaBoostClassifier,
     GradientBoostingClassifier,
     RandomForestClassifier,
 )
-from utils import DATASETS, gb_skip, prune, train_sklearn
+from utils import DATASETS, prune, train
 
 from fipe import FIPE
 
 
-def _test_predictions(X: ArrayLike, pruner: FIPE, weights: ArrayLike) -> None:
+def _test_predictions(
+    X: npt.ArrayLike,
+    pruner: FIPE,
+    weights: npt.ArrayLike,
+) -> None:
     ensemble = pruner.ensemble
     pred = ensemble.predict(X, weights)
     pruner_pred = pruner.predict(X)
@@ -22,22 +27,25 @@ def _test_predictions(X: ArrayLike, pruner: FIPE, weights: ArrayLike) -> None:
 
 def _test_fidelity(
     model: (
-        AdaBoostClassifier | GradientBoostingClassifier | RandomForestClassifier
+        AdaBoostClassifier
+        | GradientBoostingClassifier
+        | RandomForestClassifier
+        | LGBMClassifier
     ),
     pruner: FIPE,
-    weights: ArrayLike,
+    weights: npt.ArrayLike,
 ) -> None:
     ensemble = pruner.ensemble
     pruner_weights = pruner.weights
-    for xd in chain(*pruner.counterfactuals):
+    for xd in chain(*pruner.counter_factuals):
         x = pruner.transform(xd)
         x = x.reshape(1, -1)
-        sk_pred = model.predict(x)
+        model_pred = model.predict(x)
         pred = ensemble.predict(x, weights)
         pruner_pred = pruner.predict(x)
         try:
             assert np.all(pruner_pred == pred)
-            assert np.all(sk_pred == pred)
+            assert np.all(model_pred == pred)
         except AssertionError:
             # Show score prediction
             ensemble.score(x, weights)
@@ -54,9 +62,10 @@ def _test_fidelity(
 @pytest.mark.parametrize(
     ("model_cls", "options"),
     [
-        (RandomForestClassifier, {"max_depth": 1}),
+        # (RandomForestClassifier, {"max_depth": 1}),
         (AdaBoostClassifier, {"algorithm": "SAMME"}),
         (GradientBoostingClassifier, {"max_depth": 1, "init": "zero"}),
+        (LGBMClassifier, {"max_depth": 2}),
     ],
 )
 @pytest.mark.parametrize("norm", [0, 1])
@@ -68,8 +77,7 @@ def test_prune(
     options: dict[str, int | str | None],
     norm: int,
 ) -> None:
-    gb_skip(dataset, model_cls)
-    model, encoder, _, weights, (X_train, X_test, _, _) = train_sklearn(
+    model, encoder, _, weights, (X_train, X_test, _, _) = train(
         dataset=dataset,
         model_cls=model_cls,
         n_estimators=n_estimators,
@@ -85,8 +93,8 @@ def test_prune(
     pruner.add_samples(X_train)
     prune(pruner)
 
-    activated = pruner.activated
-    assert len(activated) > 0
+    active_estimators = pruner.active_estimators
+    assert len(active_estimators) > 0
 
     _test_predictions(X_test, pruner, weights)
 

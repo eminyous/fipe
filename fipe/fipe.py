@@ -1,30 +1,30 @@
 import warnings
 
+import numpy as np
+import numpy.typing as npt
+
 from .ensemble import Ensemble
 from .feature import FeatureContainer, FeatureEncoder
 from .oracle import Oracle
 from .prune import Pruner
-from .typing import BaseEnsemble, Sample, Weights
+from .typing import ParsableEnsemble, SNumber
 
 
 class FIPE(Pruner, FeatureContainer):
-    """Functionally-Identical Pruning of Ensemble (FIPE) algorithm."""
-
     oracle: Oracle
 
     _n_oracle_calls: int
     _max_oracle_calls: int
-    _counterfactuals: list[list[Sample]]
+    _counter_factuals: list[list[SNumber]]
 
     def __init__(
         self,
-        base: BaseEnsemble,
-        weights: Weights,
+        base: ParsableEnsemble,
+        weights: npt.ArrayLike,
         encoder: FeatureEncoder,
-        norm: int,
+        norm: int = 1,
         **kwargs,
     ) -> None:
-        """Initialize parent classes and oracle component."""
         ensemble = Ensemble(base=base, encoder=encoder)
         Pruner.__init__(
             self,
@@ -40,35 +40,28 @@ class FIPE(Pruner, FeatureContainer):
             weights=weights,
             **kwargs,
         )
-        # Initialize attributes
-        self._counterfactuals = []
+        self._counter_factuals = []
+        self._n_oracle_calls = 0
         self._max_oracle_calls = kwargs.get("max_oracle_calls", 100)
 
     def build(self) -> None:
-        """Build combinatorial optimization models."""
         Pruner.build(self)
         self.oracle.build()
         self._n_oracle_calls = 0
 
     def prune(self) -> None:
         while self._n_oracle_calls < self._max_oracle_calls:
-            # Solve pruning problem
             Pruner.prune(self)
             if self.SolCount == 0:
-                # No solution found.
-                msg = "No solution found in the pruning model."
+                msg = "No feasible solution in the pruning model."
                 warnings.warn(msg, RuntimeWarning, stacklevel=1)
                 break
-
-            # Solve separation problem
             X = self._separate(self.weights)
             if len(X) > 0:
-                self._save_counterfactuals(X)
-                X = self.transform(X)
-                self.add_samples(X)
+                self._save_counter_factuals(X=X)
+                X = self.transform(X=X)
+                self.add_samples(X=X)
             else:
-                # No counterfactuals found.
-                # The pruning is complete.
                 break
 
     @property
@@ -76,12 +69,13 @@ class FIPE(Pruner, FeatureContainer):
         return self._n_oracle_calls
 
     @property
-    def counterfactuals(self) -> list[list[Sample]]:
-        return self._counterfactuals
+    def counter_factuals(self) -> list[list[SNumber]]:
+        return self._counter_factuals
 
-    def _save_counterfactuals(self, counters: list[Sample]) -> None:
-        self._counterfactuals.append(counters)
+    def _save_counter_factuals(self, X: list[SNumber]) -> None:
+        self._counter_factuals.append(X)
 
-    def _separate(self, weights: Weights) -> list[Sample]:
+    def _separate(self, weights: npt.ArrayLike) -> list[SNumber]:
         self._n_oracle_calls += 1
-        return list(self.oracle.separate(weights))
+        weights = np.asarray(weights)
+        return list(self.oracle.separate(new_weights=weights))
