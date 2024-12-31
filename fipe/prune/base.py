@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import ABCMeta, abstractmethod
 
 import numpy as np
 import numpy.typing as npt
@@ -8,18 +8,16 @@ from ..feature import FeatureEncoder
 from ..typing import BaseEnsemble, MNumber, Number
 
 
-class BasePruner(ABC, EnsembleContainer):
+class BasePruner(EnsembleContainer):
+    __metaclass__ = ABCMeta
+
     def __init__(
         self,
         base: BaseEnsemble,
         encoder: FeatureEncoder,
         weights: npt.ArrayLike,
     ) -> None:
-        EnsembleContainer.__init__(
-            self,
-            ensemble=(base, encoder),
-            weights=weights,
-        )
+        super().__init__(self, ensemble=(base, encoder), weights=weights)
 
     @abstractmethod
     def prune(self, threshold: Number) -> None:
