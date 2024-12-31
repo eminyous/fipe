@@ -3,11 +3,9 @@ from collections.abc import Mapping
 
 import pandas as pd
 
-from ..typing import MNumber
+from ..typing import MNumber, Transformable
 from .encoder import FeatureEncoder
 from .types import Categories, FeatureType
-
-Transformable = pd.Series | list[pd.Series] | pd.DataFrame
 
 
 class FeatureContainer:

@@ -29,9 +29,11 @@ ParsableEnsemble = (
 Number = np.number
 MNumber = npt.NDArray[Number]
 SNumber = pd.Series
+DNumber = pd.DataFrame
 
 LeafValue = Number | MNumber
 Variable = Number | MNumber | SNumber
+Transformable = SNumber | list[SNumber] | DNumber
 
 PT = TypeVar("PT", bound=ParsableTree)
 LV = TypeVar("LV", bound=LeafValue)
