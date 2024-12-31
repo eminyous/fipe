@@ -14,7 +14,7 @@ Args = MNumber | Categories
 
 
 class FeatureVars(BaseVar[SNumber], dict[str, FeatureVar]):
-    KLASSES: Mapping[str, type] = {
+    KLASSES: Mapping[str, type[FeatureVar]] = {
         FeatureType.BIN.value: BinaryVar,
         FeatureType.CAT.value: CategoricalVar,
         FeatureType.CON.value: ContinuousVar,
