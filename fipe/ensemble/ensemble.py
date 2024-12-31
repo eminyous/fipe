@@ -57,10 +57,6 @@ class Ensemble(Iterable[Tree]):
     def max_depth(self) -> int:
         return self._parser.max_depth
 
-    @property
-    def m_valued(self) -> bool:
-        return self._parser.m_valued
-
     def __getitem__(self, t: int) -> Tree:
         return self._parser[t]
 

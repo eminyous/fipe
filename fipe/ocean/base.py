@@ -1,3 +1,5 @@
+from functools import partial
+
 import gurobipy as gp
 import numpy.typing as npt
 
@@ -49,7 +51,9 @@ class BaseOCEAN(
         self._build_feature_constrs()
 
     def function(self, class_: int) -> gp.LinExpr:
-        return self.weighted_function(class_=class_, weights=self._weights)
+        weights = self._weights
+        wf = partial(self.weighted_function, weights=weights)
+        return wf(class_=class_)
 
     def weighted_function(
         self,
@@ -57,12 +61,12 @@ class BaseOCEAN(
         weights: MNumber,
     ) -> gp.LinExpr:
         return gp.quicksum(
-            weights[t] * self._flow_value(t=t, class_=class_)
+            weights[t] * self._flow_function(t=t, class_=class_)
             for t in range(self.n_estimators)
         )
 
-    def _flow_value(self, t: int, class_: int) -> gp.MLinExpr:
-        if self.ensemble.m_valued:
+    def _flow_function(self, t: int, class_: int) -> gp.MLinExpr:
+        if self._flow_vars[t].value.ndim == 0:
             n_classes = self.n_classes
             if self.is_binary:
                 return (2 * class_ - 1) * self._flow_vars[t].value

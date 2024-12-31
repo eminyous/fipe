@@ -12,10 +12,6 @@ class EnsembleLGBM(EnsembleParser[TreeLGBM, LGBMClassifier]):
     TREE_INFO_KEY = "tree_info"
 
     @property
-    def m_valued(self) -> bool:
-        return self._base.boosting_type != "rf"
-
-    @property
     def n_classes(self) -> int:
         return self._base.n_classes_
 

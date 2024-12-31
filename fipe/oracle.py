@@ -1,4 +1,5 @@
 from collections.abc import Callable, Generator
+from functools import partial
 
 import gurobipy as gp
 import numpy as np
@@ -30,13 +31,13 @@ class Oracle(OCEAN):
             if class_ == majority_class:
                 continue
             self._separate_pair(majority_class=majority_class, class_=class_)
-            yield from self._extract_valid_samples(
+            yield from self._extract_solutions(
                 majority_class=majority_class,
                 class_=class_,
             )
         self.clear_majority_class()
 
-    def _extract_valid_samples(
+    def _extract_solutions(
         self,
         majority_class: int,
         class_: int,
@@ -61,15 +62,9 @@ class Oracle(OCEAN):
         self.setParam(param, 0)
 
     def _separate_pair(self, majority_class: int, class_: int) -> None:
-        class_score = self.weighted_function(
-            class_=class_,
-            weights=self._new_weights,
-        )
-        majority_class_score = self.weighted_function(
-            class_=majority_class,
-            weights=self._new_weights,
-        )
-        obj = class_score - majority_class_score
+        weights = self._new_weights
+        wf = partial(self.weighted_function, weights=weights)
+        obj = wf(class_=class_) - wf(class_=majority_class)
         self.setObjective(obj, gp.GRB.MAXIMIZE)
         cb = self._optimize_callback()
         self.optimize(cb)

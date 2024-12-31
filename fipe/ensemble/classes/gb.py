@@ -10,10 +10,6 @@ from ..parser import EnsembleParser
 
 class EnsembleGB(EnsembleParser[TreeGB, GradientBoostingClassifier]):
     @property
-    def m_valued(self) -> bool:
-        return True
-
-    @property
     def n_classes(self) -> int:
         return self._base.n_classes_
 

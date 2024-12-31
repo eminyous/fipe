@@ -15,10 +15,6 @@ class EnsembleXGB(EnsembleParser[TreeXGB, Booster]):
     )
 
     @property
-    def m_valued(self) -> bool:
-        return True
-
-    @property
     def n_classes(self) -> int:
         n_trees = len(self._trees)
         n_base = self.n_estimators // n_trees

@@ -76,12 +76,6 @@ class EnsembleParser(Sequence[BT], Generic[BT, BE]):
         msg = "n_estimators property must be implemented in subclass."
         raise NotImplementedError(msg)
 
-    @property
-    @abstractmethod
-    def m_valued(self) -> bool:
-        msg = "m_valued property must be implemented in subclass."
-        raise NotImplementedError(msg)
-
     @abstractmethod
     def _parse_trees(self, encoder: FeatureEncoder) -> None:
         msg = "_parse_trees method must be implemented in subclass."

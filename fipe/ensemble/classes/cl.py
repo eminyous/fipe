@@ -45,10 +45,6 @@ class EnsembleCL(EnsembleParser[TreeCL[HV], CL], Generic[CL, HV]):
     def n_estimators(self) -> int:
         return len(self._base)
 
-    @property
-    def m_valued(self) -> bool:
-        return False
-
     def _scores_impl(self, X: npt.ArrayLike) -> npt.NDArray[np.float64]:
         X = np.asarray(X)
         n_samples = X.shape[0]
