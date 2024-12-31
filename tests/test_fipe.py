@@ -62,7 +62,7 @@ def _test_fidelity(
 @pytest.mark.parametrize(
     ("model_cls", "options"),
     [
-        # (RandomForestClassifier, {"max_depth": 1}),
+        (RandomForestClassifier, {"max_depth": 1}),
         (AdaBoostClassifier, {"algorithm": "SAMME"}),
         (GradientBoostingClassifier, {"max_depth": 1, "init": "zero"}),
         (LGBMClassifier, {"max_depth": 2}),
