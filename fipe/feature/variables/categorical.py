@@ -4,8 +4,7 @@ import gurobipy as gp
 import pandas as pd
 
 from ...mip import MIP, BaseVar
-from ...typing import SNumber
-from ..types import Categories
+from ...typing import Categories, SNumber
 
 
 class CategoricalVar(BaseVar[SNumber], gp.tupledict[str, gp.Var]):

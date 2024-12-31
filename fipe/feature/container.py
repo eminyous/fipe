@@ -1,13 +1,14 @@
 from abc import ABCMeta
 from collections.abc import Mapping
+from dataclasses import dataclass
 
 import pandas as pd
 
-from ..typing import MNumber, Transformable
+from ..typing import Categories, FeatureType, MNumber, Transformable
 from .encoder import FeatureEncoder
-from .types import Categories, FeatureType
 
 
+@dataclass
 class FeatureContainer:
     """
     Abstract class for feature containers.
@@ -19,46 +20,43 @@ class FeatureContainer:
 
     __metaclass__ = ABCMeta
 
-    _encoder: FeatureEncoder
-
-    def __init__(self, encoder: FeatureEncoder) -> None:
-        self._encoder = encoder
+    encoder: FeatureEncoder
 
     @property
     def columns(self) -> list[str]:
-        return self._encoder.columns
+        return self.encoder.columns
 
     @property
     def binary(self) -> set[str]:
-        return self._encoder.binary
+        return self.encoder.binary
 
     @property
     def continuous(self) -> set[str]:
-        return self._encoder.continuous
+        return self.encoder.continuous
 
     @property
     def categorical(self) -> set[str]:
-        return self._encoder.categorical
+        return self.encoder.categorical
 
     @property
     def types(self) -> Mapping[str, FeatureType]:
-        return self._encoder.types
+        return self.encoder.types
 
     @property
     def features(self) -> set[str]:
-        return self._encoder.features
+        return self.encoder.features
 
     @property
     def n_features(self) -> int:
-        return self._encoder.n_features
+        return self.encoder.n_features
 
     @property
     def categories(self) -> Mapping[str, Categories]:
-        return self._encoder.categories
+        return self.encoder.categories
 
     @property
     def inverse_categories(self) -> Mapping[str, str]:
-        return self._encoder.inverse_categories
+        return self.encoder.inverse_categories
 
     def transform(self, X: Transformable) -> MNumber:
         if isinstance(X, pd.Series):

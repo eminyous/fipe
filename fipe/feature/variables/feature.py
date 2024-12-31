@@ -4,14 +4,13 @@ import gurobipy as gp
 import pandas as pd
 
 from ...mip import MIP, BaseVar
-from ...typing import Number, SNumber
-from ..types import Categories, FeatureType, Levels
+from ...typing import Categories, FeatureType, MNumber, Number, SNumber
 from .binary import BinaryVar
 from .categorical import CategoricalVar
 from .continuous import ContinuousVar
 
 FeatureVar = BinaryVar | ContinuousVar | CategoricalVar
-Args = Levels | Categories
+Args = MNumber | Categories
 
 
 class FeatureVars(BaseVar[SNumber], dict[str, FeatureVar]):
@@ -34,7 +33,7 @@ class FeatureVars(BaseVar[SNumber], dict[str, FeatureVar]):
         feature: str,
         vtype: str,
         *,
-        levels: Levels | None = None,
+        levels: MNumber | None = None,
         categories: Categories | None = None,
     ) -> None:
         self[feature] = self._add_var(
@@ -65,7 +64,7 @@ class FeatureVars(BaseVar[SNumber], dict[str, FeatureVar]):
         vtype: str,
         *,
         name: str = "",
-        levels: Levels | None = None,
+        levels: MNumber | None = None,
         categories: Categories | None = None,
     ) -> FeatureVar:
         klass = FeatureVars.KLASSES.get(vtype)

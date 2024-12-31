@@ -1,9 +1,10 @@
 from .ensemble import Ensemble
-from .feature import FeatureEncoder, FeatureType
+from .feature import FeatureEncoder
 from .fipe import FIPE
 from .ocean import OCEAN, BaseOCEAN, VoteOCEAN
 from .oracle import Oracle
 from .prune import BasePruner, Pruner
+from .typing import FeatureType
 
 __all__ = [
     "FIPE",

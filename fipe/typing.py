@@ -1,4 +1,5 @@
 from collections.abc import Mapping
+from enum import Enum
 from typing import Any, TypeVar
 
 import numpy as np
@@ -12,6 +13,13 @@ from sklearn.ensemble import (
 )
 from sklearn.tree._tree import Tree  # noqa: PLC2701
 from xgboost import Booster
+
+
+class FeatureType(Enum):
+    CAT = "categorical"
+    CON = "continuous"
+    BIN = "binary"
+
 
 ParsableTreeSKL = Tree
 ParsableTreeLGBM = Mapping[str, Any]
@@ -30,6 +38,8 @@ Number = np.number
 MNumber = npt.NDArray[Number]
 SNumber = pd.Series
 DNumber = pd.DataFrame
+
+Categories = set[str]
 
 LeafValue = Number | MNumber
 Variable = Number | MNumber | SNumber

@@ -4,7 +4,7 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from .types import Categories, FeatureType
+from ..typing import Categories, FeatureType
 
 
 class FeatureEncoder:

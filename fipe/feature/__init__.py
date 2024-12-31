@@ -1,6 +1,5 @@
 from .container import FeatureContainer
 from .encoder import FeatureEncoder
-from .types import FeatureType
 from .variables import (
     BinaryVar,
     CategoricalVar,
@@ -15,7 +14,6 @@ __all__ = [
     "ContinuousVar",
     "FeatureContainer",
     "FeatureEncoder",
-    "FeatureType",
     "FeatureVar",
     "FeatureVars",
 ]
