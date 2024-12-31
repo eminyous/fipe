@@ -1,5 +1,5 @@
 from collections.abc import Mapping
-from typing import Any, Literal, TypeVar
+from typing import Any, TypeVar
 
 import numpy as np
 import numpy.typing as npt
@@ -37,4 +37,4 @@ PT = TypeVar("PT", bound=ParsableTree)
 LV = TypeVar("LV", bound=LeafValue)
 VT = TypeVar("VT", bound=Variable)
 PE = TypeVar("PE", bound=ParsableEnsemble)
-HV = TypeVar("HV", bound=Literal[True, False])
+HV = TypeVar("HV", bound=bool)
