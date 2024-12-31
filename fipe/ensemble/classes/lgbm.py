@@ -74,8 +74,8 @@ class EnsembleLGBM(EnsembleParser[TreeLGBM, LGBMClassifier]):
     ) -> NDArray[np.float64]:
         n_classes = self.n_classes
         scores = np.zeros(n_classes)
-        if n_classes == self.NUM_BINARY_CLASSES:
-            leaf_index = leaf_indices[index]
+        if self.is_binary:
+            leaf_index = int(leaf_indices[index])
             scores[1] = self[index].predict(leaf_index)
             scores[0] = -scores[1]
             return scores

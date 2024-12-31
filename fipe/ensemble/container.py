@@ -11,8 +11,6 @@ from .ensemble import Ensemble
 class EnsembleContainer:
     __metaclass__ = ABCMeta
 
-    NUM_BINARY_CLASSES = Ensemble.NUM_BINARY_CLASSES
-
     _ensemble: Ensemble
     _weights: MNumber
 
@@ -32,6 +30,10 @@ class EnsembleContainer:
     @property
     def ensemble(self) -> Ensemble:
         return self._ensemble
+
+    @property
+    def is_binary(self) -> bool:
+        return self._ensemble.is_binary
 
     @property
     def n_estimators(self) -> int:

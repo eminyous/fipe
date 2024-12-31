@@ -17,7 +17,7 @@ class BasePruner(EnsembleContainer):
         encoder: FeatureEncoder,
         weights: npt.ArrayLike,
     ) -> None:
-        super().__init__(self, ensemble=(base, encoder), weights=weights)
+        super().__init__(ensemble=(base, encoder), weights=weights)
 
     @abstractmethod
     def prune(self) -> None:

@@ -18,10 +18,10 @@ class EnsembleRF(EnsembleCL[RandomForestClassifier, False]):
 
     @property
     def _base_estimators(self) -> list[DecisionTreeClassifier]:
-        return list(self._base.estimators_)
+        return self._base.estimators_
 
     @staticmethod
-    def _compute_base_scores_estimator_from_proba(
+    def _compute_scores_from_proba(
         p: npt.ArrayLike,
     ) -> npt.NDArray[np.float64]:
         return np.asarray(p)

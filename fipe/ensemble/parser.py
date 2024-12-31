@@ -61,6 +61,10 @@ class EnsembleParser(Sequence[BT], Generic[BT, BE]):
         return max(tree.max_depth for tree in self)
 
     @property
+    def is_binary(self) -> bool:
+        return self.n_classes == self.NUM_BINARY_CLASSES
+
+    @property
     @abstractmethod
     def n_classes(self) -> int:
         msg = "n_classes property must be implemented in subclass."

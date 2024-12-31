@@ -21,11 +21,11 @@ class EnsembleAB(EnsembleCL[AdaBoostClassifier, True]):
         return list(self._base)
 
     @staticmethod
-    def _compute_base_scores_estimator_from_proba(
+    def _compute_scores_from_proba(
         p: npt.ArrayLike,
     ) -> npt.NDArray[np.float64]:
-        k = p.shape[0]
-        q = np.argmax(p, axis=0)
+        k = p.shape[-1]
+        q = np.argmax(p, axis=-1)
         return np.eye(k)[q]
 
 

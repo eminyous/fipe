@@ -1,7 +1,7 @@
 import gurobipy as gp
 import numpy.typing as npt
 
-from ..ensemble import Ensemble, EnsembleContainer
+from ..ensemble import EnsembleContainer
 from ..feature import FeatureContainer, FeatureEncoder, FeatureVars
 from ..flow import FlowVars
 from ..mip import MIP
@@ -48,6 +48,27 @@ class BaseOCEAN(
         self._build_flow_vars()
         self._build_feature_constrs()
 
+    def function(self, class_: int) -> gp.LinExpr:
+        return self.weighted_function(class_=class_, weights=self._weights)
+
+    def weighted_function(
+        self,
+        class_: int,
+        weights: MNumber,
+    ) -> gp.LinExpr:
+        return gp.quicksum(
+            weights[t] * self._flow_value(t=t, class_=class_)
+            for t in range(self.n_estimators)
+        )
+
+    def _flow_value(self, t: int, class_: int) -> gp.MLinExpr:
+        if self.ensemble.m_valued:
+            n_classes = self.n_classes
+            if self.is_binary:
+                return (2 * class_ - 1) * self._flow_vars[t].value
+            return self._flow_vars[t * n_classes + class_].value
+        return self._flow_vars[t].value[class_]
+
     def _build_feature_vars(self) -> None:
         self._feature_vars.build(mip=self)
 
@@ -83,55 +104,3 @@ class BaseOCEAN(
         for t, tree in enumerate(self.ensemble):
             name = self.FLOW_VAR_FMT.format(t=t)
             self._flow_vars[t] = FlowVars(tree=tree, name=name)
-
-    def function(self, class_: int) -> gp.LinExpr:
-        return self.weighted_function(class_=class_, weights=self._weights)
-
-    def weighted_function(
-        self,
-        class_: int,
-        weights: MNumber,
-    ) -> gp.LinExpr:
-        if self.ensemble.m_valued:
-            return self._function_m_valued(class_=class_, weights=weights)
-        return self._function_valued(class_=class_, weights=weights)
-
-    def _function_valued(
-        self,
-        class_: int,
-        weights: MNumber,
-    ) -> gp.LinExpr:
-        return gp.quicksum(
-            weights[t] * self._flow_vars[t].value[class_]
-            for t in range(self.n_estimators)
-        )
-
-    def _function_m_valued(
-        self,
-        class_: int,
-        weights: MNumber,
-    ) -> gp.LinExpr:
-        if self.n_classes == Ensemble.NUM_BINARY_CLASSES:
-            return self._function_binary(class_=class_, weights=weights)
-        return self._function_multi(class_=class_, weights=weights)
-
-    def _function_binary(
-        self,
-        class_: int,
-        weights: MNumber,
-    ) -> gp.LinExpr:
-        sign = 2 * class_ - 1
-        return gp.quicksum(
-            sign * weights[t] * self._flow_vars[t].value
-            for t in range(self.n_estimators)
-        )
-
-    def _function_multi(
-        self,
-        class_: int,
-        weights: MNumber,
-    ) -> gp.LinExpr:
-        return gp.quicksum(
-            weights[t] * self._flow_vars[t * self.n_classes + class_].value
-            for t in range(self.n_estimators)
-        )

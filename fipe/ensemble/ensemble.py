@@ -12,7 +12,6 @@ from .parser import EnsembleParser
 
 
 class Ensemble(Iterable[Tree]):
-    NUM_BINARY_CLASSES = EnsembleParser.NUM_BINARY_CLASSES
     CLASSES: ClassVar[dict[type, type]] = CLASSES
 
     _parser: EnsembleParser[Tree, BaseEnsemble]
@@ -41,6 +40,10 @@ class Ensemble(Iterable[Tree]):
 
     def scores(self, X: npt.ArrayLike) -> npt.NDArray[np.float64]:
         return self._parser.scores(X=X)
+
+    @property
+    def is_binary(self) -> bool:
+        return self._parser.is_binary
 
     @property
     def n_classes(self) -> int:

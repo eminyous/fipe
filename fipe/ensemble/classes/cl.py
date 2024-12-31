@@ -55,34 +55,22 @@ class EnsembleCL(EnsembleParser[TreeCL[HV], CL], Generic[CL, HV]):
         n_estimators = self.n_estimators
         n_classes = self.n_classes
         scores = np.zeros((n_samples, n_estimators, n_classes))
-        for i in range(n_samples):
-            scores[i] = self._compute_scores_sample(X[i])
+        for j, e in enumerate(self._base_estimators):
+            scores[:, j, :] = self._compute_scores_estimator(e, X)
         return scores
 
-    def _compute_scores_sample(
-        self,
-        x: npt.ArrayLike,
-    ) -> npt.NDArray[np.float64]:
-        x = np.asarray(x)
-        n_estimators = self.n_estimators
-        n_classes = self.n_classes
-        scores = np.zeros((n_estimators, n_classes))
-        for i, e in enumerate(self._base_estimators):
-            scores[i] = self._compute_base_scores_estimator(e, x)
-        return scores
-
-    def _compute_base_scores_estimator(
+    def _compute_scores_estimator(
         self,
         estimator: DecisionTreeClassifier,
-        x: npt.ArrayLike,
+        X: npt.ArrayLike,
     ) -> npt.NDArray[np.float64]:
-        x = np.asarray(x).reshape(1, -1)
-        p = estimator.predict_proba(x).ravel()
-        return self._compute_base_scores_estimator_from_proba(p)
+        X = np.asarray(X)
+        p = estimator.predict_proba(X)
+        return self._compute_scores_from_proba(p)
 
     @staticmethod
     @abstractmethod
-    def _compute_base_scores_estimator_from_proba(
+    def _compute_scores_from_proba(
         p: npt.ArrayLike,
     ) -> npt.NDArray[np.float64]:
         msg = "This method must be implemented in a subclass."

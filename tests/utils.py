@@ -20,8 +20,9 @@ from fipe.typing import MNumber, SNumber
 
 ROOT = Path(__file__).parent
 DATASETS = ROOT / "datasets-for-tests"
-ENV = gp.Env()
+ENV = gp.Env(empty=True)
 ENV.setParam("OutputFlag", 0)
+ENV.start()
 
 
 def load(
@@ -78,7 +79,14 @@ def train(
         msg = "Ensemble not supported"
         raise ValueError(msg)
 
-    model = model_cls(n_estimators=n_estimators, random_state=seed, **options)
+    if model_cls == LGBMClassifier:
+        options["verbose"] = -1
+
+    model = model_cls(
+        n_estimators=n_estimators,
+        random_state=seed,
+        **options,
+    )
 
     model.fit(X_train, y_train)
     ensemble = Ensemble(model, encoder)
