@@ -52,7 +52,7 @@ class Pruner(BasePruner, MIP):
 
     def prune(self) -> None:
         if self._n_samples == 0:
-            msg = "Pruner has not been built yet."
+            msg = "No samples have been added to the pruner."
             raise RuntimeError(msg)
         self.optimize()
 
