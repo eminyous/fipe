@@ -7,7 +7,7 @@ from sklearn.ensemble import (
     GradientBoostingClassifier,
     RandomForestClassifier,
 )
-from utils import DATASETS, prune, train
+from utils import DATASETS, ENV, prune, train
 
 from fipe import Ensemble, Pruner
 
@@ -56,7 +56,7 @@ def test_pruner_norm(
         options=options,
     )
     # Test that pruner runs without error
-    pruner = Pruner(model, encoder, weights, norm=norm)
+    pruner = Pruner(model, encoder, weights, norm=norm, env=ENV)
     pruner.build()
     pruner.setParam("OutputFlag", 0)
     pruner.add_samples(X_train)

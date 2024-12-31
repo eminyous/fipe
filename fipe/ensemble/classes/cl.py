@@ -6,33 +6,20 @@ import numpy.typing as npt
 from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
 
-from ...feature import FeatureEncoder
 from ...tree import TreeCL
 from ...typing import HV
-from ..parser import EnsembleParser
+from .skl import EnsembleSKL
 
 Classifier = RandomForestClassifier | AdaBoostClassifier
 CL = TypeVar("CL", bound=Classifier)
 
 
-class EnsembleCL(EnsembleParser[TreeCL[HV], CL], Generic[CL, HV]):
+class EnsembleCL(
+    EnsembleSKL[TreeCL[HV], CL, DecisionTreeClassifier], Generic[CL, HV]
+):
     __metaclass__ = ABCMeta
-
-    _voting: HV
-
-    def _parse_trees(self, encoder: FeatureEncoder) -> None:
-        self._trees = []
-
-        def parse_tree(tree: DecisionTreeClassifier) -> TreeCL:
-            return TreeCL(tree=tree.tree_, encoder=encoder, voting=self._voting)
-
-        self._trees = list(map(parse_tree, self._base_estimators))
-
-    @property
-    @abstractmethod
-    def _base_estimators(self) -> list[DecisionTreeClassifier]:
-        msg = "This property must be implemented in a subclass."
-        raise NotImplementedError(msg)
+    __tree_cls__ = TreeCL
+    __voting__: HV
 
     @property
     def n_classes(self) -> int:
@@ -45,29 +32,30 @@ class EnsembleCL(EnsembleParser[TreeCL[HV], CL], Generic[CL, HV]):
     def n_estimators(self) -> int:
         return len(self._base)
 
+    def _get_tree_args(self) -> dict[str, int | bool]:
+        return {"voting": self.__voting__}
+
     def _scores_impl(self, X: npt.ArrayLike) -> npt.NDArray[np.float64]:
         X = np.asarray(X)
         n_samples = X.shape[0]
         n_estimators = self.n_estimators
         n_classes = self.n_classes
         scores = np.zeros((n_samples, n_estimators, n_classes))
-        for j, e in enumerate(self._base_estimators):
-            scores[:, j, :] = self._compute_scores_estimator(e, X)
+        for j, e in enumerate(self._base_trees):
+            scores[:, j, :] = self._scores_estimator(e, X)
         return scores
 
-    def _compute_scores_estimator(
+    def _scores_estimator(
         self,
-        estimator: DecisionTreeClassifier,
+        e: DecisionTreeClassifier,
         X: npt.ArrayLike,
     ) -> npt.NDArray[np.float64]:
         X = np.asarray(X)
-        p = estimator.predict_proba(X)
-        return self._compute_scores_from_proba(p)
+        p = e.predict_proba(X)
+        return self._scores_from_proba(p)
 
     @staticmethod
     @abstractmethod
-    def _compute_scores_from_proba(
-        p: npt.ArrayLike,
-    ) -> npt.NDArray[np.float64]:
+    def _scores_from_proba(p: npt.ArrayLike) -> npt.NDArray[np.float64]:
         msg = "This method must be implemented in a subclass."
         raise NotImplementedError(msg)

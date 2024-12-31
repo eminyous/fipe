@@ -4,6 +4,7 @@ from .base import BaseTree
 from .classes.cl import TreeCL
 from .classes.gb import TreeGB
 from .classes.lgbm import TreeLGBM
+from .classes.skl import TreeSKL
 from .classes.xgb import TreeXGB
 from .tree import Tree, TreeContainer
 
@@ -17,5 +18,6 @@ __all__ = [
     "TreeContainer",
     "TreeGB",
     "TreeLGBM",
+    "TreeSKL",
     "TreeXGB",
 ]

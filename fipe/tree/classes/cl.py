@@ -8,7 +8,7 @@ from .skl import TreeSKL
 
 
 class TreeCL(TreeSKL[MNumber], Generic[HV]):
-    _voting: HV
+    __voting__: HV
 
     def __init__(
         self,
@@ -16,13 +16,13 @@ class TreeCL(TreeSKL[MNumber], Generic[HV]):
         encoder: FeatureEncoder,
         voting: HV,
     ) -> None:
-        self._voting = voting
+        self.__voting__ = voting
         super().__init__(tree=tree, encoder=encoder)
 
     def _read_leaf(self, tree: ParsableTreeSKL, node: int) -> None:
         value = tree.value[node].flatten()
         value = np.asarray(value)
-        if self._voting:
+        if self.__voting__:
             k = value.size
             q = np.argmax(value)
             value = np.eye(k)[q]

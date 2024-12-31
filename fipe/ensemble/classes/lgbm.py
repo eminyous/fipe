@@ -1,10 +1,11 @@
+from functools import partial
+
 import numpy as np
 from lightgbm import LGBMClassifier
 from numpy.typing import ArrayLike, NDArray
 
 from ...feature import FeatureEncoder
 from ...tree import TreeLGBM
-from ...typing import ParsableTreeLGBM
 from ..parser import EnsembleParser
 
 
@@ -22,11 +23,8 @@ class EnsembleLGBM(EnsembleParser[TreeLGBM, LGBMClassifier]):
     def _parse_trees(self, encoder: FeatureEncoder) -> None:
         model = self._base.booster_.dump_model()
         trees = model[self.TREE_INFO_KEY]
-
-        def parse_tree(tree: ParsableTreeLGBM) -> TreeLGBM:
-            return TreeLGBM(tree=tree, encoder=encoder)
-
-        self._trees = list(map(parse_tree, trees))
+        pt = partial(TreeLGBM, encoder=encoder)
+        self._trees = list(map(pt, trees))
 
     def _scores_impl(self, X: ArrayLike) -> NDArray[np.float64]:
         leaf_indices = self._base.predict_proba(X, pred_leaf=True)

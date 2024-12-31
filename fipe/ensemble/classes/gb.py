@@ -1,14 +1,19 @@
+from collections.abc import Iterable
+
 import numpy as np
 import numpy.typing as npt
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.tree import DecisionTreeRegressor
 
-from ...feature import FeatureEncoder
 from ...tree import TreeGB
-from ..parser import EnsembleParser
+from .skl import EnsembleSKL
 
 
-class EnsembleGB(EnsembleParser[TreeGB, GradientBoostingClassifier]):
+class EnsembleGB(
+    EnsembleSKL[TreeGB, GradientBoostingClassifier, DecisionTreeRegressor]
+):
+    __tree_class__ = TreeGB
+
     @property
     def n_classes(self) -> int:
         return self._base.n_classes_
@@ -17,13 +22,9 @@ class EnsembleGB(EnsembleParser[TreeGB, GradientBoostingClassifier]):
     def n_estimators(self) -> int:
         return self._base.n_estimators_
 
-    def _parse_trees(self, encoder: FeatureEncoder) -> None:
-        trees = self._base.estimators_.ravel().tolist()
-
-        def parse_tree(tree: DecisionTreeRegressor) -> TreeGB:
-            return TreeGB(tree=tree.tree_, encoder=encoder)
-
-        self._trees = list(map(parse_tree, trees))
+    @property
+    def _base_trees(self) -> Iterable[DecisionTreeRegressor]:
+        return self._base.estimators_.ravel().tolist()
 
     def _scores_impl(self, X: npt.ArrayLike) -> npt.NDArray[np.float64]:
         X = np.asarray(X)
