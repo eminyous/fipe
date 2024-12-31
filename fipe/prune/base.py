@@ -5,7 +5,7 @@ import numpy.typing as npt
 
 from ..ensemble import EnsembleContainer
 from ..feature import FeatureEncoder
-from ..typing import BaseEnsemble, MNumber, Number
+from ..typing import BaseEnsemble, MNumber
 
 
 class BasePruner(EnsembleContainer):
@@ -20,7 +20,7 @@ class BasePruner(EnsembleContainer):
         super().__init__(self, ensemble=(base, encoder), weights=weights)
 
     @abstractmethod
-    def prune(self, threshold: Number) -> None:
+    def prune(self) -> None:
         msg = "Method 'prune' must be implemented in a child class"
         raise NotImplementedError(msg)
 
