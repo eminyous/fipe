@@ -14,7 +14,7 @@ Args = MNumber | Categories
 
 
 class FeatureVars(BaseVar[SNumber], dict[str, FeatureVar]):
-    KLASSES: Mapping[str, type[FeatureVar]] = {
+    CLASSES: Mapping[str, type[FeatureVar]] = {
         FeatureType.BIN.value: BinaryVar,
         FeatureType.CAT.value: CategoricalVar,
         FeatureType.CON.value: ContinuousVar,
@@ -67,8 +67,8 @@ class FeatureVars(BaseVar[SNumber], dict[str, FeatureVar]):
         levels: MNumber | None = None,
         categories: Categories | None = None,
     ) -> FeatureVar:
-        klass = FeatureVars.KLASSES.get(vtype)
-        if klass is None:
+        cls = FeatureVars.CLASSES.get(vtype)
+        if cls is None:
             msg = f"Invalid variable type: {vtype}"
             raise ValueError(msg)
         args = FeatureVars._build_args(
@@ -78,7 +78,7 @@ class FeatureVars(BaseVar[SNumber], dict[str, FeatureVar]):
         if vtype == FeatureType.CON.value:
             args["floor"] = True
 
-        return klass(name=name, **args)
+        return cls(name=name, **args)
 
     @staticmethod
     def fetch(
@@ -90,7 +90,10 @@ class FeatureVars(BaseVar[SNumber], dict[str, FeatureVar]):
         if isinstance(feature_var, BinaryVar):
             return FeatureVars.fetch_bin(feature_var=feature_var)
         if isinstance(feature_var, ContinuousVar):
-            return FeatureVars.fetch_con(feature_var=feature_var, level=level)
+            return FeatureVars.fetch_con(
+                feature_var=feature_var,
+                level=level,
+            )
         if isinstance(feature_var, CategoricalVar):
             return FeatureVars.fetch_cat(
                 feature_var=feature_var,

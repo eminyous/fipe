@@ -21,7 +21,7 @@ class Ensemble(Iterable[Tree]):
         base: BaseEnsemble,
         encoder: FeatureEncoder,
     ) -> None:
-        cls = self.fetch_cls(base=base)
+        cls = self.fetch_parser(base=base)
         self._parser = cls(base=base, encoder=encoder)
 
     def predict(
@@ -71,7 +71,7 @@ class Ensemble(Iterable[Tree]):
         return len(self._parser)
 
     @staticmethod
-    def fetch_cls(base: BaseEnsemble) -> type[EnsembleParser]:
+    def fetch_parser(base: BaseEnsemble) -> type[EnsembleParser]:
         for parsable_cls, cls in Ensemble.CLASSES.items():
             if isinstance(base, parsable_cls):
                 return cls
