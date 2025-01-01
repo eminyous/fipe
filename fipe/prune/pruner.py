@@ -4,7 +4,7 @@ import numpy.typing as npt
 
 from ..feature import FeatureEncoder
 from ..mip import MIP
-from ..typing import BaseEnsemble, MNumber
+from ..typing import BaseEnsemble, MClass, MNumber
 from .base import BasePruner
 
 
@@ -56,7 +56,7 @@ class Pruner(BasePruner, MIP):
             raise RuntimeError(msg)
         self.optimize()
 
-    def predict(self, X: npt.ArrayLike) -> npt.NDArray[np.intp]:
+    def predict(self, X: npt.ArrayLike) -> MClass:
         w = self.weights
         return self.ensemble.predict(X=X, w=w)
 

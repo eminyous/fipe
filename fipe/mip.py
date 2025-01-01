@@ -1,10 +1,12 @@
 from abc import ABC, ABCMeta, abstractmethod
-from typing import Any, Generic
+from typing import Any, Generic, TypeVar
 
 import gurobipy as gp
 import numpy as np
 
-from .typing import VT, MNumber, Number
+from .typing import MNumber, Number, SNumber
+
+VT = TypeVar("VT", bound=Number | MNumber | SNumber)
 
 
 class MIP(gp.Model):

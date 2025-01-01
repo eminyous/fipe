@@ -33,12 +33,12 @@ class EnsembleContainer:
 
     @property
     def is_binary(self) -> bool:
-        return self._ensemble.is_binary
+        return self.ensemble.is_binary
 
     @property
     def n_estimators(self) -> int:
-        return self._ensemble.n_estimators
+        return self.ensemble.n_estimators
 
     @property
     def n_classes(self) -> int:
-        return self._ensemble.n_classes
+        return self.ensemble.n_classes

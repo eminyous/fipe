@@ -4,7 +4,6 @@ from .fipe import FIPE
 from .ocean import OCEAN, BaseOCEAN
 from .oracle import Oracle
 from .prune import BasePruner, Pruner
-from .typing import FeatureType
 
 __all__ = [
     "FIPE",
@@ -14,7 +13,6 @@ __all__ = [
     "BasePruner",
     "Ensemble",
     "FeatureEncoder",
-    "FeatureType",
     "Oracle",
     "Pruner",
 ]

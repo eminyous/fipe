@@ -1,40 +1,24 @@
-from xgboost import Booster
-
-from ...feature import FeatureEncoder
-from ...tree import TreeXGB
-from ..parser import EnsembleParser
+from ...tree import TreeParserXGB
+from ...typing import Booster, ParsableTreeXGB
+from ..generic import GenericEnsemble
 
 
-class EnsembleXGB(EnsembleParser[TreeXGB, Booster]):
+class EnsembleXGB(GenericEnsemble[Booster, ParsableTreeXGB]):
     TREE_KEY = "Tree"
 
     INDEX = (
         "Tree",
-        TreeXGB.NODE_KEY,
-        TreeXGB.ID_KEY,
+        TreeParserXGB.NODE_KEY,
+        TreeParserXGB.ID_KEY,
     )
 
     @property
     def n_classes(self) -> int:
-        n_trees = len(self._trees)
-        n_base = self.n_estimators // n_trees
-        n_add = 1 if self.n_estimators == n_trees else 0
-        return n_base + n_add
+        n_trees = len(list(self.base_trees))
+        return (n_trees // self.n_estimators) + int(
+            self.n_estimators == n_trees
+        )
 
     @property
     def n_estimators(self) -> int:
         return self._base.num_boosted_rounds()
-
-    def _parse_trees(self, encoder: FeatureEncoder) -> None:
-        model_data = self._base.trees_to_dataframe().set_index(list(self.INDEX))
-        trees = []
-        tree_ids = model_data.index.get_level_values(self.TREE_KEY).unique()
-        for tree_id in tree_ids:
-            tree_data = model_data.xs(tree_id, level=self.TREE_KEY).sort_index()
-            tree = TreeXGB(tree=tree_data, encoder=encoder)
-            trees.append(tree)
-
-        self._trees = trees
-
-
-CLASSES = {Booster: EnsembleXGB}

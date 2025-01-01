@@ -1,32 +1,67 @@
 from abc import ABCMeta, abstractmethod
 from collections.abc import Iterator, Sequence
-from typing import Generic
+from typing import ClassVar
 
 import numpy as np
 import numpy.typing as npt
+from lightgbm import LGBMClassifier
+from sklearn.ensemble import (
+    AdaBoostClassifier,
+    GradientBoostingClassifier,
+    RandomForestClassifier,
+)
+from xgboost import Booster
 
 from ..feature import FeatureEncoder
-from ..tree import BT
-from ..typing import BE
+from ..tree import (
+    Tree,
+    TreeParser,
+    TreeParserCL,
+    TreeParserLGBM,
+    TreeParserRG,
+    TreeParserXGB,
+)
+from ..typing import BaseEnsemble, MClass, ParsableTree
+
+Param = bool | int | str | float
+Args = dict[str, Param]
+TreeParserArgs = tuple[type[TreeParser], Args]
 
 
-class EnsembleParser(Sequence[BT], Generic[BT, BE]):
+class EnsembleParser(Sequence[Tree]):
     __metaclass__ = ABCMeta
 
     NUM_BINARY_CLASSES = 2
 
-    _base: BE
-    _trees: list[BT]
+    _base: BaseEnsemble
+    _trees: list[Tree]
+    _tree_parser: TreeParser
 
-    def __init__(self, base: BE, encoder: FeatureEncoder) -> None:
+    TREE_PARSER_MAPPING: ClassVar[dict[type[BaseEnsemble], TreeParserArgs]] = {
+        RandomForestClassifier: (
+            TreeParserCL,
+            {"use_hard_voting": False},
+        ),
+        AdaBoostClassifier: (
+            TreeParserCL,
+            {"use_hard_voting": True},
+        ),
+        GradientBoostingClassifier: (TreeParserRG, {}),
+        LGBMClassifier: (TreeParserLGBM, {}),
+        Booster: (TreeParserXGB, {}),
+    }
+
+    def __init__(self, base: BaseEnsemble, encoder: FeatureEncoder) -> None:
         self._base = base
-        self._parse_trees(encoder=encoder)
+        parser_cls, args = self.fetch_tree_parser(base=base)
+        self._tree_parser = parser_cls(encoder=encoder, **args)
+        self._trees = list(map(self._tree_parser.parse, self.base_trees))
 
     def predict(
         self,
         X: npt.ArrayLike,
         w: npt.ArrayLike,
-    ) -> npt.NDArray[np.intp]:
+    ) -> MClass:
         p = self.score(X=X, w=w)
         return np.argmax(p, axis=-1)
 
@@ -47,13 +82,13 @@ class EnsembleParser(Sequence[BT], Generic[BT, BE]):
             X = X.reshape(1, -1)
         return self._scores_impl(X=X)
 
-    def __iter__(self) -> Iterator[BT]:
+    def __iter__(self) -> Iterator[Tree]:
         return iter(self._trees)
 
     def __len__(self) -> int:
         return len(self._trees)
 
-    def __getitem__(self, index: int) -> BT:
+    def __getitem__(self, index: int) -> Tree:
         return self._trees[index]
 
     @property
@@ -67,21 +102,30 @@ class EnsembleParser(Sequence[BT], Generic[BT, BE]):
     @property
     @abstractmethod
     def n_classes(self) -> int:
-        msg = "n_classes property must be implemented in subclass."
-        raise NotImplementedError(msg)
+        raise NotImplementedError
 
     @property
     @abstractmethod
     def n_estimators(self) -> int:
-        msg = "n_estimators property must be implemented in subclass."
-        raise NotImplementedError(msg)
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def base_trees(self) -> list[ParsableTree]:
+        raise NotImplementedError
 
     @abstractmethod
     def _parse_trees(self, encoder: FeatureEncoder) -> None:
-        msg = "_parse_trees method must be implemented in subclass."
-        raise NotImplementedError(msg)
+        raise NotImplementedError
 
     @abstractmethod
     def _scores_impl(self, X: npt.ArrayLike) -> npt.NDArray[np.float64]:
-        msg = "_scores_impl method must be implemented in subclass."
-        raise NotImplementedError(msg)
+        raise NotImplementedError
+
+    @staticmethod
+    def fetch_tree_parser(base: BaseEnsemble) -> TreeParserArgs:
+        for cls, tup in EnsembleParser.TREE_PARSER_MAPPING.items():
+            if isinstance(base, cls):
+                return tup
+        msg = f"Unknown base ensemble class: {type(base).__name__}"
+        raise ValueError(msg)

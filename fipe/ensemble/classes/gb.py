@@ -1,19 +1,20 @@
-from collections.abc import Iterable
+from collections.abc import Generator
 
 import numpy as np
 import numpy.typing as npt
-from sklearn.ensemble import GradientBoostingClassifier
-from sklearn.tree import DecisionTreeRegressor
 
-from ...tree import TreeGB
+from ...typing import (
+    DecisionTreeRegressor,
+    GradientBoostingClassifier,
+    MProb,
+    ParsableTreeSKL,
+)
 from .skl import EnsembleSKL
 
 
 class EnsembleGB(
-    EnsembleSKL[TreeGB, GradientBoostingClassifier, DecisionTreeRegressor]
+    EnsembleSKL[GradientBoostingClassifier, DecisionTreeRegressor],
 ):
-    __tree_class__ = TreeGB
-
     @property
     def n_classes(self) -> int:
         return self._base.n_classes_
@@ -23,25 +24,25 @@ class EnsembleGB(
         return self._base.n_estimators_
 
     @property
-    def _base_trees(self) -> Iterable[DecisionTreeRegressor]:
-        return self._base.estimators_.ravel().tolist()
+    def base_estimators(self) -> Generator[ParsableTreeSKL, None, None]:
+        yield from self._base.estimators_.ravel()
 
-    def _scores_impl(self, X: npt.ArrayLike) -> npt.NDArray[np.float64]:
+    def _scores_impl(self, X: npt.ArrayLike) -> MProb:
         X = np.asarray(X)
         n_samples = X.shape[0]
         n_estimators = self.n_estimators
         n_classes = self.n_classes
         scores = np.zeros((n_samples, n_estimators, n_classes))
         for j in range(n_estimators):
-            scores[:, j, :] = self._compute_scores_estimator(j, X)
+            scores[:, j, :] = self._scores_estimator(j, X)
 
         return scores
 
-    def _compute_scores_estimator(
+    def _scores_estimator(
         self,
         index: int,
         X: npt.ArrayLike,
-    ) -> npt.NDArray[np.float64]:
+    ) -> MProb:
         X = np.asarray(X)
         n_classes = self.n_classes
         n_samples = X.shape[0]
@@ -53,6 +54,3 @@ class EnsembleGB(
             for j in range(n_classes):
                 scores[:, j] = self._base.estimators_[index, j].predict(X)
         return scores
-
-
-CLASSES = {GradientBoostingClassifier: EnsembleGB}

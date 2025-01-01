@@ -1,75 +1,70 @@
-from collections.abc import Iterable, Iterator
-from typing import ClassVar
+from collections.abc import Iterator, Sequence
 
-import numpy as np
 import numpy.typing as npt
 
 from ..feature import FeatureEncoder
-from ..tree import Tree
-from ..typing import BaseEnsemble
-from .classes import CLASSES
-from .parser import EnsembleParser
+from ..tree import Tree, TreeParser, create_parser
+from ..typing import BaseEnsemble, MClass, MProb, Prob
+from .classes import Ens, create_ensemble
+from .generic import Callback
 
 
-class Ensemble(Iterable[Tree]):
-    CLASSES: ClassVar[dict[type, type]] = CLASSES
+class Ensemble(Sequence[Tree], Callback):
+    ensemble: Ens
+    tree_parser: TreeParser
+    trees: Sequence[Tree]
 
-    _parser: EnsembleParser[Tree, BaseEnsemble]
+    def __init__(self, base: BaseEnsemble, encoder: FeatureEncoder) -> None:
+        self.ensemble = self.init_ensemble(base=base, callback=self)
+        self.tree_parser = self.init_tree_parser(base=base, encoder=encoder)
+        parse = self.tree_parser.parse
+        base_trees = self.ensemble.base_trees
+        self.trees = list(map(parse, base_trees))
 
-    def __init__(
-        self,
-        base: BaseEnsemble,
-        encoder: FeatureEncoder,
-    ) -> None:
-        cls = self.fetch_parser(base=base)
-        self._parser = cls(base=base, encoder=encoder)
+    def predict(self, X: npt.ArrayLike, w: npt.ArrayLike) -> MClass:
+        return self.ensemble.predict(X=X, w=w)
 
-    def predict(
-        self,
-        X: npt.ArrayLike,
-        w: npt.ArrayLike,
-    ) -> npt.NDArray[np.intp]:
-        return self._parser.predict(X=X, w=w)
+    def score(self, X: npt.ArrayLike, w: npt.ArrayLike) -> MProb:
+        return self.ensemble.score(X=X, w=w)
 
-    def score(
-        self,
-        X: npt.ArrayLike,
-        w: npt.ArrayLike,
-    ) -> npt.NDArray[np.float64]:
-        return self._parser.score(X=X, w=w)
+    def scores(self, X: npt.ArrayLike) -> MProb:
+        return self.ensemble.scores(X=X)
 
-    def scores(self, X: npt.ArrayLike) -> npt.NDArray[np.float64]:
-        return self._parser.scores(X=X)
+    def predict_leaf(self, leaf_index: int, index: int) -> Prob:
+        return Prob(self[index].predict(leaf_index))
 
     @property
     def is_binary(self) -> bool:
-        return self._parser.is_binary
+        return self.ensemble.is_binary
 
     @property
     def n_classes(self) -> int:
-        return self._parser.n_classes
+        return self.ensemble.n_classes
 
     @property
     def n_estimators(self) -> int:
-        return self._parser.n_estimators
+        return self.ensemble.n_estimators
 
     @property
     def max_depth(self) -> int:
-        return self._parser.max_depth
+        return max(tree.max_depth for tree in self)
 
     def __getitem__(self, t: int) -> Tree:
-        return self._parser[t]
+        return self.trees[t]
 
     def __iter__(self) -> Iterator[Tree]:
-        return iter(self._parser)
+        return iter(self.trees)
 
     def __len__(self) -> int:
-        return len(self._parser)
+        return len(self.trees)
 
     @staticmethod
-    def fetch_parser(base: BaseEnsemble) -> type[EnsembleParser]:
-        for parsable_cls, cls in Ensemble.CLASSES.items():
-            if isinstance(base, parsable_cls):
-                return cls
-        msg = f"Unknown base ensemble class: {type(base).__name__}"
-        raise ValueError(msg)
+    def init_ensemble(base: BaseEnsemble, callback: Callback) -> Ens:
+        return create_ensemble(base=base, callback=callback)
+
+    @staticmethod
+    def init_tree_parser(
+        base: BaseEnsemble,
+        encoder: FeatureEncoder,
+    ) -> TreeParser:
+        return create_parser(base=base, encoder=encoder)

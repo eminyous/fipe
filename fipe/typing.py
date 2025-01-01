@@ -1,6 +1,6 @@
 from collections.abc import Mapping
 from enum import Enum
-from typing import Any, TypeVar
+from typing import Any
 
 import numpy as np
 import numpy.typing as npt
@@ -11,6 +11,7 @@ from sklearn.ensemble import (
     GradientBoostingClassifier,
     RandomForestClassifier,
 )
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.tree._tree import Tree  # noqa: PLC2701
 from xgboost import Booster
 
@@ -34,6 +35,15 @@ BaseEnsemble = (
     | Booster
 )
 
+DecisionTree = DecisionTreeClassifier | DecisionTreeRegressor
+
+
+Class = np.intp
+MClass = npt.NDArray[Class]
+
+Prob = np.float64
+MProb = npt.NDArray[Prob]
+
 Number = np.float64
 MNumber = npt.NDArray[Number]
 SNumber = pd.Series
@@ -42,11 +52,4 @@ DNumber = pd.DataFrame
 Categories = set[str]
 
 LeafValue = Number | MNumber
-Variable = Number | MNumber | SNumber
 Transformable = SNumber | list[SNumber] | DNumber
-
-BE = TypeVar("BE", bound=BaseEnsemble)
-PT = TypeVar("PT", bound=ParsableTree)
-LV = TypeVar("LV", bound=LeafValue)
-VT = TypeVar("VT", bound=Variable)
-HV = TypeVar("HV", bound=bool)
