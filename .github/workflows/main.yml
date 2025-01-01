@@ -2,6 +2,12 @@ name: test
 
 on:
   push:
+    branches:
+      - main
+    paths-ignore:
+      - "**/*.md"
+      - "**/*.yml"
+      - "**/LICENSE"
   pull_request:
   workflow_call:
 
