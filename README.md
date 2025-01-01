@@ -18,15 +18,15 @@ This project requires the gurobi solver. Free academic licenses are available. P
 Run the following commands from the project root to install the requirements. You may have to install python and venv before.
 
 ```shell
-    virtualenv -p python3.10 env
-    pip install fipepy
+virtualenv -p python3.10 env
+pip install fipepy
 ```
 
 The installation can be checked by running the test suite:
 
 ```shell
-    pip install pytest
-    pytest
+pip install pytest
+pytest
 ```
 
 The integration tests require a working Gurobi license. If a license is not available, the tests will pass and print a warning.
