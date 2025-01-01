@@ -55,7 +55,7 @@ A minimal working example to prune an AdaBoost ensemble is presented below.
 
     # Train tree ensemble
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-    base = AdaBoostClassifier(n_estimators=100)
+    base = AdaBoostClassifier(algorithm="SAMME", n_estimators=100)
     base.fit(X, y)
 
     # Read and normalize weights
