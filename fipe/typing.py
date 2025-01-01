@@ -22,10 +22,10 @@ class FeatureType(Enum):
     BIN = "binary"
 
 
-ParsableTreeSKL = Tree
-ParsableTreeLGBM = Mapping[str, Any]
-ParsableTreeXGB = pd.DataFrame
-ParsableTree = ParsableTreeSKL | ParsableTreeLGBM | ParsableTreeXGB
+SKLearnParsableTree = Tree
+LightGBMParsableTree = Mapping[str, Any]
+XGBoostParsableTree = pd.DataFrame
+ParsableTree = SKLearnParsableTree | LightGBMParsableTree | XGBoostParsableTree
 
 BaseEnsemble = (
     RandomForestClassifier
@@ -35,7 +35,7 @@ BaseEnsemble = (
     | Booster
 )
 
-DecisionTree = DecisionTreeClassifier | DecisionTreeRegressor
+BaseDecisionTree = DecisionTreeClassifier | DecisionTreeRegressor
 
 
 Class = np.intp

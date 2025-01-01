@@ -1,15 +1,15 @@
-from ...tree import TreeParserXGB
-from ...typing import Booster, ParsableTreeXGB
+from ...tree import XGBoostTreeParser
+from ...typing import Booster, XGBoostParsableTree
 from ..generic import GenericEnsemble
 
 
-class EnsembleXGB(GenericEnsemble[Booster, ParsableTreeXGB]):
+class XGBoostBinder(GenericEnsemble[Booster, XGBoostParsableTree]):
     TREE_KEY = "Tree"
 
     INDEX = (
         "Tree",
-        TreeParserXGB.NODE_KEY,
-        TreeParserXGB.ID_KEY,
+        XGBoostTreeParser.NODE_KEY,
+        XGBoostTreeParser.ID_KEY,
     )
 
     @property

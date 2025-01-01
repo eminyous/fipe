@@ -1,10 +1,10 @@
 import numpy as np
 
 from ...typing import AdaBoostClassifier, MProb
-from .cl import EnsembleCL
+from .cl import EnsembleBinderClassifier
 
 
-class EnsembleAB(EnsembleCL[AdaBoostClassifier]):
+class AdaBoostBinder(EnsembleBinderClassifier[AdaBoostClassifier]):
     @staticmethod
     def _scores_proba(p: MProb) -> MProb:
         k = int(p.shape[-1])

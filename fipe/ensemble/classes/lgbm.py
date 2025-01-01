@@ -3,11 +3,11 @@ from collections.abc import Generator
 import numpy as np
 import numpy.typing as npt
 
-from ...typing import LGBMClassifier, MProb, ParsableTreeLGBM, Prob
+from ...typing import LGBMClassifier, MProb, LightGBMParsableTree, Prob
 from ..generic import GenericEnsemble
 
 
-class EnsembleLGBM(GenericEnsemble[LGBMClassifier, ParsableTreeLGBM]):
+class LightGBMBinder(GenericEnsemble[LGBMClassifier, LightGBMParsableTree]):
     TREE_INFO_KEY = "tree_info"
 
     @property
@@ -19,7 +19,7 @@ class EnsembleLGBM(GenericEnsemble[LGBMClassifier, ParsableTreeLGBM]):
         return self._base.n_estimators_
 
     @property
-    def base_trees(self) -> Generator[ParsableTreeLGBM, None, None]:
+    def base_trees(self) -> Generator[LightGBMParsableTree, None, None]:
         model = self._base.booster_.dump_model()
         yield from model[self.TREE_INFO_KEY]
 

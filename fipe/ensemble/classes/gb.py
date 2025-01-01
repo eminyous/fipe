@@ -7,13 +7,13 @@ from ...typing import (
     DecisionTreeRegressor,
     GradientBoostingClassifier,
     MProb,
-    ParsableTreeSKL,
+    SKLearnParsableTree,
 )
-from .skl import EnsembleSKL
+from .skl import EnsembleBinderSKLearn
 
 
-class EnsembleGB(
-    EnsembleSKL[GradientBoostingClassifier, DecisionTreeRegressor],
+class GradientBoostingBinder(
+    EnsembleBinderSKLearn[GradientBoostingClassifier, DecisionTreeRegressor],
 ):
     @property
     def n_classes(self) -> int:
@@ -24,7 +24,7 @@ class EnsembleGB(
         return self._base.n_estimators_
 
     @property
-    def base_estimators(self) -> Generator[ParsableTreeSKL, None, None]:
+    def base_estimators(self) -> Generator[SKLearnParsableTree, None, None]:
         yield from self._base.estimators_.ravel()
 
     def _scores_impl(self, X: npt.ArrayLike) -> MProb:

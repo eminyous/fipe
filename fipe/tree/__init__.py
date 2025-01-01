@@ -10,13 +10,15 @@ from ..typing import (
 from .container import TreeContainer
 from .parsers import (
     TreeParserCL,
-    TreeParserLGBM,
+    LightGBMTreeParser,
     TreeParserRG,
-    TreeParserXGB,
+    XGBoostTreeParser,
 )
 from .tree import Tree
 
-TreeParser = TreeParserCL | TreeParserRG | TreeParserLGBM | TreeParserXGB
+TreeParser = (
+    TreeParserCL | TreeParserRG | LightGBMTreeParser | XGBoostTreeParser
+)
 
 
 def create_parser(base: BaseEnsemble, encoder: FeatureEncoder) -> TreeParser:
@@ -27,9 +29,9 @@ def create_parser(base: BaseEnsemble, encoder: FeatureEncoder) -> TreeParser:
     if isinstance(base, GradientBoostingClassifier):
         return TreeParserRG(encoder=encoder)
     if isinstance(base, LGBMClassifier):
-        return TreeParserLGBM(encoder=encoder)
+        return LightGBMTreeParser(encoder=encoder)
     if isinstance(base, Booster):
-        return TreeParserXGB(encoder=encoder)
+        return XGBoostTreeParser(encoder=encoder)
     msg = f"Unsupported base estimator: {type(base).__name__}"
     raise TypeError(msg)
 
@@ -39,8 +41,8 @@ __all__ = [
     "TreeContainer",
     "TreeParser",
     "TreeParserCL",
-    "TreeParserLGBM",
+    "LightGBMTreeParser",
     "TreeParserRG",
-    "TreeParserXGB",
+    "XGBoostTreeParser",
     "create_parser",
 ]

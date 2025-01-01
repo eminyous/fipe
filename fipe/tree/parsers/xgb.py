@@ -1,11 +1,11 @@
 import pandas as pd
 
 from ...feature import FeatureEncoder
-from ...typing import Number, ParsableTreeXGB
+from ...typing import Number, XGBoostParsableTree
 from ..parser import GenericTreeParser
 
 
-class TreeParserXGB(GenericTreeParser[ParsableTreeXGB, pd.Series]):
+class XGBoostTreeParser(GenericTreeParser[XGBoostParsableTree, pd.Series]):
     FEATURE_KEY = "Feature"
     THRESHOLD_KEY = "Split"
     LEFT_CHILD_KEY = "Yes"

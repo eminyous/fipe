@@ -5,12 +5,12 @@ import numpy.typing as npt
 from ..feature import FeatureEncoder
 from ..tree import Tree, TreeParser, create_parser
 from ..typing import BaseEnsemble, MClass, MProb, Prob
-from .classes import Ens, create_ensemble
+from .classes import EnsembleBinder, create_ensemble
 from .generic import Callback
 
 
 class Ensemble(Sequence[Tree], Callback):
-    ensemble: Ens
+    ensemble: EnsembleBinder
     tree_parser: TreeParser
     trees: Sequence[Tree]
 
@@ -59,7 +59,7 @@ class Ensemble(Sequence[Tree], Callback):
         return len(self.trees)
 
     @staticmethod
-    def init_ensemble(base: BaseEnsemble, callback: Callback) -> Ens:
+    def init_ensemble(base: BaseEnsemble, callback: Callback) -> EnsembleBinder:
         return create_ensemble(base=base, callback=callback)
 
     @staticmethod

@@ -17,9 +17,9 @@ from ..tree import (
     Tree,
     TreeParser,
     TreeParserCL,
-    TreeParserLGBM,
+    LightGBMTreeParser,
     TreeParserRG,
-    TreeParserXGB,
+    XGBoostTreeParser,
 )
 from ..typing import BaseEnsemble, MClass, ParsableTree
 
@@ -47,8 +47,8 @@ class EnsembleParser(Sequence[Tree]):
             {"use_hard_voting": True},
         ),
         GradientBoostingClassifier: (TreeParserRG, {}),
-        LGBMClassifier: (TreeParserLGBM, {}),
-        Booster: (TreeParserXGB, {}),
+        LGBMClassifier: (LightGBMTreeParser, {}),
+        Booster: (XGBoostTreeParser, {}),
     }
 
     def __init__(self, base: BaseEnsemble, encoder: FeatureEncoder) -> None:

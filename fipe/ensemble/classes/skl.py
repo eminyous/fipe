@@ -4,9 +4,9 @@ from typing import Generic, TypeVar
 
 from ...typing import (
     AdaBoostClassifier,
-    DecisionTree,
+    BaseDecisionTree,
     GradientBoostingClassifier,
-    ParsableTreeSKL,
+    SKLearnParsableTree,
     RandomForestClassifier,
 )
 from ..generic import GenericEnsemble
@@ -16,10 +16,12 @@ Classifier = (
 )
 
 CL = TypeVar("CL", bound=Classifier)
-DT = TypeVar("DT", bound=DecisionTree)
+DT = TypeVar("DT", bound=BaseDecisionTree)
 
 
-class EnsembleSKL(GenericEnsemble[CL, ParsableTreeSKL], Generic[CL, DT]):
+class EnsembleBinderSKLearn(
+    GenericEnsemble[CL, SKLearnParsableTree], Generic[CL, DT]
+):
     __metaclass__ = ABCMeta
 
     @property
@@ -30,7 +32,7 @@ class EnsembleSKL(GenericEnsemble[CL, ParsableTreeSKL], Generic[CL, DT]):
         return self._base.n_classes_
 
     @property
-    def base_trees(self) -> Generator[ParsableTreeSKL, None, None]:
+    def base_trees(self) -> Generator[SKLearnParsableTree, None, None]:
         for tree in self.base_estimators:
             yield tree.tree_
 

@@ -3,11 +3,11 @@ from abc import ABCMeta
 import numpy as np
 
 from ...feature import FeatureEncoder
-from ...typing import MNumber, Number, ParsableTreeSKL
+from ...typing import MNumber, Number, SKLearnParsableTree
 from ..parser import GenericTreeParser
 
 
-class TreeParserSKL(GenericTreeParser[ParsableTreeSKL, int]):
+class SKLearnTreeParser(GenericTreeParser[SKLearnParsableTree, int]):
     __metaclass__ = ABCMeta
 
     def __init__(self, encoder: FeatureEncoder) -> None:
@@ -42,7 +42,7 @@ class TreeParserSKL(GenericTreeParser[ParsableTreeSKL, int]):
         return node
 
 
-class TreeParserCL(TreeParserSKL):
+class TreeParserCL(SKLearnTreeParser):
     use_hard_voting: bool
 
     def __init__(
@@ -51,7 +51,7 @@ class TreeParserCL(TreeParserSKL):
         *,
         use_hard_voting: bool,
     ) -> None:
-        TreeParserSKL.__init__(self, encoder=encoder)
+        SKLearnTreeParser.__init__(self, encoder=encoder)
         self.use_hard_voting = use_hard_voting
 
     def get_leaf_value(self, node: int) -> MNumber:
@@ -64,6 +64,6 @@ class TreeParserCL(TreeParserSKL):
         return value
 
 
-class TreeParserRG(TreeParserSKL):
+class TreeParserRG(SKLearnTreeParser):
     def get_leaf_value(self, node: int) -> Number:
         return self.base.value[node].flatten()[0]

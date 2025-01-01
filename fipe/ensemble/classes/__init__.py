@@ -7,31 +7,41 @@ from ...typing import (
     RandomForestClassifier,
 )
 from ..generic import Callback
-from .ab import EnsembleAB
-from .gb import EnsembleGB
-from .lgbm import EnsembleLGBM
-from .rf import EnsembleRF
-from .xgb import EnsembleXGB
+from .ab import AdaBoostBinder
+from .gb import GradientBoostingBinder
+from .lgbm import LightGBMBinder
+from .rf import RandomForestBinder
+from .xgb import XGBoostBinder
 
-Ens = EnsembleAB | EnsembleGB | EnsembleLGBM | EnsembleRF | EnsembleXGB
+EnsembleBinder = (
+    AdaBoostBinder
+    | GradientBoostingBinder
+    | LightGBMBinder
+    | RandomForestBinder
+    | XGBoostBinder
+)
 
 
-def create_ensemble(base: BaseEnsemble, *, callback: Callback) -> Ens:
+def create_ensemble(
+    base: BaseEnsemble,
+    *,
+    callback: Callback,
+) -> EnsembleBinder:
     if isinstance(base, RandomForestClassifier):
-        return EnsembleRF(base, callback=callback)
+        return RandomForestBinder(base, callback=callback)
     if isinstance(base, AdaBoostClassifier):
-        return EnsembleAB(base, callback=callback)
+        return AdaBoostBinder(base, callback=callback)
     if isinstance(base, GradientBoostingClassifier):
-        return EnsembleGB(base, callback=callback)
+        return GradientBoostingBinder(base, callback=callback)
     if isinstance(base, LGBMClassifier):
-        return EnsembleLGBM(base, callback=callback)
+        return LightGBMBinder(base, callback=callback)
     if isinstance(base, Booster):
-        return EnsembleXGB(base, callback=callback)
+        return XGBoostBinder(base, callback=callback)
     msg = f"Unsupported base estimator: {type(base).__name__}"
     raise TypeError(msg)
 
 
 __all__ = [
-    "Ens",
+    "EnsembleBinder",
     "create_ensemble",
 ]

@@ -21,6 +21,7 @@ class Callback:
 
 class GenericEnsemble(Generic[BE, PT]):
     __metaclass__ = ABCMeta
+
     NUM_BINARY_CLASSES = 2
 
     _base: BE

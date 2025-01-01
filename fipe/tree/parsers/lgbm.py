@@ -1,9 +1,11 @@
 from ...feature import FeatureEncoder
-from ...typing import Number, ParsableTreeLGBM
+from ...typing import LightGBMParsableTree, Number
 from ..parser import GenericTreeParser
 
 
-class TreeParserLGBM(GenericTreeParser[ParsableTreeLGBM, ParsableTreeLGBM]):
+class LightGBMTreeParser(
+    GenericTreeParser[LightGBMParsableTree, LightGBMParsableTree]
+):
     NUM_LEAVES_KEY = "num_leaves"
     NUM_CAT_KEY = "num_cat"
     TREE_STRUCTURE_KEY = "tree_structure"
@@ -27,30 +29,32 @@ class TreeParserLGBM(GenericTreeParser[ParsableTreeLGBM, ParsableTreeLGBM]):
         self.leaf_offset = n_leaves - 1
         return 2 * n_leaves - 1
 
-    def parse_root(self) -> ParsableTreeLGBM:
+    def parse_root(self) -> LightGBMParsableTree:
         return self.base[self.TREE_STRUCTURE_KEY]
 
-    def get_internal_node(self, node: ParsableTreeLGBM) -> tuple[int, float]:
+    def get_internal_node(
+        self, node: LightGBMParsableTree
+    ) -> tuple[int, float]:
         column_index = int(node[self.SPLIT_FEATURE_KEY])
         threshold = float(node[self.THRESHOLD_KEY])
         return column_index, threshold
 
     def get_children(
         self,
-        node: ParsableTreeLGBM,
-    ) -> tuple[ParsableTreeLGBM, ParsableTreeLGBM]:
+        node: LightGBMParsableTree,
+    ) -> tuple[LightGBMParsableTree, LightGBMParsableTree]:
         whichs = ("left", "right")
         keys = (self.CHILD_KEY_FMT.format(which=which) for which in whichs)
         children = map(dict, map(node.get, keys))
         return tuple(children)
 
-    def get_leaf_value(self, node: ParsableTreeLGBM) -> Number:
+    def get_leaf_value(self, node: LightGBMParsableTree) -> Number:
         return Number(node[self.LEAF_VALUE_KEY])
 
-    def is_leaf(self, node: ParsableTreeLGBM) -> bool:
+    def is_leaf(self, node: LightGBMParsableTree) -> bool:
         return self.LEAF_INDEX_KEY in node
 
-    def read_node_id(self, node: ParsableTreeLGBM) -> int:
+    def read_node_id(self, node: LightGBMParsableTree) -> int:
         if self.LEAF_INDEX_KEY in node:
             return int(node[self.LEAF_INDEX_KEY]) + self.leaf_offset
         if self.SPLIT_INDEX_KEY in node:

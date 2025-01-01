@@ -11,13 +11,16 @@ from ...typing import (
     MProb,
     RandomForestClassifier,
 )
-from .skl import EnsembleSKL
+from .skl import EnsembleBinderSKLearn
 
 Classifier = RandomForestClassifier | AdaBoostClassifier
 CL = TypeVar("CL", bound=Classifier)
 
 
-class EnsembleCL(EnsembleSKL[CL, DecisionTreeClassifier], Generic[CL]):
+class EnsembleBinderClassifier(
+    EnsembleBinderSKLearn[CL, DecisionTreeClassifier],
+    Generic[CL],
+):
     __metaclass__ = ABCMeta
 
     @property
