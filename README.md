@@ -36,64 +36,64 @@ The integration tests require a working Gurobi license. If a license is not avai
 A minimal working example to prune an AdaBoost ensemble is presented below.
 
 ```python
-    import gurobipy as gp
-    import numpy as np
-    import pandas as pd
-    from sklearn.datasets import load_iris
-    from sklearn.ensemble import AdaBoostClassifier
-    from sklearn.model_selection import train_test_split
+import gurobipy as gp
+import numpy as np
+import pandas as pd
+from sklearn.datasets import load_iris
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.model_selection import train_test_split
 
-    from fipe import FIPE, FeatureEncoder
+from fipe import FIPE, FeatureEncoder
 
-    # Load data encode features
-    data = load_iris(as_frame=True)
-    X = pd.DataFrame(data.data)
-    y = data.target
+# Load data encode features
+data = load_iris(as_frame=True)
+X = pd.DataFrame(data.data)
+y = data.target
 
-    encoder = FeatureEncoder(X)
-    X = encoder.X.to_numpy()
+encoder = FeatureEncoder(X)
+X = encoder.X.to_numpy()
 
-    # Train tree ensemble
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-    base = AdaBoostClassifier(algorithm="SAMME", n_estimators=100)
-    base.fit(X, y)
+# Train tree ensemble
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+base = AdaBoostClassifier(algorithm="SAMME", n_estimators=100)
+base.fit(X, y)
 
-    # Read and normalize weights
-    w = base.estimator_weights_
-    w = (w / w.max()) * 1e5
+# Read and normalize weights
+w = base.estimator_weights_
+w = (w / w.max()) * 1e5
 
-    # Prune using FIPE
-    norm = 1
-    print(f"Pruning model by minimizing l_{norm} norm.")
-    env = gp.Env()
-    env.setParam("OutputFlag", 0)
-    pruner = FIPE(
-        base=base,
-        encoder=encoder,
-        weights=w,
-        norm=norm,
-        env=env,
-        eps=1e-6,
-        tol=1e-4,
-    )
-    print("Building pruner...")
-    pruner.build()
-    pruner.add_samples(X_train)
-    print("Pruning...")
-    pruner.prune()
-    print("Finished pruning.")
+# Prune using FIPE
+norm = 1
+print(f"Pruning model by minimizing l_{norm} norm.")
+env = gp.Env()
+env.setParam("OutputFlag", 0)
+pruner = FIPE(
+    base=base,
+    encoder=encoder,
+    weights=w,
+    norm=norm,
+    env=env,
+    eps=1e-6,
+    tol=1e-4,
+)
+print("Building pruner...")
+pruner.build()
+pruner.add_samples(X_train)
+print("Pruning...")
+pruner.prune()
+print("Finished pruning.")
 
-    # Read pruned model
-    n_active_estimators = pruner.n_active_estimators
-    print(
-        f"The pruned ensemble has {n_active_estimators}"
-        f"/{base.n_estimators} active estimators."
-    )
+# Read pruned model
+n_active_estimators = pruner.n_active_estimators
+print(
+    f"The pruned ensemble has {n_active_estimators}"
+    f"/{base.n_estimators} active estimators."
+)
 
-    # Verify functionally-identical on test data
-    y_pred = base.predict(X_test)
-    y_pruned = pruner.predict(X_test)
-    fidelity = np.mean(y_pred == y_pruned)
-    print(f"Fidelity to initial ensemble is {fidelity * 100:.2f}%.")
+# Verify functionally-identical on test data
+y_pred = base.predict(X_test)
+y_pruned = pruner.predict(X_test)
+fidelity = np.mean(y_pred == y_pruned)
+print(f"Fidelity to initial ensemble is {fidelity * 100:.2f}%.")
 
 ```
