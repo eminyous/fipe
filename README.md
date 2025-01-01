@@ -54,8 +54,8 @@ encoder = FeatureEncoder(X)
 X = encoder.X.to_numpy()
 
 # Train tree ensemble
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-base = AdaBoostClassifier(algorithm="SAMME", n_estimators=100)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+base = AdaBoostClassifier(n_estimators=100, random_state=42)
 base.fit(X, y)
 
 # Read and normalize weights
@@ -95,5 +95,4 @@ y_pred = base.predict(X_test)
 y_pruned = pruner.predict(X_test)
 fidelity = np.mean(y_pred == y_pruned)
 print(f"Fidelity to initial ensemble is {fidelity * 100:.2f}%.")
-
 ```
