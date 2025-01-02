@@ -9,6 +9,7 @@ from fipe.typing import (
     GradientBoostingClassifier,
     LightGBMBooster,
     RandomForestClassifier,
+    XGBoostBooster,
 )
 
 
@@ -23,6 +24,7 @@ from fipe.typing import (
         (AdaBoostClassifier, {}),
         (GradientBoostingClassifier, {"max_depth": 2, "init": "zero"}),
         (LightGBMBooster, {"max_depth": 2}),
+        (XGBoostBooster, {"max_depth": 2, "base_score": 0.5}),
     ],
 )
 def test_pruner_norm(

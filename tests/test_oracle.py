@@ -15,6 +15,7 @@ from fipe.typing import (
     MNumber,
     RandomForestClassifier,
     SNumber,
+    XGBoostBooster,
 )
 
 
@@ -26,6 +27,7 @@ from fipe.typing import (
         (AdaBoostClassifier, {}),
         (GradientBoostingClassifier, {"max_depth": 2, "init": "zero"}),
         (LightGBMBooster, {"max_depth": 2}),
+        (XGBoostBooster, {"max_depth": 2, "base_score": 0.5}),
     ],
 )
 @pytest.mark.parametrize("n_estimators", [25])

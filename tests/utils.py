@@ -1,28 +1,25 @@
+import warnings
 from pathlib import Path
 
 import gurobipy as gp
+import lightgbm as lgb
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
 import pytest
-from gurobipy import GurobiError
-from lightgbm import LGBMClassifier
-from numpy.typing import ArrayLike
-from sklearn.ensemble import (
-    AdaBoostClassifier,
-    GradientBoostingClassifier,
-    RandomForestClassifier,
-)
+import xgboost as xgb
 from sklearn.model_selection import train_test_split
-from xgboost import DMatrix, XGBClassifier
 
 from fipe import FIPE, Ensemble, FeatureEncoder, Oracle, Pruner
 from fipe.typing import (
+    AdaBoostClassifier,
     BaseEnsemble,
+    GradientBoostingClassifier,
     LightGBMBooster,
     MClass,
     MNumber,
     MProb,
+    RandomForestClassifier,
     SNumber,
     XGBoostBooster,
 )
@@ -34,6 +31,7 @@ DATASETS = [
     for dataset_path in DATASETS_PATH.iterdir()
     if dataset_path.is_dir()
 ]
+NUM_BINARY_CLASS = 2
 ENV = gp.Env(empty=True)
 ENV.setParam("OutputFlag", 0)
 ENV.start()
@@ -56,10 +54,10 @@ def load(
 
 def predict(
     model: BaseEnsemble,
-    X: ArrayLike,
+    X: npt.ArrayLike,
 ) -> MClass:
     if isinstance(model, XGBoostBooster):
-        dx = DMatrix(X)
+        dx = xgb.DMatrix(X)
         prob = model.predict(dx)
         if prob.ndim == 1:
             return np.array(prob - 0.5 > 0, dtype=np.intp)
@@ -74,18 +72,72 @@ def predict(
 
 def predict_proba(
     model: BaseEnsemble,
-    X: ArrayLike,
+    X: npt.ArrayLike,
 ) -> MProb:
     if isinstance(model, XGBoostBooster):
-        dx = DMatrix(X)
+        dx = xgb.DMatrix(X)
         return model.predict(dx)
     if isinstance(model, LightGBMBooster):
         return np.array(model.predict(X))
     return model.predict_proba(X)
 
 
+def train_sklearn(
+    model_cls: type[
+        RandomForestClassifier | AdaBoostClassifier | GradientBoostingClassifier
+    ],
+    X_train: npt.ArrayLike,
+    y_train: MClass,
+    n_estimators: int,
+    seed: int,
+    **options,
+) -> BaseEnsemble:
+    model = model_cls(
+        n_estimators=n_estimators,
+        random_state=seed,
+        **options,
+    )
+    model.fit(X_train, y_train)
+    return model
+
+
+def train_xgboost(
+    X_train: npt.ArrayLike,
+    y_train: MClass,
+    n_estimators: int,
+    seed: int,
+    **options,
+) -> XGBoostBooster:
+    clf = xgb.XGBClassifier(
+        n_estimators=n_estimators,
+        random_state=seed,
+        **options,
+    )
+    clf.fit(X_train, y_train)
+    return clf.get_booster()
+
+
+def train_lgbm(
+    X_train: npt.ArrayLike,
+    y_train: MClass,
+    n_estimators: int,
+    seed: int,
+    **options,
+) -> LightGBMBooster:
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=FutureWarning)
+        clf = lgb.LGBMClassifier(
+            n_estimators=n_estimators,
+            random_state=seed,
+            verbose=-1,
+            **options,
+        )
+        clf.fit(X_train, y_train)
+    return clf.booster_
+
+
 def train(
-    dataset: str,
+    dataset: Path,
     model_cls: type[BaseEnsemble],
     options: dict[str, int | str | None],
     n_estimators: int = 50,
@@ -96,7 +148,7 @@ def train(
     FeatureEncoder,
     Ensemble,
     MNumber,
-    tuple[ArrayLike, ArrayLike, ArrayLike, ArrayLike],
+    tuple[npt.ArrayLike, npt.ArrayLike, npt.ArrayLike, npt.ArrayLike],
 ]:
     data, y, _ = load(dataset)
 
@@ -120,29 +172,30 @@ def train(
         raise ValueError(msg)
 
     if model_cls == LightGBMBooster:
-        cls = LGBMClassifier
+        model = train_lgbm(
+            X_train,
+            y_train,
+            n_estimators,
+            seed,
+            **options,
+        )
     elif model_cls == XGBoostBooster:
-        cls = XGBClassifier
+        model = train_xgboost(
+            X_train,
+            y_train,
+            n_estimators,
+            seed,
+            **options,
+        )
     else:
-        cls = model_cls
-
-    if cls == LGBMClassifier:
-        options["verbose"] = -1
-
-    clf = cls(
-        n_estimators=n_estimators,
-        random_state=seed,
-        **options,
-    )
-    clf.fit(X_train, y_train)
-
-    if isinstance(clf, LGBMClassifier):
-        model = clf.booster_
-    elif isinstance(clf, XGBClassifier):
-        model = clf.get_booster()
-    else:
-        model = clf
-
+        model = train_sklearn(
+            model_cls,
+            X_train,
+            y_train,
+            n_estimators,
+            seed,
+            **options,
+        )
     ensemble = Ensemble(base=model, encoder=encoder)
 
     if isinstance(model, AdaBoostClassifier):
@@ -166,7 +219,7 @@ def separate(oracle: Oracle, weights: MNumber, out: list[SNumber]) -> None:
     try:
         X = list(oracle.separate(weights))
         out.extend(X)
-    except GurobiError:
+    except gp.GurobiError:
         msg = "Gurobi license is not available"
         pytest.skip(f"Skipping test: {msg}")
     except Exception:
@@ -176,7 +229,7 @@ def separate(oracle: Oracle, weights: MNumber, out: list[SNumber]) -> None:
 def prune(pruner: Pruner) -> None:
     try:
         pruner.prune()
-    except GurobiError:
+    except gp.GurobiError:
         msg = "Gurobi license is not available"
         pytest.skip(f"Skipping test: {msg}")
     except Exception:
@@ -203,14 +256,7 @@ def validate_base_pred(
     expected_pred = predict(model, X)
     actual_pred = ensemble.predict(X, weights)
     assert actual_pred.shape == expected_pred.shape
-    diff = np.abs(actual_pred - expected_pred) > 0
-
-    assert (expected_pred == actual_pred).all(), (
-        actual_pred[diff],
-        expected_pred[diff],
-        ensemble.score(X, weights)[diff],
-        predict_proba(model, X)[diff],
-    )
+    assert (expected_pred == actual_pred).all()
 
 
 def validate_fidelity(
