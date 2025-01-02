@@ -1,10 +1,10 @@
 from ...typing import (
     AdaBoostClassifier,
     BaseEnsemble,
-    Booster,
     GradientBoostingClassifier,
-    LGBMClassifier,
+    LightGBMBooster,
     RandomForestClassifier,
+    XGBoostBooster,
 )
 from ..binder import BinderCallback
 from .cl import SKLearnBinderClassifier
@@ -39,9 +39,9 @@ def create_binder(
         )
     if isinstance(base, GradientBoostingClassifier):
         return GradientBoostingBinder(base, callback=callback)
-    if isinstance(base, LGBMClassifier):
+    if isinstance(base, LightGBMBooster):
         return LightGBMBinder(base, callback=callback)
-    if isinstance(base, Booster):
+    if isinstance(base, XGBoostBooster):
         return XGBoostBinder(base, callback=callback)
     msg = f"Unsupported base estimator: {type(base).__name__}"
     raise TypeError(msg)
