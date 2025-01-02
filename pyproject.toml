@@ -61,13 +61,3 @@ urls.Issues = "https://github.com/eminyous/fipe/issues"
 
 [tool.pyproject-fmt]
 max_supported_python = "3.13"
-
-
-[tool.coverage]
-run.omit = ["tests/*"]
-report.exclude_lines = [
-    'return NotImplemented',
-    'raise NotImplementedError()',
-    'pragma: no cover',
-    '^\s*def _',
-]
