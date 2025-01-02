@@ -21,14 +21,12 @@ class BasePruner(EnsembleContainer):
 
     @abstractmethod
     def prune(self) -> None:
-        msg = "Method 'prune' must be implemented in a child class"
-        raise NotImplementedError(msg)
+        raise NotImplementedError
 
     @property
     @abstractmethod
     def _pruned_weights(self) -> MNumber:
-        msg = "Property '_pruned_weights' must be implemented in a child class"
-        raise NotImplementedError(msg)
+        raise NotImplementedError
 
     @property
     def weights(self) -> MNumber:
