@@ -3,31 +3,34 @@ from collections.abc import Generator
 import numpy as np
 import numpy.typing as npt
 
-from ...typing import LGBMClassifier, LightGBMParsableTree, MProb, Prob
+from ...typing import LightGBMBooster, LightGBMParsableTree, MProb, Prob
 from ..binder import GenericBinder
 
 
-class LightGBMBinder(GenericBinder[LGBMClassifier, LightGBMParsableTree]):
+class LightGBMBinder(GenericBinder[LightGBMBooster, LightGBMParsableTree]):
     TREE_INFO_KEY = "tree_info"
 
     @property
     def n_classes(self) -> int:
-        return self._base.n_classes_
+        n_per_iter = self._base.num_model_per_iteration()
+        return n_per_iter + int(n_per_iter == 1)
 
     @property
     def n_estimators(self) -> int:
-        return self._base.n_estimators_
+        n_trees = self._base.num_trees()
+        n_per_iter = self._base.num_model_per_iteration()
+        return n_trees // n_per_iter
 
     @property
     def base_trees(self) -> Generator[LightGBMParsableTree, None, None]:
-        model = self._base.booster_.dump_model()
+        model = self._base.dump_model()
         yield from model[self.TREE_INFO_KEY]
 
     def _predict_leaf(self, leaf_index: int, index: int) -> Prob:
         return self.callback.predict_leaf(leaf_index=leaf_index, index=index)
 
     def _scores_impl(self, X: npt.ArrayLike) -> MProb:
-        leaf_indices = self._base.predict_proba(X, pred_leaf=True)
+        leaf_indices = self._base.predict(X, pred_leaf=True)
         leaf_indices = np.asarray(
             leaf_indices,
             dtype=np.int32,
@@ -73,6 +76,6 @@ class LightGBMBinder(GenericBinder[LGBMClassifier, LightGBMParsableTree]):
 
         for k in range(n_classes):
             e = index * n_classes + k
-            leaf_index = leaf_indices[e]
+            leaf_index = int(leaf_indices[e])
             scores[k] = self._predict_leaf(leaf_index, e)
         return scores
