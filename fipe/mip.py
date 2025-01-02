@@ -41,20 +41,17 @@ class BaseVar(ABC, Generic[VT]):
     __metaclass__ = ABCMeta
 
     name: str
-    MSG_FMT = "Subclasses must implement the {name} {method}"
 
     def __init__(self, name: str = "") -> None:
         self.name = name
 
     @abstractmethod
     def build(self, mip: MIP) -> None:
-        msg = self.MSG_FMT.format(name="build", method="method")
-        raise NotImplementedError(msg)
+        raise NotImplementedError
 
     @abstractmethod
     def _apply(self, prop_name: str) -> VT:
-        msg = self.MSG_FMT.format(name="apply", method="method")
-        raise NotImplementedError(msg)
+        raise NotImplementedError
 
     @staticmethod
     def _apply_prop(var: gp.Var, prop_name: str) -> Number:
