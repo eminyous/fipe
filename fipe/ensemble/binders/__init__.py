@@ -7,17 +7,15 @@ from ...typing import (
     RandomForestClassifier,
 )
 from ..binder import BinderCallback
-from .ab import AdaBoostBinder
+from .cl import SKLearnBinderClassifier
 from .gb import GradientBoostingBinder
 from .lgbm import LightGBMBinder
-from .rf import RandomForestBinder
 from .xgb import XGBoostBinder
 
 Binder = (
-    AdaBoostBinder
+    SKLearnBinderClassifier
     | GradientBoostingBinder
     | LightGBMBinder
-    | RandomForestBinder
     | XGBoostBinder
 )
 
@@ -28,9 +26,17 @@ def create_binder(
     callback: BinderCallback,
 ) -> Binder:
     if isinstance(base, RandomForestClassifier):
-        return RandomForestBinder(base, callback=callback)
+        return SKLearnBinderClassifier(
+            base,
+            callback=callback,
+            use_hard_voting=False,
+        )
     if isinstance(base, AdaBoostClassifier):
-        return AdaBoostBinder(base, callback=callback)
+        return SKLearnBinderClassifier(
+            base,
+            callback=callback,
+            use_hard_voting=True,
+        )
     if isinstance(base, GradientBoostingClassifier):
         return GradientBoostingBinder(base, callback=callback)
     if isinstance(base, LGBMClassifier):

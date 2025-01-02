@@ -1,6 +1,5 @@
 from collections.abc import Mapping
 from enum import Enum
-from typing import Any
 
 import numpy as np
 import numpy.typing as npt
@@ -22,13 +21,20 @@ class FeatureType(Enum):
     BIN = "binary"
 
 
+LightGBMParam = int | float | str | bool
+
+
 SKLearnParsableTree = Tree
-LightGBMParsableTree = Mapping[str, Any]
+LightGBMParsableTree = Mapping[
+    str, LightGBMParam | type["LightGBMParsableTree"]
+]
 XGBoostParsableTree = pd.DataFrame
 ParsableTree = SKLearnParsableTree | LightGBMParsableTree | XGBoostParsableTree
 
 SKLearnParsableNode = int
-LightGBMParsableNode = Mapping[str, Any]
+LightGBMParsableNode = Mapping[
+    str, LightGBMParam | type["LightGBMParsableNode"]
+]
 XGBoostParsableNode = pd.Series
 ParsableNode = SKLearnParsableNode | LightGBMParsableNode | XGBoostParsableNode
 

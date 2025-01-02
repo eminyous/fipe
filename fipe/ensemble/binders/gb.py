@@ -7,7 +7,6 @@ from ...typing import (
     DecisionTreeRegressor,
     GradientBoostingClassifier,
     MProb,
-    SKLearnParsableTree,
 )
 from .skl import SKLearnBinder
 
@@ -24,7 +23,7 @@ class GradientBoostingBinder(
         return self._base.n_estimators_
 
     @property
-    def base_estimators(self) -> Generator[SKLearnParsableTree, None, None]:
+    def base_estimators(self) -> Generator[DecisionTreeRegressor, None, None]:
         yield from self._base.estimators_.ravel()
 
     def _scores_impl(self, X: npt.ArrayLike) -> MProb:
