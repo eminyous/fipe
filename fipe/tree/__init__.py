@@ -27,11 +27,13 @@ TreeParser = (
 def create_parser(base: BaseEnsemble, encoder: FeatureEncoder) -> TreeParser:
     if isinstance(base, RandomForestClassifier):
         return SKLearnTreeParserClassifier(
-            encoder=encoder, use_hard_voting=False
+            encoder=encoder,
+            use_hard_voting=False,
         )
     if isinstance(base, AdaBoostClassifier):
         return SKLearnTreeParserClassifier(
-            encoder=encoder, use_hard_voting=True
+            encoder=encoder,
+            use_hard_voting=True,
         )
     if isinstance(base, GradientBoostingClassifier):
         return SKLearnTreeParser(encoder=encoder)
