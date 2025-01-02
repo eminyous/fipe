@@ -85,7 +85,7 @@ allowlist_externals = *
 
 commands =
     pip install -e .[test]
-    ruff check fipe tests --fix
+    ruff check fipe tests
     coverage run -m pytest
     coverage report
     coverage xml
