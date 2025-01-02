@@ -52,9 +52,7 @@ class GenericBinder(Generic[BE, PT]):
         return np.sum(p, axis=1) / np.sum(w)
 
     def scores(self, X: npt.ArrayLike) -> MProb:
-        X = np.asarray(X)
-        if X.ndim == 1:
-            X = X.reshape(1, -1)
+        X = np.array(X, ndmin=2)
         return self._scores_impl(X=X)
 
     @property
