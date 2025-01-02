@@ -8,7 +8,6 @@ from .prune import BasePruner, Pruner
 __all__ = [
     "FIPE",
     "OCEAN",
-    "OCEAN",
     "BaseOCEAN",
     "BasePruner",
     "Ensemble",

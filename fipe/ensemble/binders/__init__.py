@@ -6,7 +6,7 @@ from ...typing import (
     LGBMClassifier,
     RandomForestClassifier,
 )
-from ..generic import Callback
+from ..binder import EnsembleBinderCallback
 from .ab import AdaBoostBinder
 from .gb import GradientBoostingBinder
 from .lgbm import LightGBMBinder
@@ -22,10 +22,10 @@ EnsembleBinder = (
 )
 
 
-def create_ensemble(
+def create_binder(
     base: BaseEnsemble,
     *,
-    callback: Callback,
+    callback: EnsembleBinderCallback,
 ) -> EnsembleBinder:
     if isinstance(base, RandomForestClassifier):
         return RandomForestBinder(base, callback=callback)
@@ -43,5 +43,5 @@ def create_ensemble(
 
 __all__ = [
     "EnsembleBinder",
-    "create_ensemble",
+    "create_binder",
 ]

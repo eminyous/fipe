@@ -3,11 +3,13 @@ from collections.abc import Generator
 import numpy as np
 import numpy.typing as npt
 
-from ...typing import LGBMClassifier, MProb, LightGBMParsableTree, Prob
-from ..generic import GenericEnsemble
+from ...typing import LGBMClassifier, LightGBMParsableTree, MProb, Prob
+from ..binder import GenericEnsembleBinder
 
 
-class LightGBMBinder(GenericEnsemble[LGBMClassifier, LightGBMParsableTree]):
+class LightGBMBinder(
+    GenericEnsembleBinder[LGBMClassifier, LightGBMParsableTree]
+):
     TREE_INFO_KEY = "tree_info"
 
     @property

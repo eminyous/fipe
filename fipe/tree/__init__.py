@@ -9,8 +9,8 @@ from ..typing import (
 )
 from .container import TreeContainer
 from .parsers import (
-    TreeParserCL,
     LightGBMTreeParser,
+    TreeParserCL,
     TreeParserRG,
     XGBoostTreeParser,
 )
@@ -37,11 +37,11 @@ def create_parser(base: BaseEnsemble, encoder: FeatureEncoder) -> TreeParser:
 
 
 __all__ = [
+    "LightGBMTreeParser",
     "Tree",
     "TreeContainer",
     "TreeParser",
     "TreeParserCL",
-    "LightGBMTreeParser",
     "TreeParserRG",
     "XGBoostTreeParser",
     "create_parser",

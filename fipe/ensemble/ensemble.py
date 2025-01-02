@@ -5,62 +5,64 @@ import numpy.typing as npt
 from ..feature import FeatureEncoder
 from ..tree import Tree, TreeParser, create_parser
 from ..typing import BaseEnsemble, MClass, MProb, Prob
-from .classes import EnsembleBinder, create_ensemble
-from .generic import Callback
+from .binder import EnsembleBinderCallback
+from .binders import EnsembleBinder, create_binder
 
 
-class Ensemble(Sequence[Tree], Callback):
-    ensemble: EnsembleBinder
-    tree_parser: TreeParser
-    trees: Sequence[Tree]
+class Ensemble(Sequence[Tree], EnsembleBinderCallback):
+    _binder: EnsembleBinder
+    _tree_parser: TreeParser
+    _trees: Sequence[Tree]
 
     def __init__(self, base: BaseEnsemble, encoder: FeatureEncoder) -> None:
-        self.ensemble = self.init_ensemble(base=base, callback=self)
-        self.tree_parser = self.init_tree_parser(base=base, encoder=encoder)
-        parse = self.tree_parser.parse
-        base_trees = self.ensemble.base_trees
-        self.trees = list(map(parse, base_trees))
+        self._binder = self.init_ensemble_binder(base=base, callback=self)
+        self._tree_parser = self.init_tree_parser(base=base, encoder=encoder)
+        parse = self._tree_parser.parse
+        base_trees = self._binder.base_trees
+        self._trees = list(map(parse, base_trees))
 
     def predict(self, X: npt.ArrayLike, w: npt.ArrayLike) -> MClass:
-        return self.ensemble.predict(X=X, w=w)
+        return self._binder.predict(X=X, w=w)
 
     def score(self, X: npt.ArrayLike, w: npt.ArrayLike) -> MProb:
-        return self.ensemble.score(X=X, w=w)
+        return self._binder.score(X=X, w=w)
 
     def scores(self, X: npt.ArrayLike) -> MProb:
-        return self.ensemble.scores(X=X)
+        return self._binder.scores(X=X)
 
     def predict_leaf(self, leaf_index: int, index: int) -> Prob:
         return Prob(self[index].predict(leaf_index))
 
     @property
     def is_binary(self) -> bool:
-        return self.ensemble.is_binary
+        return self._binder.is_binary
 
     @property
     def n_classes(self) -> int:
-        return self.ensemble.n_classes
+        return self._binder.n_classes
 
     @property
     def n_estimators(self) -> int:
-        return self.ensemble.n_estimators
+        return self._binder.n_estimators
 
     @property
     def max_depth(self) -> int:
         return max(tree.max_depth for tree in self)
 
     def __getitem__(self, t: int) -> Tree:
-        return self.trees[t]
+        return self._trees[t]
 
     def __iter__(self) -> Iterator[Tree]:
-        return iter(self.trees)
+        return iter(self._trees)
 
     def __len__(self) -> int:
-        return len(self.trees)
+        return len(self._trees)
 
     @staticmethod
-    def init_ensemble(base: BaseEnsemble, callback: Callback) -> EnsembleBinder:
-        return create_ensemble(base=base, callback=callback)
+    def init_ensemble_binder(
+        base: BaseEnsemble, callback: EnsembleBinderCallback
+    ) -> EnsembleBinder:
+        return create_binder(base=base, callback=callback)
 
     @staticmethod
     def init_tree_parser(
