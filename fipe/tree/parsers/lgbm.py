@@ -1,4 +1,3 @@
-from ...feature import FeatureEncoder
 from ...typing import LightGBMParsableNode, LightGBMParsableTree, Number
 from ..parser import GenericTreeParser
 
@@ -17,12 +16,6 @@ class LightGBMTreeParser(
     THRESHOLD_KEY = "threshold"
 
     CHILD_KEY_FMT = "{which}_child"
-
-    leaf_offset: int
-
-    def __init__(self, encoder: FeatureEncoder) -> None:
-        GenericTreeParser.__init__(self, encoder=encoder)
-        self.leaf_offset = 0
 
     def parse_n_nodes(self) -> int:
         n_leaves = int(self.base[self.NUM_LEAVES_KEY])
