@@ -1,10 +1,11 @@
 from collections.abc import Mapping
 from enum import Enum
+from typing import Any
 
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
-from lightgbm import LGBMClassifier
+from lightgbm import Booster as LightGBMBooster
 from sklearn.ensemble import (
     AdaBoostClassifier,
     GradientBoostingClassifier,
@@ -12,7 +13,7 @@ from sklearn.ensemble import (
 )
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.tree._tree import Tree  # noqa: PLC2701
-from xgboost import Booster
+from xgboost import Booster as XGBoostBooster
 
 
 class FeatureType(Enum):
@@ -21,29 +22,23 @@ class FeatureType(Enum):
     BIN = "binary"
 
 
-LightGBMParam = int | float | str | bool
-
+SKLearnParsableNode = int
+LightGBMParsableNode = Mapping[str, Any]
+XGBoostParsableNode = pd.Series
+ParsableNode = SKLearnParsableNode | LightGBMParsableNode | XGBoostParsableNode
 
 SKLearnParsableTree = Tree
-LightGBMParsableTree = Mapping[
-    str, LightGBMParam | type["LightGBMParsableTree"]
-]
+LightGBMParsableTree = Mapping[str, Any]
 XGBoostParsableTree = pd.DataFrame
 ParsableTree = SKLearnParsableTree | LightGBMParsableTree | XGBoostParsableTree
 
-SKLearnParsableNode = int
-LightGBMParsableNode = Mapping[
-    str, LightGBMParam | type["LightGBMParsableNode"]
-]
-XGBoostParsableNode = pd.Series
-ParsableNode = SKLearnParsableNode | LightGBMParsableNode | XGBoostParsableNode
 
 BaseEnsemble = (
     RandomForestClassifier
     | AdaBoostClassifier
     | GradientBoostingClassifier
-    | LGBMClassifier
-    | Booster
+    | LightGBMBooster
+    | XGBoostBooster
 )
 
 BaseDecisionTree = DecisionTreeClassifier | DecisionTreeRegressor
