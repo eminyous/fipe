@@ -29,10 +29,6 @@ class TreeContainer:
     def internal_nodes(self) -> set[int]:
         return self.tree.internal_nodes
 
-    @property
-    def nodes(self) -> set[int]:
-        return self.tree.nodes
-
     def nodes_at_depth(self, depth: int) -> set[int]:
         return self.tree.nodes_at_depth(depth)
 
