@@ -8,13 +8,13 @@ from ..parser import GenericTreeParser
 class XGBoostTreeParser(
     GenericTreeParser[XGBoostParsableTree, XGBoostParsableNode],
 ):
+    ID_KEY = "ID"
+    NODE_KEY = "Node"
     FEATURE_KEY = "Feature"
     THRESHOLD_KEY = "Split"
     LEFT_CHILD_KEY = "Yes"
     RIGHT_CHILD_KEY = "No"
     VALUE_KEY = "Gain"
-    ID_KEY = "ID"
-    NODE_KEY = "Node"
 
     IS_LEAF = "Leaf"
     FEATURE_PATTERN = r"f(\d+)"
