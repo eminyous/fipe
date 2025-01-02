@@ -4,7 +4,7 @@ omit = ["tests/*"]
 [report]
 exclude_lines = [
     'return NotImplemented',
-    'raise NotImplementedError()',
+    'raise NotImplementedError',
     'pragma: no cover',
     '^\s*def _',
 ]
