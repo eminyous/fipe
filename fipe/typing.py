@@ -27,6 +27,11 @@ LightGBMParsableTree = Mapping[str, Any]
 XGBoostParsableTree = pd.DataFrame
 ParsableTree = SKLearnParsableTree | LightGBMParsableTree | XGBoostParsableTree
 
+SKLearnParsableNode = int
+LightGBMParsableNode = Mapping[str, Any]
+XGBoostParsableNode = pd.Series
+ParsableNode = SKLearnParsableNode | LightGBMParsableNode | XGBoostParsableNode
+
 BaseEnsemble = (
     RandomForestClassifier
     | AdaBoostClassifier

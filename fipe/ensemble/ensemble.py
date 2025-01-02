@@ -5,21 +5,19 @@ import numpy.typing as npt
 from ..feature import FeatureEncoder
 from ..tree import Tree, TreeParser, create_parser
 from ..typing import BaseEnsemble, MClass, MProb, Prob
-from .binder import EnsembleBinderCallback
-from .binders import EnsembleBinder, create_binder
+from .binder import BinderCallback
+from .binders import Binder, create_binder
 
 
-class Ensemble(Sequence[Tree], EnsembleBinderCallback):
-    _binder: EnsembleBinder
-    _tree_parser: TreeParser
+class Ensemble(Sequence[Tree], BinderCallback):
+    _binder: Binder
+    _parser: TreeParser
     _trees: Sequence[Tree]
 
     def __init__(self, base: BaseEnsemble, encoder: FeatureEncoder) -> None:
-        self._binder = self.init_ensemble_binder(base=base, callback=self)
-        self._tree_parser = self.init_tree_parser(base=base, encoder=encoder)
-        parse = self._tree_parser.parse
-        base_trees = self._binder.base_trees
-        self._trees = list(map(parse, base_trees))
+        self._init_binder(base=base)
+        self._init_parser(base=base, encoder=encoder)
+        self._parse_trees()
 
     def predict(self, X: npt.ArrayLike, w: npt.ArrayLike) -> MClass:
         return self._binder.predict(X=X, w=w)
@@ -58,15 +56,13 @@ class Ensemble(Sequence[Tree], EnsembleBinderCallback):
     def __len__(self) -> int:
         return len(self._trees)
 
-    @staticmethod
-    def init_ensemble_binder(
-        base: BaseEnsemble, callback: EnsembleBinderCallback
-    ) -> EnsembleBinder:
-        return create_binder(base=base, callback=callback)
+    def _init_binder(self, base: BaseEnsemble) -> None:
+        self._binder = create_binder(base=base, callback=self)
 
-    @staticmethod
-    def init_tree_parser(
-        base: BaseEnsemble,
-        encoder: FeatureEncoder,
-    ) -> TreeParser:
-        return create_parser(base=base, encoder=encoder)
+    def _init_parser(self, base: BaseEnsemble, encoder: FeatureEncoder) -> None:
+        self._parser = create_parser(base=base, encoder=encoder)
+
+    def _parse_trees(self) -> None:
+        parse = self._parser.parse
+        base_trees = self._binder.base_trees
+        self._trees = list(map(parse, base_trees))

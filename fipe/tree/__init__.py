@@ -10,24 +10,31 @@ from ..typing import (
 from .container import TreeContainer
 from .parsers import (
     LightGBMTreeParser,
-    TreeParserCL,
-    TreeParserRG,
+    SKLearnTreeParser,
+    SKLearnTreeParserClassifier,
     XGBoostTreeParser,
 )
 from .tree import Tree
 
 TreeParser = (
-    TreeParserCL | TreeParserRG | LightGBMTreeParser | XGBoostTreeParser
+    SKLearnTreeParserClassifier
+    | SKLearnTreeParser
+    | LightGBMTreeParser
+    | XGBoostTreeParser
 )
 
 
 def create_parser(base: BaseEnsemble, encoder: FeatureEncoder) -> TreeParser:
     if isinstance(base, RandomForestClassifier):
-        return TreeParserCL(encoder=encoder, use_hard_voting=False)
+        return SKLearnTreeParserClassifier(
+            encoder=encoder, use_hard_voting=False
+        )
     if isinstance(base, AdaBoostClassifier):
-        return TreeParserCL(encoder=encoder, use_hard_voting=True)
+        return SKLearnTreeParserClassifier(
+            encoder=encoder, use_hard_voting=True
+        )
     if isinstance(base, GradientBoostingClassifier):
-        return TreeParserRG(encoder=encoder)
+        return SKLearnTreeParser(encoder=encoder)
     if isinstance(base, LGBMClassifier):
         return LightGBMTreeParser(encoder=encoder)
     if isinstance(base, Booster):
@@ -38,11 +45,11 @@ def create_parser(base: BaseEnsemble, encoder: FeatureEncoder) -> TreeParser:
 
 __all__ = [
     "LightGBMTreeParser",
+    "SKLearnTreeParser",
+    "SKLearnTreeParserClassifier",
     "Tree",
     "TreeContainer",
     "TreeParser",
-    "TreeParserCL",
-    "TreeParserRG",
     "XGBoostTreeParser",
     "create_parser",
 ]

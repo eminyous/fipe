@@ -1,11 +1,13 @@
 from .lgbm import LightGBMTreeParser
-from .skl import SKLearnTreeParser, TreeParserCL, TreeParserRG
+from .skl import (
+    SKLearnTreeParser,
+    SKLearnTreeParserClassifier,
+)
 from .xgb import XGBoostTreeParser
 
 __all__ = [
     "LightGBMTreeParser",
     "SKLearnTreeParser",
-    "TreeParserCL",
-    "TreeParserRG",
+    "SKLearnTreeParserClassifier",
     "XGBoostTreeParser",
 ]

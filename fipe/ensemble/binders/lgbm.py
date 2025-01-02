@@ -4,12 +4,10 @@ import numpy as np
 import numpy.typing as npt
 
 from ...typing import LGBMClassifier, LightGBMParsableTree, MProb, Prob
-from ..binder import GenericEnsembleBinder
+from ..binder import GenericBinder
 
 
-class LightGBMBinder(
-    GenericEnsembleBinder[LGBMClassifier, LightGBMParsableTree]
-):
+class LightGBMBinder(GenericBinder[LGBMClassifier, LightGBMParsableTree]):
     TREE_INFO_KEY = "tree_info"
 
     @property

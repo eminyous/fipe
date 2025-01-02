@@ -11,7 +11,7 @@ BE = TypeVar("BE", bound=BaseEnsemble)
 PT = TypeVar("PT", bound=ParsableTree)
 
 
-class EnsembleBinderCallback:
+class BinderCallback:
     __metaclass__ = ABCMeta
 
     @abstractmethod
@@ -19,25 +19,25 @@ class EnsembleBinderCallback:
         raise NotImplementedError
 
 
-class GenericEnsembleBinder(Generic[BE, PT]):
+class GenericBinder(Generic[BE, PT]):
     __metaclass__ = ABCMeta
 
     NUM_BINARY_CLASSES = 2
 
     _base: BE
-    __callback: EnsembleBinderCallback
+    __callback: BinderCallback
 
     def __init__(
         self,
         base: BE,
         *,
-        callback: EnsembleBinderCallback,
+        callback: BinderCallback,
     ) -> None:
         self._base = base
         self.__callback = callback
 
     @property
-    def callback(self) -> EnsembleBinderCallback:
+    def callback(self) -> BinderCallback:
         return self.__callback
 
     def predict(self, X: npt.ArrayLike, w: npt.ArrayLike) -> MClass:

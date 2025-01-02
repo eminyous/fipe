@@ -9,7 +9,7 @@ from ...typing import (
     RandomForestClassifier,
     SKLearnParsableTree,
 )
-from ..binder import GenericEnsembleBinder
+from ..binder import GenericBinder
 
 Classifier = (
     RandomForestClassifier | AdaBoostClassifier | GradientBoostingClassifier
@@ -19,9 +19,7 @@ CL = TypeVar("CL", bound=Classifier)
 DT = TypeVar("DT", bound=BaseDecisionTree)
 
 
-class EnsembleBinderSKLearn(
-    GenericEnsembleBinder[CL, SKLearnParsableTree], Generic[CL, DT]
-):
+class SKLearnBinder(GenericBinder[CL, SKLearnParsableTree], Generic[CL, DT]):
     __metaclass__ = ABCMeta
 
     @property

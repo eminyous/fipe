@@ -2,17 +2,18 @@ from abc import ABCMeta, abstractmethod
 from typing import Generic, TypeVar
 
 from ..feature import FeatureContainer
-from ..typing import LeafValue, ParsableTree
+from ..typing import LeafValue, ParsableNode, ParsableTree
 from .tree import Tree
 
 PT = TypeVar("PT", bound=ParsableTree)
-NT = TypeVar("NT")
+NT = TypeVar("NT", bound=ParsableNode)
 
 
 class GenericTreeParser(FeatureContainer, Generic[PT, NT]):
     __metaclass__ = ABCMeta
 
     DEFAULT_ROOT_ID = 0
+
     __base: PT | None = None
 
     @property

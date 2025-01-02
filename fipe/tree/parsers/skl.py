@@ -3,11 +3,13 @@ from abc import ABCMeta
 import numpy as np
 
 from ...feature import FeatureEncoder
-from ...typing import MNumber, Number, SKLearnParsableTree
+from ...typing import MNumber, Number, SKLearnParsableNode, SKLearnParsableTree
 from ..parser import GenericTreeParser
 
 
-class SKLearnTreeParser(GenericTreeParser[SKLearnParsableTree, int]):
+class SKLearnTreeParser(
+    GenericTreeParser[SKLearnParsableTree, SKLearnParsableNode],
+):
     __metaclass__ = ABCMeta
 
     def __init__(self, encoder: FeatureEncoder) -> None:
@@ -16,7 +18,7 @@ class SKLearnTreeParser(GenericTreeParser[SKLearnParsableTree, int]):
     def parse_n_nodes(self) -> int:
         return self.base.node_count
 
-    def parse_root(self) -> int:
+    def parse_root(self) -> SKLearnParsableNode:
         return self.DEFAULT_ROOT_ID
 
     def get_internal_node(self, node: int) -> tuple[int, float]:
@@ -24,25 +26,28 @@ class SKLearnTreeParser(GenericTreeParser[SKLearnParsableTree, int]):
         threshold = float(self.base.threshold[node])
         return column_index, threshold
 
+    def get_leaf_value(self, node: SKLearnParsableNode) -> Number:
+        return Number(self.base.value[node].flatten()[0])
+
     def get_children(self, node: int) -> tuple[int, int]:
         left = int(self.base.children_left[node])
         right = int(self.base.children_right[node])
         return left, right
 
-    def is_leaf(self, node: int) -> bool:
-        left = int(self.base.children_left[node])
-        right = int(self.base.children_right[node])
+    def is_leaf(self, node: SKLearnParsableNode) -> bool:
+        left = SKLearnParsableNode(self.base.children_left[node])
+        right = SKLearnParsableNode(self.base.children_right[node])
         return left == right
 
-    def read_node_id(self, node: int) -> int:
+    def read_node_id(self, node: SKLearnParsableNode) -> int:
         return self._read_node_id_static(node=node)
 
     @staticmethod
-    def _read_node_id_static(node: int) -> int:
+    def _read_node_id_static(node: SKLearnParsableNode) -> int:
         return node
 
 
-class TreeParserCL(SKLearnTreeParser):
+class SKLearnTreeParserClassifier(SKLearnTreeParser):
     use_hard_voting: bool
 
     def __init__(
@@ -51,10 +56,10 @@ class TreeParserCL(SKLearnTreeParser):
         *,
         use_hard_voting: bool,
     ) -> None:
-        SKLearnTreeParser.__init__(self, encoder=encoder)
+        super().__init__(encoder=encoder)
         self.use_hard_voting = use_hard_voting
 
-    def get_leaf_value(self, node: int) -> MNumber:
+    def get_leaf_value(self, node: SKLearnParsableNode) -> MNumber:
         value = self.base.value[node].flatten()
         value = np.asarray(value)
         if self.use_hard_voting:
@@ -62,8 +67,3 @@ class TreeParserCL(SKLearnTreeParser):
             q = np.argmax(value)
             value = np.eye(k)[q]
         return value
-
-
-class TreeParserRG(SKLearnTreeParser):
-    def get_leaf_value(self, node: int) -> Number:
-        return self.base.value[node].flatten()[0]

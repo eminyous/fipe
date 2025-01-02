@@ -1,9 +1,9 @@
 from ...tree import XGBoostTreeParser
 from ...typing import Booster, XGBoostParsableTree
-from ..binder import GenericEnsembleBinder
+from ..binder import GenericBinder
 
 
-class XGBoostBinder(GenericEnsembleBinder[Booster, XGBoostParsableTree]):
+class XGBoostBinder(GenericBinder[Booster, XGBoostParsableTree]):
     TREE_KEY = "Tree"
 
     INDEX = (

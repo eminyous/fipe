@@ -9,11 +9,11 @@ from ...typing import (
     MProb,
     SKLearnParsableTree,
 )
-from .skl import EnsembleBinderSKLearn
+from .skl import SKLearnBinder
 
 
 class GradientBoostingBinder(
-    EnsembleBinderSKLearn[GradientBoostingClassifier, DecisionTreeRegressor],
+    SKLearnBinder[GradientBoostingClassifier, DecisionTreeRegressor],
 ):
     @property
     def n_classes(self) -> int:
