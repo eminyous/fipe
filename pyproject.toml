@@ -69,25 +69,5 @@ report.exclude_lines = [
     'return NotImplemented',
     'raise NotImplementedError()',
     'pragma: no cover',
+    '^\s*def _',
 ]
-
-[tool.tox]
-legacy_tox_ini = """
-[tox]
-envlist = py
-isolated_build = True
-
-[tox:.package]
-basepython = python3
-
-[testenv]
-allowlist_externals = *
-
-commands =
-    pip install --upgrade scikit-learn
-    pip install -e .[test]
-    ruff check fipe tests
-    coverage run -m pytest
-    coverage report
-    coverage xml
-"""
