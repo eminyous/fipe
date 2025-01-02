@@ -2,10 +2,10 @@ from ..feature import FeatureEncoder
 from ..typing import (
     AdaBoostClassifier,
     BaseEnsemble,
-    Booster,
     GradientBoostingClassifier,
-    LGBMClassifier,
+    LightGBMBooster,
     RandomForestClassifier,
+    XGBoostBooster,
 )
 from .container import TreeContainer
 from .parsers import (
@@ -35,9 +35,9 @@ def create_parser(base: BaseEnsemble, encoder: FeatureEncoder) -> TreeParser:
         )
     if isinstance(base, GradientBoostingClassifier):
         return SKLearnTreeParser(encoder=encoder)
-    if isinstance(base, LGBMClassifier):
+    if isinstance(base, LightGBMBooster):
         return LightGBMTreeParser(encoder=encoder)
-    if isinstance(base, Booster):
+    if isinstance(base, XGBoostBooster):
         return XGBoostTreeParser(encoder=encoder)
     msg = f"Unsupported base estimator: {type(base).__name__}"
     raise TypeError(msg)

@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from typing import Generic, TypeVar
 
-from ..feature import FeatureContainer
+from ..feature import FeatureContainer, FeatureEncoder
 from ..typing import LeafValue, ParsableNode, ParsableTree
 from .tree import Tree
 
@@ -13,8 +13,13 @@ class GenericTreeParser(FeatureContainer, Generic[PT, NT]):
     __metaclass__ = ABCMeta
 
     DEFAULT_ROOT_ID = 0
+    leaf_offset: int
 
     __base: PT | None = None
+
+    def __init__(self, encoder: FeatureEncoder) -> None:
+        super().__init__(encoder=encoder)
+        self.leaf_offset = 0
 
     @property
     def base(self) -> PT:
@@ -32,18 +37,21 @@ class GenericTreeParser(FeatureContainer, Generic[PT, NT]):
 
     def parse(self, base: PT) -> Tree:
         self.__base = base
+        self.leaf_offset = 0
 
         tree = self.init_tree()
 
         root_id = self.parse_root_id()
         n_nodes = self.parse_n_nodes()
         tree.n_leaves = (n_nodes + 1) // 2
+        tree.leaf_offset = self.leaf_offset
         tree.root_id = root_id
 
         root = self.parse_root()
         self.parse_node(tree, node_id=root_id, node=root, depth=0)
 
         self.__base = None
+        self.leaf_offset = 0
         return tree
 
     def parse_node(

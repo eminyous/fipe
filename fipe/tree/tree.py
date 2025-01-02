@@ -51,6 +51,8 @@ class Tree(FeatureContainer, Iterable[int]):
 
     leaf_value: dict[int, LeafValue]
 
+    __leaf_offset: int
+
     __node_at_depth: dict[int, set[int]]
     __node_split_on: dict[str, set[int]]
     __max_depth: int | None
@@ -73,6 +75,7 @@ class Tree(FeatureContainer, Iterable[int]):
         self.__node_at_depth = {}
         self.__node_split_on = {}
         self.__max_depth = None
+        self.__leaf_offset = 0
 
     @property
     def max_depth(self) -> int:
@@ -127,7 +130,11 @@ class Tree(FeatureContainer, Iterable[int]):
 
     @property
     def leaf_offset(self) -> int:
-        return self.n_leaves - 1
+        return self.__leaf_offset
+
+    @leaf_offset.setter
+    def leaf_offset(self, offset: int) -> None:
+        self.__leaf_offset = offset
 
     @property
     def n_nodes(self) -> int:
