@@ -84,6 +84,7 @@ basepython = python3
 allowlist_externals = *
 
 commands =
+    pip install --upgrade scikit-learn
     pip install -e .[test]
     ruff check fipe tests
     coverage run -m pytest
