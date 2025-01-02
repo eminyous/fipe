@@ -1,7 +1,7 @@
 import unittest
 from typing import ClassVar
 
-from utils import load
+from utils import DATASETS_PATH, load
 
 from fipe import FeatureEncoder
 
@@ -21,7 +21,7 @@ class TestFeatures(unittest.TestCase):
     }
 
     def test_fit(self) -> None:
-        data, _, _ = load(self.dataset)
+        data, _, _ = load(DATASETS_PATH / self.dataset)
         encoder = FeatureEncoder(data)
         assert encoder.continuous == self.true_features
         assert encoder.categorical == set()

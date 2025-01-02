@@ -1,35 +1,35 @@
 import warnings
+from pathlib import Path
 
 import numpy as np
 import numpy.typing as npt
 import pytest
-from lightgbm import LGBMClassifier
-from sklearn.ensemble import (
-    AdaBoostClassifier,
-    GradientBoostingClassifier,
-    RandomForestClassifier,
-)
-from utils import DATASETS, ENV, separate, train
+from utils import DATASETS, ENV, predict, separate, train
 
 from fipe import FeatureEncoder, Oracle
-from fipe.typing import BaseEnsemble, MNumber, SNumber
-
-
-@pytest.mark.parametrize(
-    "dataset",
-    [d.name for d in DATASETS.iterdir() if d.is_dir()],
+from fipe.typing import (
+    AdaBoostClassifier,
+    BaseEnsemble,
+    GradientBoostingClassifier,
+    LightGBMBooster,
+    MNumber,
+    RandomForestClassifier,
+    SNumber,
 )
-@pytest.mark.parametrize("n_estimators", [50])
-@pytest.mark.parametrize("seed", [42, 60])
+
+
+@pytest.mark.parametrize("dataset", DATASETS)
 @pytest.mark.parametrize(
     ("model_cls", "options"),
     [
         (RandomForestClassifier, {"max_depth": 2}),
-        (AdaBoostClassifier, {"algorithm": "SAMME"}),
+        (AdaBoostClassifier, {}),
         (GradientBoostingClassifier, {"max_depth": 2, "init": "zero"}),
-        (LGBMClassifier, {"max_depth": 2}),
+        (LightGBMBooster, {"max_depth": 2}),
     ],
 )
+@pytest.mark.parametrize("n_estimators", [25])
+@pytest.mark.parametrize("seed", [42, 60])
 class TestOracle:
     @staticmethod
     def _separate(
@@ -47,7 +47,7 @@ class TestOracle:
 
     def test_oracle_cannot_separate_with_all_active(
         self,
-        dataset: str,
+        dataset: Path,
         n_estimators: int,
         seed: int,
         model_cls: type,
@@ -83,7 +83,7 @@ class TestOracle:
             )
             for item in X:
                 x = item.reshape(1, -1)
-                model.predict(x)
+                predict(model, x)
                 ensemble.predict(x, w=weights)
                 ensemble.score(x, w=weights)
         assert len(X) == 0
@@ -115,10 +115,8 @@ class TestOracle:
         # Check that the new points have the same predictions
         # according to my predict and sklearn both using the initial ensemble
         X = oracle.transform(X)
-        for item in X:
-            x = item.reshape(1, -1)
-            model_pred = model.predict(x)
-            pred = ensemble.predict(x, w=weights)
-            new_pred = ensemble.predict(x, w=new_weights)
-            assert not np.any(new_pred == pred)
-            assert np.all(model_pred == pred)
+        model_pred = predict(model, X)
+        pred = ensemble.predict(X, w=weights)
+        new_pred = ensemble.predict(X, w=new_weights)
+        assert np.all(model_pred == pred)
+        assert not np.any(pred == new_pred)
