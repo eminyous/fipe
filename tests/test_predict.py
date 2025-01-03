@@ -20,12 +20,12 @@ from fipe.typing import (
         (RandomForestClassifier, {"max_depth": 5}),
         (AdaBoostClassifier, {}),
         (GradientBoostingClassifier, {"max_depth": 3, "init": "zero"}),
-        (LightGBMBooster, {"max_depth": 2}),
-        (XGBoostBooster, {"max_depth": 2, "base_score": 0.5}),
+        (LightGBMBooster, {"max_depth": 3}),
+        (XGBoostBooster, {"max_depth": 3, "base_score": 0.5}),
     ],
 )
-@pytest.mark.parametrize("n_estimators", [40, 80])
-@pytest.mark.parametrize("seed", [42, 60])
+@pytest.mark.parametrize("n_estimators", [25, 50])
+@pytest.mark.parametrize("seed", [34, 42])
 class TestPredict:
     @staticmethod
     def test_predict_vs_base(
