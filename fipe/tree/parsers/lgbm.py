@@ -46,11 +46,11 @@ class LightGBMTreeParser(
         return Number(node[self.LEAF_VALUE_KEY])
 
     def is_leaf(self, node: LightGBMParsableNode) -> bool:
-        return self.LEAF_INDEX_KEY in node
+        return self.SPLIT_INDEX_KEY not in node
 
     def read_node_id(self, node: LightGBMParsableNode) -> int:
-        if self.LEAF_INDEX_KEY in node:
-            return int(node[self.LEAF_INDEX_KEY]) + self.leaf_offset
         if self.SPLIT_INDEX_KEY in node:
             return int(node[self.SPLIT_INDEX_KEY])
+        if self.LEAF_INDEX_KEY in node:
+            return int(node[self.LEAF_INDEX_KEY]) + self.leaf_offset
         raise ValueError
