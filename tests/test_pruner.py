@@ -14,9 +14,6 @@ from fipe.typing import (
 
 
 @pytest.mark.parametrize("dataset", DATASETS)
-@pytest.mark.parametrize("norm", [0, 1])
-@pytest.mark.parametrize("n_estimators", [25])
-@pytest.mark.parametrize("seed", [42, 44])
 @pytest.mark.parametrize(
     ("model_cls", "options"),
     [
@@ -27,6 +24,9 @@ from fipe.typing import (
         (XGBoostBooster, {"max_depth": 2, "base_score": 0.5}),
     ],
 )
+@pytest.mark.parametrize("n_estimators", [25])
+@pytest.mark.parametrize("norm", [0, 1])
+@pytest.mark.parametrize("seed", [42, 44])
 def test_pruner_norm(
     dataset: Path,
     n_estimators: int,
