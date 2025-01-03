@@ -24,11 +24,11 @@ from fipe.typing import (
 @pytest.mark.parametrize(
     ("model_cls", "options"),
     [
-        (RandomForestClassifier, {"max_depth": 1}),
+        (RandomForestClassifier, {"max_depth": 2}),
         (AdaBoostClassifier, {}),
-        (GradientBoostingClassifier, {"max_depth": 1, "init": "zero"}),
-        (LightGBMBooster, {"max_depth": 1}),
-        (XGBoostBooster, {"max_depth": 1, "base_score": 0.5}),
+        (GradientBoostingClassifier, {"max_depth": 2, "init": "zero"}),
+        (LightGBMBooster, {"max_depth": 2}),
+        (XGBoostBooster, {"max_depth": 2, "base_score": 0.5}),
     ],
 )
 @pytest.mark.parametrize("n_estimators", [10])
