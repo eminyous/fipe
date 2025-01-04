@@ -11,13 +11,13 @@ from .container import TreeContainer
 from .parsers import (
     LightGBMTreeParser,
     SKLearnTreeParser,
-    SKLearnTreeParserClassifier,
+    SKLearnTreeMParser,
     XGBoostTreeParser,
 )
 from .tree import Tree
 
 TreeParser = (
-    SKLearnTreeParserClassifier
+    SKLearnTreeMParser
     | SKLearnTreeParser
     | LightGBMTreeParser
     | XGBoostTreeParser
@@ -26,12 +26,12 @@ TreeParser = (
 
 def create_parser(base: BaseEnsemble, encoder: FeatureEncoder) -> TreeParser:
     if isinstance(base, RandomForestClassifier):
-        return SKLearnTreeParserClassifier(
+        return SKLearnTreeMParser(
             encoder=encoder,
             use_hard_voting=False,
         )
     if isinstance(base, AdaBoostClassifier):
-        return SKLearnTreeParserClassifier(
+        return SKLearnTreeMParser(
             encoder=encoder,
             use_hard_voting=True,
         )
@@ -48,7 +48,7 @@ def create_parser(base: BaseEnsemble, encoder: FeatureEncoder) -> TreeParser:
 __all__ = [
     "LightGBMTreeParser",
     "SKLearnTreeParser",
-    "SKLearnTreeParserClassifier",
+    "SKLearnTreeMParser",
     "Tree",
     "TreeContainer",
     "TreeParser",

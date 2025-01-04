@@ -47,8 +47,8 @@ class SKLearnTreeParser(
         return node
 
 
-class SKLearnTreeParserClassifier(SKLearnTreeParser):
-    use_hard_voting: bool
+class SKLearnTreeMParser(SKLearnTreeParser):
+    _use_hard_voting: bool
 
     def __init__(
         self,
@@ -57,12 +57,12 @@ class SKLearnTreeParserClassifier(SKLearnTreeParser):
         use_hard_voting: bool,
     ) -> None:
         super().__init__(encoder=encoder)
-        self.use_hard_voting = use_hard_voting
+        self._use_hard_voting = use_hard_voting
 
     def get_leaf_value(self, node: SKLearnParsableNode) -> MNumber:
         value = self.base.value[node].flatten()
         value = np.asarray(value)
-        if self.use_hard_voting:
+        if self._use_hard_voting:
             k = value.size
             q = np.argmax(value)
             value = np.eye(k)[q]
