@@ -41,7 +41,7 @@ class BaseOCEAN(
         )
         FeatureContainer.__init__(self, encoder=encoder)
         LevelParser.__init__(self, tol=tol)
-        self.parse_levels(self._ensemble, encoder=encoder)
+        self.parse_levels(self.ensemble, encoder=encoder)
         self._add_feature_vars()
         self._add_flow_vars()
 
