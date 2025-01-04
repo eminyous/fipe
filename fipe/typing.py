@@ -33,13 +33,10 @@ XGBoostParsableTree = pd.DataFrame
 ParsableTree = SKLearnParsableTree | LightGBMParsableTree | XGBoostParsableTree
 
 
-BaseEnsemble = (
-    RandomForestClassifier
-    | AdaBoostClassifier
-    | GradientBoostingClassifier
-    | LightGBMBooster
-    | XGBoostBooster
+SKLearnClassifier = (
+    RandomForestClassifier | AdaBoostClassifier | GradientBoostingClassifier
 )
+BaseEnsemble = SKLearnClassifier | LightGBMBooster | XGBoostBooster
 
 BaseDecisionTree = DecisionTreeClassifier | DecisionTreeRegressor
 

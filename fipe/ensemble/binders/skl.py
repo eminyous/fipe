@@ -3,19 +3,13 @@ from collections.abc import Generator
 from typing import Generic, TypeVar
 
 from ...typing import (
-    AdaBoostClassifier,
     BaseDecisionTree,
-    GradientBoostingClassifier,
-    RandomForestClassifier,
+    SKLearnClassifier,
     SKLearnParsableTree,
 )
 from ..binder import GenericBinder
 
-Classifier = (
-    RandomForestClassifier | AdaBoostClassifier | GradientBoostingClassifier
-)
-
-CL = TypeVar("CL", bound=Classifier)
+CL = TypeVar("CL", bound=SKLearnClassifier)
 DT = TypeVar("DT", bound=BaseDecisionTree)
 
 
