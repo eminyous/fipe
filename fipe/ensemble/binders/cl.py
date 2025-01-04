@@ -38,24 +38,20 @@ class SKLearnBinderClassifier(
     def base_estimators(self) -> Generator[DecisionTreeClassifier, None, None]:
         yield from self._base
 
-    def _scores_impl(self, X: npt.ArrayLike) -> MProb:
-        X = np.asarray(X)
-        n_samples = X.shape[0]
-        n_estimators = self.n_estimators
-        n_classes = self.n_classes
-        scores = np.zeros((n_samples, n_estimators, n_classes))
+    def _scores_impl(self, X: npt.ArrayLike, *, scores: MProb) -> None:
         for j, e in enumerate(self.base_estimators):
-            scores[:, j, :] = self._scores_estimator(e, X)
-        return scores
+            self._scores_estimator(e, X, scores=scores[:, j, :])
 
     def _scores_estimator(
         self,
         e: DecisionTreeClassifier,
         X: npt.ArrayLike,
-    ) -> MProb:
+        *,
+        scores: MProb,
+    ) -> None:
         X = np.asarray(X)
         p = e.predict_proba(X)
-        return self._scores_proba(p)
+        scores[:] = self._scores_proba(p)
 
     def _scores_proba(self, p: MProb) -> MProb:
         if self._use_hard_voting:

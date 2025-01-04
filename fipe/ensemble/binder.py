@@ -53,7 +53,15 @@ class GenericBinder(Generic[BE, PT]):
 
     def scores(self, X: npt.ArrayLike) -> MProb:
         X = np.array(X, ndmin=2)
-        return self._scores_impl(X=X)
+        n_samples = X.shape[0]
+        n_classes = self.n_classes
+        n_estimators = self.n_estimators
+        scores = np.empty(
+            (n_samples, n_estimators, n_classes),
+            dtype=Prob,
+        )
+        self._scores_impl(X=X, scores=scores)
+        return scores
 
     @property
     def is_binary(self) -> bool:
@@ -75,5 +83,5 @@ class GenericBinder(Generic[BE, PT]):
         raise NotImplementedError
 
     @abstractmethod
-    def _scores_impl(self, X: npt.ArrayLike) -> MProb:
+    def _scores_impl(self, X: npt.ArrayLike, *, scores: MProb) -> None:
         raise NotImplementedError
