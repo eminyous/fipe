@@ -28,7 +28,7 @@ class XGBoostBinder(BoosterBinder[XGBoostBooster, XGBoostParsableTree]):
 
     @property
     def n_trees_per_iter(self) -> int:
-        n_rounds = self._base.num_boost_round
+        n_rounds = self._base.num_boosted_rounds()
         return self.n_trees // n_rounds
 
     @property
