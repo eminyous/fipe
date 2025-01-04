@@ -37,6 +37,13 @@ ENV.setParam("OutputFlag", 0)
 ENV.start()
 
 DatasetLoader = tuple[pd.DataFrame, MClass, list[str]]
+TrainingResult = tuple[
+    BaseEnsemble,
+    FeatureEncoder,
+    Ensemble,
+    MNumber,
+    tuple[npt.ArrayLike, npt.ArrayLike, npt.ArrayLike, npt.ArrayLike],
+]
 
 
 def load(dataset_path: Path) -> DatasetLoader:
@@ -137,13 +144,7 @@ def train(
     n_estimators: int = 50,
     seed: int = 42,
     test_size: float = 0.2,
-) -> tuple[
-    BaseEnsemble,
-    FeatureEncoder,
-    Ensemble,
-    MNumber,
-    tuple[npt.ArrayLike, npt.ArrayLike, npt.ArrayLike, npt.ArrayLike],
-]:
+) -> TrainingResult:
     data, y, _ = load(dataset)
 
     encoder = FeatureEncoder(data)
