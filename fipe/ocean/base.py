@@ -17,6 +17,7 @@ class BaseOCEAN(
     FeatureContainer,
     LevelParser,
 ):
+    DEFAULT_TOL = 1e-4
     FEATURE_VARS_NAME = "feature_vars"
     FLOW_VAR_FMT = "tree_{t}"
 
@@ -31,7 +32,7 @@ class BaseOCEAN(
         *,
         name: str = "OCEAN",
         env: gp.Env | None = None,
-        tol: float = LevelParser.DEFAULT_TOL,
+        tol: float = DEFAULT_TOL,
     ) -> None:
         MIP.__init__(self, name=name, env=env)
         EnsembleContainer.__init__(
