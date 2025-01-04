@@ -36,6 +36,10 @@ class BasePruner(EnsembleContainer):
         w = self.weights
         return self.ensemble.predict(X=X, w=w)
 
+    def predict_proba(self, X: npt.ArrayLike) -> np.ndarray:
+        w = self.weights
+        return self.ensemble.predict_weighted_proba(X=X, w=w)
+
     @abstractmethod
     def prune(self) -> None:
         raise NotImplementedError

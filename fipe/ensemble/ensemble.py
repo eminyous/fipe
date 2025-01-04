@@ -22,11 +22,15 @@ class Ensemble(Sequence[Tree], BinderCallback):
     def predict(self, X: npt.ArrayLike, w: npt.ArrayLike) -> MClass:
         return self._binder.predict(X=X, w=w)
 
-    def score(self, X: npt.ArrayLike, w: npt.ArrayLike) -> MProb:
-        return self._binder.score(X=X, w=w)
+    def predict_weighted_proba(
+        self,
+        X: npt.ArrayLike,
+        w: npt.ArrayLike,
+    ) -> MProb:
+        return self._binder.predict_weighted_proba(X=X, w=w)
 
-    def scores(self, X: npt.ArrayLike) -> MProb:
-        return self._binder.scores(X=X)
+    def predict_proba(self, X: npt.ArrayLike) -> MProb:
+        return self._binder.predict_proba(X=X)
 
     def predict_leaf(self, e: int, index: int) -> Prob:
         return Prob(self[e].predict(index))

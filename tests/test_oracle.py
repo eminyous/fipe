@@ -87,7 +87,7 @@ class TestOracle:
                 x = item.reshape(1, -1)
                 predict(model, x)
                 ensemble.predict(x, w=weights)
-                ensemble.score(x, w=weights)
+                ensemble.predict_weighted_proba(x, w=weights)
         assert len(X) == 0
 
     def test_oracle_separate(

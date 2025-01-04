@@ -140,8 +140,8 @@ class Tree(FeatureContainer, Iterable[int]):
     def n_nodes(self) -> int:
         return 2 * self.n_leaves - 1
 
-    def predict(self, leaf_index: int) -> LeafValue:
-        leaf = self.leaf_offset + leaf_index
+    def predict(self, index: int) -> LeafValue:
+        leaf = self.leaf_offset + index
         return self.leaf_value[leaf]
 
     def __iter__(self) -> Iterator[int]:

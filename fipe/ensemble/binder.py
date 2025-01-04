@@ -41,17 +41,21 @@ class GenericBinder(Generic[BE, PT]):
         return self.__callback
 
     def predict(self, X: npt.ArrayLike, w: npt.ArrayLike) -> MClass:
-        p = self.score(X=X, w=w)
+        p = self.predict_weighted_proba(X=X, w=w)
         return np.argmax(p, axis=-1)
 
-    def score(self, X: npt.ArrayLike, w: npt.ArrayLike) -> MProb:
+    def predict_weighted_proba(
+        self,
+        X: npt.ArrayLike,
+        w: npt.ArrayLike,
+    ) -> MProb:
         w = np.asarray(w)
-        p = self.scores(X=X)
+        p = self.predict_proba(X=X)
         for e in range(self.n_estimators):
             p[:, e, :] *= w[e]
         return np.sum(p, axis=1) / np.sum(w)
 
-    def scores(self, X: npt.ArrayLike) -> MProb:
+    def predict_proba(self, X: npt.ArrayLike) -> MProb:
         X = np.array(X, ndmin=2)
         n_samples = X.shape[0]
         n_classes = self.n_classes

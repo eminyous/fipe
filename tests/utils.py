@@ -270,6 +270,6 @@ def validate_fidelity(
             assert np.all(pruner_pred == pred)
             assert np.all(model_pred == pred)
         except AssertionError:
-            ensemble.score(x, weights)
-            ensemble.score(x, pruner_weights)
+            ensemble.predict_weighted_proba(x, weights)
+            ensemble.predict_weighted_proba(x, pruner_weights)
             raise

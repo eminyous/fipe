@@ -47,7 +47,7 @@ class Pruner(BasePruner, MIP):
     def add_samples(self, X: npt.ArrayLike) -> None:
         X = np.asarray(X)
         classes = self.ensemble.predict(X=X, w=self._weights)
-        prob = self.ensemble.scores(X=X)
+        prob = self.ensemble.predict_proba(X=X)
         n = X.shape[0]
         for i in range(n):
             self._add_sample(prob=prob[i], class_=classes[i])
