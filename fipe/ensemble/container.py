@@ -7,6 +7,8 @@ from ..feature import FeatureEncoder
 from ..typing import BaseEnsemble, MNumber
 from .ensemble import Ensemble
 
+SupportedEnsemble = tuple[BaseEnsemble, FeatureEncoder] | Ensemble
+
 
 class EnsembleContainer:
     __metaclass__ = ABCMeta
@@ -17,7 +19,7 @@ class EnsembleContainer:
     def __init__(
         self,
         *,
-        ensemble: Ensemble | tuple[BaseEnsemble, FeatureEncoder],
+        ensemble: SupportedEnsemble,
         weights: npt.ArrayLike,
     ) -> None:
         if isinstance(ensemble, tuple):
