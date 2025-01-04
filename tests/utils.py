@@ -266,7 +266,7 @@ def validate_fidelity(
 ) -> None:
     ensemble = pruner.ensemble
     pruner_weights = pruner.weights
-    for xd in pruner.counter_factuals:
+    for xd in pruner.oracle_samples:
         x = pruner.transform(xd)
         model_pred = predict(model, x)
         pred = ensemble.predict(x, weights)

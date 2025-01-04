@@ -18,7 +18,7 @@ class FIPE(Pruner, FeatureContainer):
 
     _n_oracle_calls: int
     _max_oracle_calls: int
-    _counter_factuals: list[list[SNumber]]
+    _oracle_samples: list[list[SNumber]]
 
     def __init__(
         self,
@@ -52,7 +52,7 @@ class FIPE(Pruner, FeatureContainer):
             tol=tol,
             eps=eps,
         )
-        self._counter_factuals = []
+        self._oracle_samples = []
         self._n_oracle_calls = 0
         self._max_oracle_calls = max_oracle_calls
 
@@ -70,7 +70,7 @@ class FIPE(Pruner, FeatureContainer):
                 break
             X = self._separate(self.weights)
             if len(X) > 0:
-                self._save_counter_factuals(X=X)
+                self._save_oracle_samples(X=X)
                 X = self.transform(X=X)
                 self.add_samples(X=X)
             else:
@@ -81,11 +81,11 @@ class FIPE(Pruner, FeatureContainer):
         return self._n_oracle_calls
 
     @property
-    def counter_factuals(self) -> list[list[SNumber]]:
-        return self._counter_factuals
+    def oracle_samples(self) -> list[list[SNumber]]:
+        return self._oracle_samples
 
-    def _save_counter_factuals(self, X: list[SNumber]) -> None:
-        self._counter_factuals.append(X)
+    def _save_oracle_samples(self, X: list[SNumber]) -> None:
+        self._oracle_samples.append(X)
 
     def _separate(self, weights: npt.ArrayLike) -> list[SNumber]:
         self._n_oracle_calls += 1
