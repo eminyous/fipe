@@ -1,13 +1,12 @@
 import warnings
 
 import gurobipy as gp
-import numpy as np
 import numpy.typing as npt
 
 from .feature import FeatureContainer, FeatureEncoder
 from .oracle import Oracle
 from .prune import Pruner
-from .typing import BaseEnsemble, SNumber
+from .typing import BaseEnsemble, MNumber, SNumber
 
 
 class FIPE(Pruner, FeatureContainer):
@@ -68,7 +67,7 @@ class FIPE(Pruner, FeatureContainer):
                 msg = "No feasible solution in the pruning model."
                 warnings.warn(msg, RuntimeWarning, stacklevel=1)
                 break
-            X = self._separate(self.weights)
+            X = self._call_oracle(self.weights)
             if len(X) > 0:
                 self._save_oracle_samples(X=X)
                 X = self.transform(X=X)
@@ -87,7 +86,6 @@ class FIPE(Pruner, FeatureContainer):
     def _save_oracle_samples(self, X: list[SNumber]) -> None:
         self._oracle_samples.append(X)
 
-    def _separate(self, weights: npt.ArrayLike) -> list[SNumber]:
+    def _call_oracle(self, weights: MNumber) -> list[SNumber]:
         self._n_oracle_calls += 1
-        weights = np.asarray(weights)
         return list(self.oracle(new_weights=weights))
