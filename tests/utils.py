@@ -36,10 +36,10 @@ ENV = gp.Env(empty=True)
 ENV.setParam("OutputFlag", 0)
 ENV.start()
 
+DatasetLoader = tuple[pd.DataFrame, MClass, list[str]]
 
-def load(
-    dataset_path: Path,
-) -> tuple[pd.DataFrame, MClass, list[str]]:
+
+def load(dataset_path: Path) -> DatasetLoader:
     dataset_name = dataset_path.name
     data = pd.read_csv(dataset_path / f"{dataset_name}.full.csv")
     labels = data.iloc[:, -1]
@@ -52,10 +52,7 @@ def load(
     return data, y, features
 
 
-def predict(
-    model: BaseEnsemble,
-    X: npt.ArrayLike,
-) -> MClass:
+def predict(model: BaseEnsemble, X: npt.ArrayLike) -> MClass:
     if isinstance(model, XGBoostBooster):
         dx = xgb.DMatrix(X)
         prob = model.predict(dx)
@@ -70,10 +67,7 @@ def predict(
     return np.array(model.predict(X))
 
 
-def predict_proba(
-    model: BaseEnsemble,
-    X: npt.ArrayLike,
-) -> MProb:
+def predict_proba(model: BaseEnsemble, X: npt.ArrayLike) -> MProb:
     if isinstance(model, XGBoostBooster):
         dx = xgb.DMatrix(X)
         return model.predict(dx)
