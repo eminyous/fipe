@@ -1,7 +1,9 @@
 import re
 
+import numpy as np
+
 from ...feature import FeatureEncoder
-from ...typing import Number, XGBoostParsableNode, XGBoostParsableTree
+from ...typing import MNumber, XGBoostParsableNode, XGBoostParsableTree
 from ..parser import GenericTreeParser
 
 
@@ -47,8 +49,8 @@ class XGBoostTreeParser(
         right = self.base.xs(right_id, level=self.ID_KEY).iloc[0]
         return left, right
 
-    def get_leaf_value(self, node: XGBoostParsableNode) -> Number:
-        return Number(node[self.VALUE_KEY])
+    def get_leaf_value(self, node: XGBoostParsableNode) -> MNumber:
+        return np.array(node[self.VALUE_KEY])
 
     def is_leaf(self, node: XGBoostParsableNode) -> bool:
         return str(node[self.FEATURE_KEY]) == self.IS_LEAF

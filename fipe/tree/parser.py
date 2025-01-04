@@ -2,7 +2,7 @@ from abc import ABCMeta, abstractmethod
 from typing import Generic, TypeVar
 
 from ..feature import FeatureContainer, FeatureEncoder
-from ..typing import LeafValue, ParsableNode, ParsableTree
+from ..typing import MNumber, ParsableNode, ParsableTree
 from .tree import Tree
 
 PT = TypeVar("PT", bound=ParsableTree)
@@ -61,13 +61,13 @@ class GenericTreeParser(FeatureContainer, Generic[PT, NT]):
         node: NT,
         depth: int,
     ) -> None:
-        tree.node_depth[node_id] = depth
+        tree.depth[node_id] = depth
         if self.is_leaf(node=node):
             value = self.get_leaf_value(node=node)
             tree.add_leaf(node=node_id, value=value)
         else:
             column_index, threshold = self.get_internal_node(node=node)
-            tree.add_internal_node(
+            tree.add_node(
                 node=node_id,
                 column_index=column_index,
                 threshold=threshold,
@@ -111,7 +111,7 @@ class GenericTreeParser(FeatureContainer, Generic[PT, NT]):
         raise NotImplementedError
 
     @abstractmethod
-    def get_leaf_value(self, node: NT) -> LeafValue:
+    def get_leaf_value(self, node: NT) -> MNumber:
         raise NotImplementedError
 
     @abstractmethod

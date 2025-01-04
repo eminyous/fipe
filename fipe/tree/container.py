@@ -1,7 +1,7 @@
 from collections.abc import Mapping
 from dataclasses import dataclass
 
-from ..typing import FeatureType, LeafValue, Number
+from ..typing import FeatureType, MNumber, Number
 from .tree import Tree
 
 
@@ -26,8 +26,8 @@ class TreeContainer:
         return self.tree.leaves
 
     @property
-    def internal_nodes(self) -> set[int]:
-        return self.tree.internal_nodes
+    def nodes(self) -> set[int]:
+        return self.tree.nodes
 
     def nodes_at_depth(self, depth: int) -> set[int]:
         return self.tree.nodes_at_depth(depth)
@@ -44,7 +44,7 @@ class TreeContainer:
         return self.tree.right
 
     @property
-    def node_value(self) -> Mapping[int, LeafValue]:
+    def node_value(self) -> Mapping[int, MNumber]:
         return self.tree.leaf_value
 
     @property

@@ -1,9 +1,11 @@
-from ...typing import LightGBMParsableNode, LightGBMParsableTree, Number
+import numpy as np
+
+from ...typing import LightGBMParsableNode, LightGBMParsableTree, MNumber
 from ..parser import GenericTreeParser
 
 
 class LightGBMTreeParser(
-    GenericTreeParser[LightGBMParsableTree, LightGBMParsableNode]
+    GenericTreeParser[LightGBMParsableTree, LightGBMParsableNode],
 ):
     NUM_LEAVES_KEY = "num_leaves"
     NUM_CAT_KEY = "num_cat"
@@ -42,8 +44,8 @@ class LightGBMTreeParser(
         children = map(dict, map(node.get, keys))
         return tuple(children)
 
-    def get_leaf_value(self, node: LightGBMParsableNode) -> Number:
-        return Number(node[self.LEAF_VALUE_KEY])
+    def get_leaf_value(self, node: LightGBMParsableNode) -> MNumber:
+        return np.array(node[self.LEAF_VALUE_KEY])
 
     def is_leaf(self, node: LightGBMParsableNode) -> bool:
         return self.SPLIT_INDEX_KEY not in node

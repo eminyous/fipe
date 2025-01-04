@@ -7,10 +7,10 @@ import numpy as np
 from ..feature import FeatureVar, FeatureVars
 from ..mip import MIP, BaseVar
 from ..tree import Tree, TreeContainer
-from ..typing import LeafValue, MNumber
+from ..typing import MNumber
 
 
-class FlowVars(BaseVar[LeafValue], TreeContainer):
+class FlowVars(BaseVar[MNumber], TreeContainer):
     __metaclass__ = ABCMeta
 
     FLOW_VAR_FMT = "{name}_flow"
@@ -76,8 +76,9 @@ class FlowVars(BaseVar[LeafValue], TreeContainer):
 
     @property
     def value(self) -> gp.MLinExpr:
-        node_value = self.node_value
-        return np.sum([self[node] * node_value[node] for node in self.leaves])
+        return np.sum([
+            self[node] * self.node_value[node] for node in self.leaves
+        ])
 
     @property
     def flow(self) -> MNumber:
@@ -105,10 +106,9 @@ class FlowVars(BaseVar[LeafValue], TreeContainer):
     # Protected methods:
     # ------------------
     #  * _apply (override): BaseVar
-    def _apply(self, prop_name: str) -> LeafValue:
+    def _apply(self, prop_name: str) -> MNumber:
         flow = self._apply_m_prop(mvar=self._flow_vars, prop_name=prop_name)
-        node_value = self.node_value
-        values = [flow[node] * node_value[node] for node in self.leaves]
+        values = [flow[node] * self.node_value[node] for node in self.leaves]
         return np.sum(values, axis=0)
 
     # Private methods:
@@ -149,7 +149,7 @@ class FlowVars(BaseVar[LeafValue], TreeContainer):
         self._root_constr = mip.addConstr(expr, name=name)
 
     def _add_flow_constrs(self, mip: MIP) -> None:
-        for node in self.internal_nodes:
+        for node in self.nodes:
             self._add_flow_constr_at_node(mip=mip, node=node)
 
     def _add_flow_constr_at_node(self, mip: MIP, node: int) -> None:

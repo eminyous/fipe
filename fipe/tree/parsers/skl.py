@@ -12,8 +12,16 @@ class SKLearnTreeParser(
 ):
     __metaclass__ = ABCMeta
 
-    def __init__(self, encoder: FeatureEncoder) -> None:
+    _use_hard_voting: bool
+
+    def __init__(
+        self,
+        encoder: FeatureEncoder,
+        *,
+        use_hard_voting: bool = False,
+    ) -> None:
         GenericTreeParser.__init__(self, encoder=encoder)
+        self._use_hard_voting = use_hard_voting
 
     def parse_n_nodes(self) -> int:
         return self.base.node_count
@@ -26,8 +34,16 @@ class SKLearnTreeParser(
         threshold = float(self.base.threshold[node])
         return column_index, threshold
 
-    def get_leaf_value(self, node: SKLearnParsableNode) -> Number:
-        return Number(self.base.value[node].flatten()[0])
+    def get_leaf_value(self, node: SKLearnParsableNode) -> MNumber:
+        value = np.array(self.base.value[node][0], dtype=Number).flatten()
+        if value.size == 1:
+            return value[0]
+
+        if self._use_hard_voting:
+            k = value.size
+            q = np.argmax(value)
+            value = np.eye(k)[q]
+        return value
 
     def get_children(self, node: int) -> tuple[int, int]:
         left = int(self.base.children_left[node])
@@ -45,25 +61,3 @@ class SKLearnTreeParser(
     @staticmethod
     def _read_node_id_static(node: SKLearnParsableNode) -> int:
         return node
-
-
-class SKLearnTreeMParser(SKLearnTreeParser):
-    _use_hard_voting: bool
-
-    def __init__(
-        self,
-        encoder: FeatureEncoder,
-        *,
-        use_hard_voting: bool,
-    ) -> None:
-        super().__init__(encoder=encoder)
-        self._use_hard_voting = use_hard_voting
-
-    def get_leaf_value(self, node: SKLearnParsableNode) -> MNumber:
-        value = self.base.value[node].flatten()
-        value = np.asarray(value)
-        if self._use_hard_voting:
-            k = value.size
-            q = np.argmax(value)
-            value = np.eye(k)[q]
-        return value

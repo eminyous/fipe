@@ -54,5 +54,4 @@ DNumber = pd.DataFrame
 
 Categories = set[str]
 
-LeafValue = Number | MNumber
 Transformable = SNumber | list[SNumber] | DNumber

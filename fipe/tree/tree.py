@@ -2,7 +2,7 @@ from collections.abc import Iterable, Iterator
 from typing import Literal
 
 from ..feature import FeatureContainer, FeatureEncoder
-from ..typing import LeafValue, Number
+from ..typing import MNumber, Number
 
 
 class Tree(FeatureContainer, Iterable[int]):
@@ -37,11 +37,11 @@ class Tree(FeatureContainer, Iterable[int]):
 
     n_leaves: int
     root_id: int
-    internal_nodes: set[int]
+    nodes: set[int]
     leaves: set[int]
 
-    node_depth: dict[int, int]
-    node_feature: dict[int, str]
+    depth: dict[int, int]
+    feature: dict[int, str]
 
     left: dict[int, int]
     right: dict[int, int]
@@ -49,7 +49,7 @@ class Tree(FeatureContainer, Iterable[int]):
     threshold: dict[int, Number]
     category: dict[int, str]
 
-    leaf_value: dict[int, LeafValue]
+    leaf_value: dict[int, MNumber]
 
     __leaf_offset: int
 
@@ -59,11 +59,11 @@ class Tree(FeatureContainer, Iterable[int]):
 
     def __init__(self, encoder: FeatureEncoder) -> None:
         FeatureContainer.__init__(self, encoder=encoder)
-        self.internal_nodes = set()
+        self.nodes = set()
         self.leaves = set()
 
-        self.node_depth = {}
-        self.node_feature = {}
+        self.depth = {}
+        self.feature = {}
 
         self.left = {}
         self.right = {}
@@ -80,7 +80,7 @@ class Tree(FeatureContainer, Iterable[int]):
     @property
     def max_depth(self) -> int:
         if self.__max_depth is None:
-            self.__max_depth = max(self.node_depth.values())
+            self.__max_depth = max(self.depth.values())
         return self.__max_depth
 
     def nodes_at_depth(self, depth: int) -> set[int]:
@@ -95,18 +95,18 @@ class Tree(FeatureContainer, Iterable[int]):
             self.__node_split_on[feature] = nodes
         return self.__node_split_on[feature]
 
-    def add_internal_node(
+    def add_node(
         self,
         node: int,
         column_index: int,
         threshold: Number | None,
     ) -> None:
-        self.internal_nodes.add(node)
+        self.nodes.add(node)
         column = self.columns[column_index]
         if column in self.inverse_categories:
             self.category[node] = column
         feature = self.inverse_categories.get(column, column)
-        self.node_feature[node] = feature
+        self.feature[node] = feature
         if feature in self.continuous:
             self.threshold[node] = threshold
 
@@ -124,7 +124,7 @@ class Tree(FeatureContainer, Iterable[int]):
             msg = "Invalid child name."
             raise ValueError(msg)
 
-    def add_leaf(self, node: int, value: LeafValue) -> None:
+    def add_leaf(self, node: int, value: MNumber) -> None:
         self.leaves.add(node)
         self.leaf_value[node] = value
 
@@ -140,7 +140,7 @@ class Tree(FeatureContainer, Iterable[int]):
     def n_nodes(self) -> int:
         return 2 * self.n_leaves - 1
 
-    def predict(self, index: int) -> LeafValue:
+    def predict(self, index: int) -> MNumber:
         leaf = self.leaf_offset + index
         return self.leaf_value[leaf]
 
@@ -151,15 +151,7 @@ class Tree(FeatureContainer, Iterable[int]):
         return self.n_nodes
 
     def _nodes_at_depth(self, depth: int) -> set[int]:
-        return {
-            node
-            for node in self.internal_nodes
-            if self.node_depth[node] == depth
-        }
+        return {node for node in self.nodes if self.depth[node] == depth}
 
     def _nodes_split_on(self, feature: str) -> set[int]:
-        return {
-            node
-            for node in self.internal_nodes
-            if self.node_feature[node] == feature
-        }
+        return {node for node in self.nodes if self.feature[node] == feature}

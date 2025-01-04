@@ -9,27 +9,21 @@ from ...typing import (
 )
 from .lgbm import LightGBMTreeParser
 from .skl import (
-    SKLearnTreeMParser,
     SKLearnTreeParser,
 )
 from .xgb import XGBoostTreeParser
 
-TreeParser = (
-    SKLearnTreeMParser
-    | SKLearnTreeParser
-    | LightGBMTreeParser
-    | XGBoostTreeParser
-)
+TreeParser = SKLearnTreeParser | LightGBMTreeParser | XGBoostTreeParser
 
 
 def create_parser(base: BaseEnsemble, encoder: FeatureEncoder) -> TreeParser:
     if isinstance(base, RandomForestClassifier):
-        return SKLearnTreeMParser(
+        return SKLearnTreeParser(
             encoder=encoder,
             use_hard_voting=False,
         )
     if isinstance(base, AdaBoostClassifier):
-        return SKLearnTreeMParser(
+        return SKLearnTreeParser(
             encoder=encoder,
             use_hard_voting=True,
         )
