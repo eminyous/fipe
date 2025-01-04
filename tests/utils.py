@@ -217,7 +217,7 @@ def train(
 
 def separate(oracle: Oracle, weights: MNumber, out: list[SNumber]) -> None:
     try:
-        X = list(oracle.separate(weights))
+        X = list(oracle(weights))
         out.extend(X)
     except gp.GurobiError:
         msg = "Gurobi license is not available"

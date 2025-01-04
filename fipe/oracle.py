@@ -8,40 +8,42 @@ import numpy.typing as npt
 from .ocean import OCEAN
 from .typing import SNumber
 
+SGenerator = Generator[SNumber, None, None]
+
 
 class Oracle(OCEAN):
-    def separate(
+    def __call__(
         self,
         new_weights: npt.ArrayLike,
-    ) -> Generator[SNumber, None, None]:
+    ) -> SGenerator:
         new_weights = np.copy(new_weights)
         self.new_weights = new_weights
         yield from self._separate()
 
-    def _separate(self) -> Generator[SNumber, None, None]:
+    def _separate(self) -> SGenerator:
         for class_ in range(self.n_classes):
             yield from self._separate_class(majority_class=class_)
 
     def _separate_class(
         self,
         majority_class: int,
-    ) -> Generator[SNumber, None, None]:
+    ) -> SGenerator:
         self.set_majority_class(class_=majority_class)
         for class_ in range(self.n_classes):
             if class_ == majority_class:
                 continue
             self._separate_pair(majority_class=majority_class, class_=class_)
-            yield from self._extract_solutions(
+            yield from self._extract_samples(
                 majority_class=majority_class,
                 class_=class_,
             )
         self.clear_majority_class()
 
-    def _extract_solutions(
+    def _extract_samples(
         self,
         majority_class: int,
         class_: int,
-    ) -> Generator[SNumber, None, None]:
+    ) -> SGenerator:
         param = gp.GRB.Param.SolutionNumber
         for i in range(self.SolCount):
             self.setParam(param, i)
@@ -66,11 +68,11 @@ class Oracle(OCEAN):
         wf = partial(self.weighted_function, weights=weights)
         obj = wf(class_=class_) - wf(class_=majority_class)
         self.setObjective(obj, gp.GRB.MAXIMIZE)
-        cb = self._optimize_callback()
+        cb = self._get_optimize_callback()
         self.optimize(cb)
 
     @staticmethod
-    def _optimize_callback() -> Callable[[gp.Model, int], None]:
+    def _get_optimize_callback() -> Callable[[gp.Model, int], None]:
         def cb(model: gp.Model, where: int) -> None:
             if where == gp.GRB.Callback.MIPSOL:
                 val = model.cbGet(gp.GRB.Callback.MIPSOL_OBJBND)

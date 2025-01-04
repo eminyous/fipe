@@ -90,4 +90,4 @@ class FIPE(Pruner, FeatureContainer):
     def _separate(self, weights: npt.ArrayLike) -> list[SNumber]:
         self._n_oracle_calls += 1
         weights = np.asarray(weights)
-        return list(self.oracle.separate(new_weights=weights))
+        return list(self.oracle(new_weights=weights))
