@@ -50,7 +50,7 @@ class BoosterBinder(GenericBinder[BT, PT], Generic[BT, PT]):
     def _predict_leaf(self, e: int, index: int) -> Prob:
         return self.callback.predict_leaf(e=e, index=index)
 
-    def _base_predict(self, X: Data) -> npt.NDArray[np.int32]:
+    def _predict_base(self, X: Data) -> npt.NDArray[np.int32]:
         return np.asarray(self._base.predict(X, pred_leaf=True))
 
     def _scores_impl(
@@ -60,7 +60,7 @@ class BoosterBinder(GenericBinder[BT, PT], Generic[BT, PT]):
         scores: MProb,
     ) -> None:
         dX = self._transform(X)
-        indices = self._base_predict(dX)
+        indices = self._predict_base(dX)
         self._scores_leaf(indices=indices, scores=scores)
 
     def _scores_leaf(
