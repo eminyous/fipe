@@ -10,8 +10,8 @@ from ..typing import (
 from .container import TreeContainer
 from .parsers import (
     LightGBMTreeParser,
-    SKLearnTreeParser,
     SKLearnTreeMParser,
+    SKLearnTreeParser,
     XGBoostTreeParser,
 )
 from .tree import Tree
@@ -47,8 +47,8 @@ def create_parser(base: BaseEnsemble, encoder: FeatureEncoder) -> TreeParser:
 
 __all__ = [
     "LightGBMTreeParser",
-    "SKLearnTreeParser",
     "SKLearnTreeMParser",
+    "SKLearnTreeParser",
     "Tree",
     "TreeContainer",
     "TreeParser",
