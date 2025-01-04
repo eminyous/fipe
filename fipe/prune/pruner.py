@@ -4,16 +4,20 @@ import numpy.typing as npt
 
 from ..feature import FeatureEncoder
 from ..mip import MIP
-from ..typing import BaseEnsemble, MClass, MNumber
+from ..typing import BaseEnsemble, MNumber, MProb
 from .base import BasePruner
 
 
 class Pruner(BasePruner, MIP):
+    WEIGHT_VARS_NAME = "weights"
+    OBJECTIVE_NAME = "norm"
+    SAMPLE_CONSTR_NAME_FMT = "sample_{n}"
+
     _n_samples: int
     _norm: int
     _objective: gp.Var
-    _weight_vars: gp.tupledict[int, gp.Var]
-    _sample_constrs: gp.tupledict[tuple[int, int], gp.Constr]
+    _weight_vars: gp.MVar
+    _sample_constrs: gp.tupledict[int, gp.MConstr]
 
     def __init__(
         self,
@@ -33,7 +37,6 @@ class Pruner(BasePruner, MIP):
         )
         MIP.__init__(self, name=name, env=env)
         self._norm = norm
-        self._weight_vars = gp.tupledict()
         self._sample_constrs = gp.tupledict()
 
     def build(self) -> None:
@@ -45,7 +48,6 @@ class Pruner(BasePruner, MIP):
         X = np.asarray(X)
         classes = self.ensemble.predict(X=X, w=self._weights)
         prob = self.ensemble.scores(X=X)
-        X = np.asarray(X)
         n = X.shape[0]
         for i in range(n):
             self._add_sample(prob=prob[i], class_=classes[i])
@@ -56,63 +58,46 @@ class Pruner(BasePruner, MIP):
             raise RuntimeError(msg)
         self.optimize()
 
-    def predict(self, X: npt.ArrayLike) -> MClass:
-        w = self.weights
-        return self.ensemble.predict(X=X, w=w)
-
     @property
     def n_samples(self) -> int:
         return self._n_samples
 
     @property
-    def _pruned_weights(self) -> MNumber:
+    def _pruner_weights(self) -> MNumber:
         if self.SolCount == 0:
             return self._weights
-        return np.array([
-            self._weight_vars[t].X for t in range(self.n_estimators)
-        ])
+        return np.array(self._weight_vars.X)
 
-    def _add_sample(self, prob: npt.ArrayLike, class_: int) -> None:
-        for c in range(self.ensemble.n_classes):
-            if class_ == c:
-                continue
-            self._add_sample_constr(
-                prob=prob,
-                true_class=class_,
-                class_=c,
-            )
+    def _add_sample(self, prob: MProb, class_: int) -> None:
+        true_prob = prob[:, [class_]]
+        prob = np.delete(arr=prob, obj=class_, axis=1)
+        name = self.SAMPLE_CONSTR_NAME_FMT.format(n=self._n_samples)
+        constr = self.addMConstr(
+            A=(true_prob - prob).T,
+            x=self._weight_vars,
+            sense=gp.GRB.GREATER_EQUAL,
+            b=np.ones(self.n_classes - 1),
+            name=name,
+        )
+        self._sample_constrs[self._n_samples] = constr
         self._n_samples += 1
 
     def _add_weight_vars(self) -> None:
-        for t in range(self.n_estimators):
-            self._weight_vars[t] = self.addVar(
-                vtype=gp.GRB.CONTINUOUS,
-                lb=0.0,
-                name=f"weight_{t}",
-            )
+        self._weight_vars = self.addMVar(
+            shape=self.n_estimators,
+            lb=0.0,
+            name=self.WEIGHT_VARS_NAME,
+        )
 
     def _add_objective(self) -> None:
-        self._objective = self.addVar(vtype=gp.GRB.CONTINUOUS, name="norm")
+        self._objective = self.addVar(
+            vtype=gp.GRB.CONTINUOUS,
+            name=self.OBJECTIVE_NAME,
+        )
         self.addGenConstrNorm(
-            self._objective,
-            self._weight_vars,
-            self._norm,
+            resvar=self._objective,
+            vars=self._weight_vars,
+            which=self._norm,
+            name=self.OBJECTIVE_NAME,
         )
         self.setObjective(self._objective, gp.GRB.MINIMIZE)
-
-    def _add_sample_constr(
-        self,
-        prob: npt.ArrayLike,
-        true_class: int,
-        class_: int,
-    ) -> None:
-        prob = np.asarray(prob)
-        n = self._n_samples
-        self._sample_constrs[n, class_] = self.addConstr(
-            gp.quicksum(
-                (prob[t, true_class] - prob[t, class_]) * self._weight_vars[t]
-                for t in range(self.n_estimators)
-            )
-            >= 1.0,
-            name=f"sample_{n}_class_{class_}",
-        )
