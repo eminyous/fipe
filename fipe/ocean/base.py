@@ -15,7 +15,6 @@ class BaseOCEAN(
     MIP,
     EnsembleContainer,
     FeatureContainer,
-    LevelParser,
 ):
     DEFAULT_TOL = 1e-4
     FEATURE_VARS_NAME = "feature_vars"
@@ -23,6 +22,9 @@ class BaseOCEAN(
 
     _feature_vars: FeatureVars
     _flow_vars: dict[int, FlowVars]
+
+    _level_parser: LevelParser
+    _levels: dict[str, MNumber]
 
     def __init__(
         self,
@@ -41,10 +43,13 @@ class BaseOCEAN(
             weights=weights,
         )
         FeatureContainer.__init__(self, encoder=encoder)
-        LevelParser.__init__(self, tol=tol)
-        self.parse_levels(self.ensemble, encoder=encoder)
+        self._parse_levels(encoder=encoder, tol=tol)
         self._add_feature_vars()
         self._add_flow_vars()
+
+    @property
+    def levels(self) -> dict[str, MNumber]:
+        return self._levels
 
     def build(self) -> None:
         self._build_feature_vars()
@@ -87,6 +92,17 @@ class BaseOCEAN(
                 mip=self,
                 feature_vars=self._feature_vars,
             )
+
+    def _parse_levels(
+        self,
+        encoder: FeatureEncoder,
+        tol: float,
+    ) -> None:
+        self._level_parser = LevelParser(tol=tol)
+        self._levels = self._level_parser.parse_levels(
+            self.ensemble,
+            encoder=encoder,
+        )
 
     def _add_feature_vars(self) -> None:
         self._feature_vars = FeatureVars(name=self.FEATURE_VARS_NAME)
