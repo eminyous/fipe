@@ -7,8 +7,8 @@ from ..ensemble import EnsembleContainer
 from ..feature import FeatureContainer, FeatureEncoder, FeatureVars
 from ..flow import FlowVars
 from ..mip import MIP
-from ..parsers import LevelParser
 from ..typing import BaseEnsemble, MNumber
+from .parsers import LevelParser
 
 
 class BaseOCEAN(

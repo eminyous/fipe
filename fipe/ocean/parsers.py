@@ -2,9 +2,9 @@ import warnings
 
 import numpy as np
 
-from .ensemble import Ensemble
-from .feature import FeatureEncoder
-from .typing import MNumber, Number
+from ..ensemble import Ensemble
+from ..feature import FeatureEncoder
+from ..typing import MNumber, Number
 
 
 class LevelParser:
