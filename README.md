@@ -18,7 +18,7 @@ This project requires the gurobi solver. Free academic licenses are available. P
 Run the following commands from the project root to install the requirements. You may have to install python and venv before.
 
 ```shell
-virtualenv -p python3.10 env
+virtualenv -p python3.12 env
 pip install fipepy
 ```
 
