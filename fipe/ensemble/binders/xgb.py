@@ -3,18 +3,19 @@ from collections.abc import Generator
 import numpy.typing as npt
 import xgboost as xgb
 
-from ...tree import XGBoostTreeParser
 from ...typing import XGBoostBooster, XGBoostParsableTree
 from .boost import BoosterBinder
 
 
 class XGBoostBinder(BoosterBinder[XGBoostBooster, XGBoostParsableTree]):
     TREE_KEY = "Tree"
+    NODE_KEY = "Node"
+    ID_KEY = "ID"
 
     INDEX = (
         TREE_KEY,
-        XGBoostTreeParser.NODE_KEY,
-        XGBoostTreeParser.ID_KEY,
+        NODE_KEY,
+        ID_KEY,
     )
 
     __n_trees: int | None = None
