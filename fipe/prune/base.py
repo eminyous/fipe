@@ -5,7 +5,7 @@ import numpy.typing as npt
 
 from ..ensemble import EnsembleContainer
 from ..feature import FeatureEncoder
-from ..typing import BaseEnsemble, MNumber
+from ..typing import BaseEnsemble, MClass, MNumber
 
 
 class BasePruner(EnsembleContainer):
@@ -19,18 +19,9 @@ class BasePruner(EnsembleContainer):
     ) -> None:
         super().__init__(ensemble=(base, encoder), weights=weights)
 
-    @abstractmethod
-    def prune(self) -> None:
-        raise NotImplementedError
-
-    @property
-    @abstractmethod
-    def _pruned_weights(self) -> MNumber:
-        raise NotImplementedError
-
     @property
     def weights(self) -> MNumber:
-        return self._pruned_weights
+        return self._pruner_weights
 
     @property
     def active_estimators(self) -> set[int]:
@@ -40,3 +31,16 @@ class BasePruner(EnsembleContainer):
     @property
     def n_active_estimators(self) -> int:
         return len(self.active_estimators)
+
+    def predict(self, X: npt.ArrayLike) -> MClass:
+        w = self.weights
+        return self.ensemble.predict(X=X, w=w)
+
+    @abstractmethod
+    def prune(self) -> None:
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def _pruner_weights(self) -> MNumber:
+        raise NotImplementedError
