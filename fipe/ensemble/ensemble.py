@@ -28,8 +28,8 @@ class Ensemble(Sequence[Tree], BinderCallback):
     def scores(self, X: npt.ArrayLike) -> MProb:
         return self._binder.scores(X=X)
 
-    def predict_leaf(self, leaf_index: int, index: int) -> Prob:
-        return Prob(self[index].predict(leaf_index))
+    def predict_leaf(self, e: int, index: int) -> Prob:
+        return Prob(self[e].predict(index))
 
     @property
     def is_binary(self) -> bool:

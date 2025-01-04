@@ -15,7 +15,7 @@ class BinderCallback:
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def predict_leaf(self, leaf_index: int, index: int) -> Prob:
+    def predict_leaf(self, e: int, index: int) -> Prob:
         raise NotImplementedError
 
 
@@ -56,10 +56,8 @@ class GenericBinder(Generic[BE, PT]):
         n_samples = X.shape[0]
         n_classes = self.n_classes
         n_estimators = self.n_estimators
-        scores = np.empty(
-            (n_samples, n_estimators, n_classes),
-            dtype=Prob,
-        )
+        shape = (n_samples, n_estimators, n_classes)
+        scores = np.empty(shape=shape, dtype=Prob)
         self._scores_impl(X=X, scores=scores)
         return scores
 
