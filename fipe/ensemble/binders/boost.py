@@ -1,4 +1,4 @@
-from abc import ABCMeta
+from abc import ABCMeta, abstractmethod
 from typing import Generic, TypeVar
 
 import numpy as np
@@ -25,6 +25,27 @@ PT = TypeVar("PT", bound=ParsableBoosterTree)
 
 class BoosterBinder(GenericBinder[BT, PT], Generic[BT, PT]):
     __metaclass__ = ABCMeta
+
+    @property
+    def n_classes(self) -> int:
+        n_per_iter = self.n_trees_per_iter
+        return n_per_iter + int(n_per_iter == 1)
+
+    @property
+    def n_estimators(self) -> int:
+        n_trees = self.n_trees
+        n_per_iter = self.n_trees_per_iter
+        return n_trees // n_per_iter
+
+    @property
+    @abstractmethod
+    def n_trees(self) -> int:
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def n_trees_per_iter(self) -> int:
+        raise NotImplementedError
 
     def _predict_leaf(self, leaf_index: int, index: int) -> Prob:
         return self.callback.predict_leaf(leaf_index=leaf_index, index=index)

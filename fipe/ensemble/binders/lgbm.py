@@ -10,15 +10,12 @@ class LightGBMBinder(BoosterBinder[LightGBMBooster, LightGBMParsableTree]):
     TREE_INFO_KEY = "tree_info"
 
     @property
-    def n_classes(self) -> int:
-        n_per_iter = self._base.num_model_per_iteration()
-        return n_per_iter + int(n_per_iter == 1)
+    def n_trees(self) -> int:
+        return self._base.num_trees()
 
     @property
-    def n_estimators(self) -> int:
-        n_trees = self._base.num_trees()
-        n_per_iter = self._base.num_model_per_iteration()
-        return n_trees // n_per_iter
+    def n_trees_per_iter(self) -> int:
+        return self._base.num_model_per_iteration()
 
     @property
     def base_trees(self) -> Generator[LightGBMParsableTree, None, None]:

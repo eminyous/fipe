@@ -27,15 +27,9 @@ class XGBoostBinder(BoosterBinder[XGBoostBooster, XGBoostParsableTree]):
         return self.__n_trees
 
     @property
-    def n_classes(self) -> int:
-        n_trees = self.n_trees
-        return (n_trees // self.n_estimators) + int(
-            self.n_estimators == n_trees
-        )
-
-    @property
-    def n_estimators(self) -> int:
-        return self._base.num_boosted_rounds()
+    def n_trees_per_iter(self) -> int:
+        n_rounds = self._base.num_boost_round
+        return self.n_trees // n_rounds
 
     @property
     def base_trees(self) -> Generator[XGBoostParsableTree, None, None]:
