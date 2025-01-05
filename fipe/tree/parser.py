@@ -2,7 +2,7 @@ from abc import ABCMeta, abstractmethod
 from typing import Generic, TypeVar
 
 from ..feature import FeatureContainer, FeatureEncoder
-from ..typing import MNumber, ParsableNode, ParsableTree
+from ..typing import MNumber, Number, ParsableNode, ParsableTree
 from .tree import Tree
 
 PT = TypeVar("PT", bound=ParsableTree)
@@ -63,16 +63,16 @@ class GenericTreeParser(FeatureContainer, Generic[PT, NT]):
     ) -> None:
         tree.depth[node_id] = depth
         if self.is_leaf(node=node):
-            value = self.get_leaf_value(node=node)
+            value = self.read_leaf(node=node)
             tree.add_leaf(node=node_id, value=value)
         else:
-            column_index, threshold = self.get_internal_node(node=node)
+            index, threshold = self.read_node(node=node)
             tree.add_node(
                 node=node_id,
-                column_index=column_index,
+                index=index,
                 threshold=threshold,
             )
-            children = self.get_children(node=node)
+            children = self.read_children(node=node)
             self.parse_children(
                 tree=tree,
                 node_id=node_id,
@@ -111,15 +111,15 @@ class GenericTreeParser(FeatureContainer, Generic[PT, NT]):
         raise NotImplementedError
 
     @abstractmethod
-    def get_leaf_value(self, node: NT) -> MNumber:
+    def read_leaf(self, node: NT) -> MNumber:
         raise NotImplementedError
 
     @abstractmethod
-    def get_internal_node(self, node: NT) -> tuple[int, float]:
+    def read_node(self, node: NT) -> tuple[int, Number]:
         raise NotImplementedError
 
     @abstractmethod
-    def get_children(self, node: NT) -> tuple[NT, NT]:
+    def read_children(self, node: NT) -> tuple[NT, NT]:
         raise NotImplementedError
 
     @abstractmethod

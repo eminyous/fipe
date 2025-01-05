@@ -99,11 +99,11 @@ class Tree(FeatureContainer, Iterable[int]):
     def add_node(
         self,
         node: int,
-        column_index: int,
+        index: int,
         threshold: Number | None,
     ) -> None:
         self.nodes.add(node)
-        column = self.columns[column_index]
+        column = self.columns[index]
         if column in self.inverse_categories:
             self.category[node] = column
         feature = self.inverse_categories.get(column, column)

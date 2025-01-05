@@ -1,9 +1,10 @@
 import re
+from typing import override
 
 import numpy as np
 
 from ...feature import FeatureEncoder
-from ...typing import MNumber, XGBoostParsableNode, XGBoostParsableTree
+from ...typing import MNumber, Number, XGBoostParsableNode, XGBoostParsableTree
 from ..parser import GenericTreeParser
 
 
@@ -24,22 +25,25 @@ class XGBoostTreeParser(
     def __init__(self, encoder: FeatureEncoder) -> None:
         GenericTreeParser.__init__(self, encoder=encoder)
 
+    @override
     def parse_n_nodes(self) -> int:
         return len(self.base)
 
+    @override
     def parse_root(self) -> XGBoostParsableNode:
         return self.base.xs(self.DEFAULT_ROOT_ID, level=self.NODE_KEY).iloc[0]
 
-    def get_internal_node(self, node: XGBoostParsableNode) -> tuple[int, float]:
+    @override
+    def read_node(self, node: XGBoostParsableNode) -> tuple[int, Number]:
         matcher = re.match(self.FEATURE_PATTERN, node[self.FEATURE_KEY])
         if matcher is None:
             raise ValueError
 
-        column_index = int(matcher.group(1))
-        threshold = float(node[self.THRESHOLD_KEY])
-        return column_index, threshold
+        index = int(matcher.group(1))
+        threshold = Number(node[self.THRESHOLD_KEY])
+        return index, threshold
 
-    def get_children(
+    def read_children(
         self,
         node: XGBoostParsableNode,
     ) -> tuple[XGBoostParsableNode, XGBoostParsableNode]:
@@ -49,7 +53,7 @@ class XGBoostTreeParser(
         right = self.base.xs(right_id, level=self.ID_KEY).iloc[0]
         return left, right
 
-    def get_leaf_value(self, node: XGBoostParsableNode) -> MNumber:
+    def read_leaf(self, node: XGBoostParsableNode) -> MNumber:
         return np.array(node[self.VALUE_KEY])
 
     def is_leaf(self, node: XGBoostParsableNode) -> bool:
@@ -60,4 +64,4 @@ class XGBoostTreeParser(
 
     @staticmethod
     def _read_node_id_static(node: XGBoostParsableNode) -> int:
-        return int(node.name)
+        return int(str(node.name))

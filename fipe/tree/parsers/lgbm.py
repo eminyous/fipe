@@ -1,6 +1,13 @@
+from typing import override
+
 import numpy as np
 
-from ...typing import LightGBMParsableNode, LightGBMParsableTree, MNumber
+from ...typing import (
+    LightGBMParsableNode,
+    LightGBMParsableTree,
+    MNumber,
+    Number,
+)
 from ..parser import GenericTreeParser
 
 
@@ -19,37 +26,41 @@ class LightGBMTreeParser(
 
     CHILD_KEY_FMT = "{which}_child"
 
+    @override
     def parse_n_nodes(self) -> int:
         n_leaves = int(self.base[self.NUM_LEAVES_KEY])
         self.leaf_offset = n_leaves - 1
         return 2 * n_leaves - 1
 
+    @override
     def parse_root(self) -> LightGBMParsableNode:
         return self.base[self.TREE_STRUCTURE_KEY]
 
-    def get_internal_node(
-        self,
-        node: LightGBMParsableNode,
-    ) -> tuple[int, float]:
-        column_index = int(node[self.SPLIT_FEATURE_KEY])
-        threshold = float(node[self.THRESHOLD_KEY])
-        return column_index, threshold
+    @override
+    def read_node(self, node: LightGBMParsableNode) -> tuple[int, Number]:
+        index = int(node[self.SPLIT_FEATURE_KEY])
+        threshold = Number(node[self.THRESHOLD_KEY])
+        return index, threshold
 
-    def get_children(
+    @override
+    def read_children(
         self,
         node: LightGBMParsableNode,
     ) -> tuple[LightGBMParsableNode, LightGBMParsableNode]:
         whichs = ("left", "right")
         keys = (self.CHILD_KEY_FMT.format(which=which) for which in whichs)
-        children = map(dict, map(node.get, keys))
+        children = (node[key] for key in keys)
         return tuple(children)
 
-    def get_leaf_value(self, node: LightGBMParsableNode) -> MNumber:
+    @override
+    def read_leaf(self, node: LightGBMParsableNode) -> MNumber:
         return np.array(node[self.LEAF_VALUE_KEY])
 
+    @override
     def is_leaf(self, node: LightGBMParsableNode) -> bool:
         return self.SPLIT_INDEX_KEY not in node
 
+    @override
     def read_node_id(self, node: LightGBMParsableNode) -> int:
         if self.SPLIT_INDEX_KEY in node:
             return int(node[self.SPLIT_INDEX_KEY])
