@@ -3,9 +3,6 @@ from typing import Protocol, TypeVar
 
 from ..feature import FeatureEncoder
 from ..tree import Tree
-from ..tree.parsers.lgbm import LightGBMTreeParser
-from ..tree.parsers.skl import SKLearnTreeParser
-from ..tree.parsers.xgb import XGBoostTreeParser
 from ..typing import (
     AdaBoostClassifier,
     BaseEnsemble,
@@ -19,6 +16,9 @@ from .binders.cl import SKLearnBinderClassifier
 from .binders.gb import GradientBoostingBinder
 from .binders.lgbm import LightGBMBinder
 from .binders.xgb import XGBoostBinder
+from .parsers.lgbm import LightGBMTreeParser
+from .parsers.skl import SKLearnTreeParser
+from .parsers.xgb import XGBoostTreeParser
 
 Binder = (
     SKLearnBinderClassifier
