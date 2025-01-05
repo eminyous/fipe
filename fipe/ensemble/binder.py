@@ -1,4 +1,4 @@
-from abc import ABCMeta, abstractmethod
+from abc import ABC, ABCMeta, abstractmethod
 from collections.abc import Generator
 from typing import Generic, TypeVar
 
@@ -11,9 +11,7 @@ BE = TypeVar("BE", bound=BaseEnsemble)
 PT = TypeVar("PT", bound=ParsableTree)
 
 
-class BinderCallback:
-    __metaclass__ = ABCMeta
-
+class BinderCallback(ABC):
     @abstractmethod
     def predict_leaf(self, e: int, index: int) -> Prob:
         raise NotImplementedError
