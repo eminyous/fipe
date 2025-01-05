@@ -1,4 +1,3 @@
-from abc import ABCMeta
 from collections.abc import Mapping
 from dataclasses import dataclass
 
@@ -17,8 +16,6 @@ class FeatureContainer:
     and provide a transform method to transform a sample
     to a numpy array.
     """
-
-    __metaclass__ = ABCMeta
 
     encoder: FeatureEncoder
 
