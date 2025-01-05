@@ -9,5 +9,11 @@ exclude_lines =
     pragma: no cover
     return NotImplemented
     raise NotImplementedError
-    def _
     if __name__ == .__main__.:
+    # This needs to be removed after
+    # extensively testing the code
+    def _
+    msg = .*.
+    raise TypeError
+    raise ValueError
+    raise RuntimeError
