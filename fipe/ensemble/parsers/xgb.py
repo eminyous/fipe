@@ -3,7 +3,6 @@ from typing import override
 
 import numpy as np
 
-from ...feature import FeatureEncoder
 from ...typing import MNumber, Number, XGBoostParsableNode, XGBoostParsableTree
 from .generic import GenericTreeParser
 
@@ -21,9 +20,6 @@ class XGBoostTreeParser(
 
     IS_LEAF = "Leaf"
     FEATURE_PATTERN = r"f(\d+)"
-
-    def __init__(self, encoder: FeatureEncoder) -> None:
-        GenericTreeParser.__init__(self, encoder=encoder)
 
     @override
     def parse_n_nodes(self) -> int:

@@ -1,4 +1,4 @@
-from abc import ABCMeta, abstractmethod
+from abc import abstractmethod
 from typing import Generic, TypeVar
 
 from ...feature import FeatureContainer, FeatureEncoder
@@ -10,9 +10,8 @@ NT = TypeVar("NT", bound=ParsableNode)
 
 
 class GenericTreeParser(FeatureContainer, Generic[PT, NT]):
-    __metaclass__ = ABCMeta
-
     DEFAULT_ROOT_ID = 0
+
     leaf_offset: int
 
     __base: PT | None = None
@@ -52,6 +51,7 @@ class GenericTreeParser(FeatureContainer, Generic[PT, NT]):
 
         self.__base = None
         self.leaf_offset = 0
+
         return tree
 
     def parse_node(

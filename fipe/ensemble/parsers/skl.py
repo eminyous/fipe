@@ -18,7 +18,7 @@ class SKLearnTreeParser(
         *,
         use_hard_voting: bool = False,
     ) -> None:
-        GenericTreeParser.__init__(self, encoder=encoder)
+        super().__init__(encoder=encoder)
         self._use_hard_voting = use_hard_voting
 
     @override
