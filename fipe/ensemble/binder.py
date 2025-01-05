@@ -1,4 +1,4 @@
-from abc import ABC, ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 from collections.abc import Generator
 from typing import Generic, TypeVar
 
@@ -17,12 +17,13 @@ class BinderCallback(ABC):
         raise NotImplementedError
 
 
-class GenericBinder(Generic[BE, PT]):
-    __metaclass__ = ABCMeta
-
+class GenericBinder(ABC, Generic[BE, PT]):
     NUM_BINARY_CLASSES = 2
 
+    # Protected attributes
     _base: BE
+
+    # Private attributes
     __callback: BinderCallback
 
     def __init__(
