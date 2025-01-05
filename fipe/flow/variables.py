@@ -7,7 +7,7 @@ import numpy as np
 from ..feature import FeatureVar, FeatureVars
 from ..mip import MIP, BaseVar
 from ..tree import Tree, TreeContainer
-from ..typing import MNumber
+from ..typing import MNumber, Number
 
 
 class FlowVars(BaseVar[MNumber], TreeContainer):
@@ -85,7 +85,7 @@ class FlowVars(BaseVar[MNumber], TreeContainer):
 
     @property
     def flow(self) -> MNumber:
-        return np.asarray(self._flow_vars.Xn)
+        return np.asarray(self._flow_vars.Xn, dtype=Number)
 
     # Public methods:
     # --------------
