@@ -1,3 +1,5 @@
+from typing import override
+
 import gurobipy as gp
 import numpy as np
 
@@ -11,6 +13,7 @@ class BinaryVar(BaseVar[Number]):
     def __init__(self, name: str = "") -> None:
         BaseVar.__init__(self, name)
 
+    @override
     def build(self, mip: MIP) -> None:
         self._add_var(mip)
 
@@ -18,6 +21,7 @@ class BinaryVar(BaseVar[Number]):
     def var(self) -> gp.Var:
         return self._var
 
+    @override
     def _apply(self, prop_name: str) -> Number:
         value = self._apply_prop(var=self.var, prop_name=prop_name)
         return np.round(value)
