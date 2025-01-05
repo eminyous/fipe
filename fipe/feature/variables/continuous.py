@@ -1,20 +1,22 @@
+from typing import override
+
 import gurobipy as gp
 import numpy as np
 import numpy.typing as npt
 
 from ...mip import MIP, BaseVar
-from ...typing import Number
+from ...typing import MNumber, Number
 
 
 class ContinuousVar(BaseVar[Number]):
-    levels: npt.NDArray[Number]
+    levels: MNumber
 
     _vars: gp.MVar
     _logic_constrs: gp.tupledict[int, gp.MConstr]
     _floor: bool
 
-    INFINITY = 1.0
-    DEFAULT_VALUE: np.float64 = np.float64(0.0)
+    INFINITY: Number = Number(1.0)
+    DEFAULT_VALUE: Number = Number(0.0)
 
     def __init__(
         self,
@@ -28,6 +30,7 @@ class ContinuousVar(BaseVar[Number]):
         self._logic_constrs = gp.tupledict()
         self._floor = floor
 
+    @override
     def build(self, mip: MIP) -> None:
         self._add_vars(mip)
         self._add_logic_constrs(mip)
@@ -35,6 +38,7 @@ class ContinuousVar(BaseVar[Number]):
     def __getitem__(self, key: int) -> gp.MVar:
         return self._vars[key]
 
+    @override
     def _apply(self, prop_name: str) -> Number:
         n = self.levels.size
         if n == 0:
