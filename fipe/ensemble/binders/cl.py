@@ -10,7 +10,7 @@ from ...typing import (
     MProb,
     RandomForestClassifier,
 )
-from ..binder import BinderCallback
+from .generic import BinderCallback
 from .skl import SKLearnBinder
 
 Classifier = RandomForestClassifier | AdaBoostClassifier

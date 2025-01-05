@@ -1,15 +1,16 @@
-from collections.abc import Iterator, Sequence
+from collections.abc import Iterable, Iterator, Sequence
+from typing import override
 
 import numpy.typing as npt
 
 from ..feature import FeatureEncoder
 from ..tree import Tree, TreeParser, create_parser
-from ..typing import BaseEnsemble, MClass, MProb, Prob
-from .binder import BinderCallback
+from ..typing import BaseEnsemble, MClass, MProb, ParsableTree, Prob
 from .binders import Binder, create_binder
+from .binders.generic import BinderCallback
 
 
-class Ensemble(Sequence[Tree], BinderCallback):
+class Ensemble(BinderCallback, Iterable[Tree]):
     _binder: Binder
     _parser: TreeParser
     _trees: Sequence[Tree]
@@ -32,6 +33,7 @@ class Ensemble(Sequence[Tree], BinderCallback):
     def predict_proba(self, X: npt.ArrayLike) -> MProb:
         return self._binder.predict_proba(X=X)
 
+    @override
     def predict_leaf(self, e: int, index: int) -> Prob:
         return Prob(self[e].predict(index))
 
@@ -54,6 +56,7 @@ class Ensemble(Sequence[Tree], BinderCallback):
     def __getitem__(self, t: int) -> Tree:
         return self._trees[t]
 
+    @override
     def __iter__(self) -> Iterator[Tree]:
         return iter(self._trees)
 
@@ -67,6 +70,8 @@ class Ensemble(Sequence[Tree], BinderCallback):
         self._parser = create_parser(base=base, encoder=encoder)
 
     def _parse_trees(self) -> None:
-        parse = self._parser.parse
+        def _parse(tree: ParsableTree) -> Tree:
+            return self._parser.parse(tree)
+
         base_trees = self._binder.base_trees
-        self._trees = list(map(parse, base_trees))
+        self._trees = list(map(_parse, base_trees))

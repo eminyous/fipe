@@ -5,7 +5,7 @@ from typing import Generic, TypeVar
 import numpy as np
 import numpy.typing as npt
 
-from ..typing import BaseEnsemble, MClass, MProb, ParsableTree, Prob
+from ...typing import BaseEnsemble, MClass, MProb, ParsableTree, Prob
 
 BE = TypeVar("BE", bound=BaseEnsemble)
 PT = TypeVar("PT", bound=ParsableTree)

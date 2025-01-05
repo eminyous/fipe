@@ -13,7 +13,7 @@ from ...typing import (
     XGBoostBooster,
     XGBoostParsableTree,
 )
-from ..binder import GenericBinder
+from .generic import GenericBinder
 
 Booster = LightGBMBooster | XGBoostBooster
 ParsableBoosterTree = LightGBMParsableTree | XGBoostParsableTree

@@ -7,7 +7,7 @@ from ...typing import (
     SKLearnClassifier,
     SKLearnParsableTree,
 )
-from ..binder import GenericBinder
+from .generic import GenericBinder
 
 CL = TypeVar("CL", bound=SKLearnClassifier)
 DT = TypeVar("DT", bound=BaseDecisionTree)

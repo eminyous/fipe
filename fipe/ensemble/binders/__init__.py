@@ -6,7 +6,7 @@ from ...typing import (
     RandomForestClassifier,
     XGBoostBooster,
 )
-from ..binder import BinderCallback
+from .generic import BinderCallback
 from .cl import SKLearnBinderClassifier
 from .gb import GradientBoostingBinder
 from .lgbm import LightGBMBinder
