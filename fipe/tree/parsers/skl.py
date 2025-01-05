@@ -4,7 +4,7 @@ import numpy as np
 
 from ...feature import FeatureEncoder
 from ...typing import MNumber, Number, SKLearnParsableNode, SKLearnParsableTree
-from ..parser import GenericTreeParser
+from .generic import GenericTreeParser
 
 
 class SKLearnTreeParser(

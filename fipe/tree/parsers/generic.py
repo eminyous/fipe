@@ -1,9 +1,9 @@
 from abc import ABCMeta, abstractmethod
 from typing import Generic, TypeVar
 
-from ..feature import FeatureContainer, FeatureEncoder
-from ..typing import MNumber, Number, ParsableNode, ParsableTree
-from .tree import Tree
+from ...feature import FeatureContainer, FeatureEncoder
+from ...typing import MNumber, Number, ParsableNode, ParsableTree
+from ..tree import Tree
 
 PT = TypeVar("PT", bound=ParsableTree)
 NT = TypeVar("NT", bound=ParsableNode)

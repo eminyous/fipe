@@ -8,7 +8,7 @@ from ...typing import (
     MNumber,
     Number,
 )
-from ..parser import GenericTreeParser
+from .generic import GenericTreeParser
 
 
 class LightGBMTreeParser(

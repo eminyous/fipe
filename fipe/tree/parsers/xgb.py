@@ -5,7 +5,7 @@ import numpy as np
 
 from ...feature import FeatureEncoder
 from ...typing import MNumber, Number, XGBoostParsableNode, XGBoostParsableTree
-from ..parser import GenericTreeParser
+from .generic import GenericTreeParser
 
 
 class XGBoostTreeParser(
