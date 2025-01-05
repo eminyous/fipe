@@ -6,7 +6,7 @@ from ...typing import (
     RandomForestClassifier,
     XGBoostBooster,
 )
-from .generic import BinderCallback
+from .callback import BinderCallback
 from .cl import SKLearnBinderClassifier
 from .gb import GradientBoostingBinder
 from .lgbm import LightGBMBinder
@@ -49,5 +49,6 @@ def create_binder(
 
 __all__ = [
     "Binder",
+    "BinderCallback",
     "create_binder",
 ]

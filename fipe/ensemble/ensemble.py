@@ -5,9 +5,8 @@ import numpy.typing as npt
 
 from ..feature import FeatureEncoder
 from ..tree import Tree, TreeParser, create_parser
-from ..typing import BaseEnsemble, MClass, MProb, ParsableTree, Prob
-from .binders import Binder, create_binder
-from .binders.generic import BinderCallback
+from ..typing import BaseEnsemble, MClass, MProb, Prob
+from .binders import Binder, BinderCallback, create_binder
 
 
 class Ensemble(BinderCallback, Iterable[Tree]):
@@ -70,8 +69,5 @@ class Ensemble(BinderCallback, Iterable[Tree]):
         self._parser = create_parser(base=base, encoder=encoder)
 
     def _parse_trees(self) -> None:
-        def _parse(tree: ParsableTree) -> Tree:
-            return self._parser.parse(tree)
-
         base_trees = self._binder.base_trees
-        self._trees = list(map(_parse, base_trees))
+        self._trees = [self._parser.parse(tree) for tree in base_trees]

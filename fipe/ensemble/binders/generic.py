@@ -6,15 +6,10 @@ import numpy as np
 import numpy.typing as npt
 
 from ...typing import BaseEnsemble, MClass, MProb, ParsableTree, Prob
+from .callback import BinderCallback
 
 BE = TypeVar("BE", bound=BaseEnsemble)
 PT = TypeVar("PT", bound=ParsableTree)
-
-
-class BinderCallback(ABC):
-    @abstractmethod
-    def predict_leaf(self, e: int, index: int) -> Prob:
-        raise NotImplementedError
 
 
 class GenericBinder(ABC, Generic[BE, PT]):
