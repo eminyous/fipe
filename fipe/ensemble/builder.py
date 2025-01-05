@@ -12,12 +12,11 @@ from ..typing import (
     XGBoostBooster,
 )
 from .binders.callback import BinderCallback
-from .binders.cl import SKLearnBinderClassifier
-from .binders.gb import GradientBoostingBinder
 from .binders.lgbm import LightGBMBinder
+from .binders.sklearn import GradientBoostingBinder, SKLearnBinderClassifier
 from .binders.xgb import XGBoostBinder
 from .parsers.lgbm import LightGBMParser
-from .parsers.skl import SKLearnParser
+from .parsers.sklearn import SKLearnParser
 from .parsers.xgb import XGBoostParser
 
 Binder = (

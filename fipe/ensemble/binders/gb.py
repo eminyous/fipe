@@ -8,7 +8,7 @@ from ...typing import (
     GradientBoostingClassifier,
     MProb,
 )
-from .skl import SKLearnBinder
+from .sklearn import SKLearnBinder
 
 
 class GradientBoostingBinder(

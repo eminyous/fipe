@@ -11,7 +11,7 @@ from ...typing import (
     RandomForestClassifier,
 )
 from .binder import BinderCallback
-from .skl import SKLearnBinder
+from .sklearn import SKLearnBinder
 
 Classifier = RandomForestClassifier | AdaBoostClassifier
 
