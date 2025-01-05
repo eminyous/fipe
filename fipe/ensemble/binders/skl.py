@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from collections.abc import Generator
-from typing import Generic, TypeVar
+from typing import Generic, TypeVar, override
 
 from ...typing import (
     BaseDecisionTree,
@@ -17,6 +17,7 @@ class SKLearnBinder(GenericBinder[CL, SKLearnParsableTree], Generic[CL, DT]):
     __metaclass__ = ABCMeta
 
     @property
+    @override
     def n_classes(self) -> int:
         if not isinstance(self._base.n_classes_, int):
             msg = "n_classes must be an integer."
@@ -24,6 +25,7 @@ class SKLearnBinder(GenericBinder[CL, SKLearnParsableTree], Generic[CL, DT]):
         return self._base.n_classes_
 
     @property
+    @override
     def base_trees(self) -> Generator[SKLearnParsableTree, None, None]:
         for tree in self.base_estimators:
             yield tree.tree_

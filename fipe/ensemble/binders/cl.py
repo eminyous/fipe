@@ -1,4 +1,5 @@
 from collections.abc import Generator
+from typing import override
 
 import numpy as np
 import numpy.typing as npt
@@ -31,31 +32,34 @@ class SKLearnBinderClassifier(
         self._use_hard_voting = use_hard_voting
 
     @property
+    @override
     def n_estimators(self) -> int:
         return len(self._base.estimators_)
 
     @property
+    @override
     def base_estimators(self) -> Generator[DecisionTreeClassifier, None, None]:
         yield from self._base
 
-    def _scores_impl(self, X: npt.ArrayLike, *, scores: MProb) -> None:
+    @override
+    def _predict_proba_impl(self, X: npt.ArrayLike, *, probs: MProb) -> None:
         for j, e in enumerate(self.base_estimators):
-            self._scores_estimator(e, X, scores=scores[:, j, :])
+            self._predict_proba_e(e=e, X=X, probs=probs[:, j, :])
 
-    def _scores_estimator(
+    def _predict_proba_e(
         self,
         e: DecisionTreeClassifier,
         X: npt.ArrayLike,
         *,
-        scores: MProb,
+        probs: MProb,
     ) -> None:
         X = np.asarray(X)
-        p = e.predict_proba(X)
-        scores[:] = self._scores_proba(p)
+        prob = np.asarray(e.predict_proba(X))
+        probs[:] = self._cast_proba(prob)
 
-    def _scores_proba(self, p: MProb) -> MProb:
+    def _cast_proba(self, prob: MProb) -> MProb:
         if self._use_hard_voting:
-            k = p.shape[-1]
-            q = np.argmax(p, axis=-1)
+            k = prob.shape[-1]
+            q = np.argmax(prob, axis=-1)
             return np.eye(k)[q]
-        return p
+        return prob

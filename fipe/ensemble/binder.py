@@ -61,7 +61,7 @@ class GenericBinder(ABC, Generic[BE, PT]):
         n_estimators = self.n_estimators
         shape = (n_samples, n_estimators, n_classes)
         scores = np.empty(shape=shape, dtype=Prob)
-        self._scores_impl(X=X, scores=scores)
+        self._predict_proba_impl(X=X, probs=scores)
         return scores
 
     @property
@@ -84,5 +84,5 @@ class GenericBinder(ABC, Generic[BE, PT]):
         raise NotImplementedError
 
     @abstractmethod
-    def _scores_impl(self, X: npt.ArrayLike, *, scores: MProb) -> None:
+    def _predict_proba_impl(self, X: npt.ArrayLike, *, probs: MProb) -> None:
         raise NotImplementedError

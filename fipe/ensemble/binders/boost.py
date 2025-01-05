@@ -1,4 +1,4 @@
-from abc import ABCMeta, abstractmethod
+from abc import abstractmethod
 from typing import Generic, TypeVar
 
 import numpy as np
@@ -17,15 +17,12 @@ from ..binder import GenericBinder
 
 Booster = LightGBMBooster | XGBoostBooster
 ParsableBoosterTree = LightGBMParsableTree | XGBoostParsableTree
-Data = npt.ArrayLike | xgb.DMatrix
 
 BT = TypeVar("BT", bound=Booster)
 PT = TypeVar("PT", bound=ParsableBoosterTree)
 
 
 class BoosterBinder(GenericBinder[BT, PT], Generic[BT, PT]):
-    __metaclass__ = ABCMeta
-
     @property
     def n_classes(self) -> int:
         n_per_iter = self.n_trees_per_iter
@@ -50,56 +47,56 @@ class BoosterBinder(GenericBinder[BT, PT], Generic[BT, PT]):
     def _predict_leaf(self, e: int, index: int) -> Prob:
         return self.callback.predict_leaf(e=e, index=index)
 
-    def _predict_base(self, X: Data) -> npt.NDArray[np.int32]:
-        return np.asarray(self._base.predict(X, pred_leaf=True))
+    def _predict_base(self, X: npt.ArrayLike) -> npt.NDArray[np.int64]:
+        if isinstance(self._base, XGBoostBooster):
+            dX = xgb.DMatrix(X)
+            indices = self._base.predict(dX, pred_leaf=True)
+        else:
+            indices = self._base.predict(X, pred_leaf=True)
+        return np.asarray(indices, dtype=np.int64)
 
-    def _scores_impl(
+    def _predict_proba_impl(
         self,
         X: npt.ArrayLike,
         *,
-        scores: MProb,
+        probs: MProb,
     ) -> None:
-        dX = self._transform(X)
-        indices = self._predict_base(dX)
-        self._scores_leaf(indices=indices, scores=scores)
+        indices = self._predict_base(X)
+        self._predict_proba_leaf(indices=indices, probs=probs)
 
-    def _scores_leaf(
+    def _predict_proba_leaf(
         self,
         indices: npt.NDArray[np.int64],
         *,
-        scores: MProb,
+        probs: MProb,
     ) -> None:
         for i, _ in enumerate(indices):
-            self._scores_sample(indices=indices[i], scores=scores[i])
+            self._predict_prob_s(indices=indices[i], probs=probs[i])
 
-    def _scores_sample(
+    def _predict_prob_s(
         self,
         indices: npt.NDArray[np.int64],
         *,
-        scores: MProb,
+        probs: MProb,
     ) -> None:
         for e in range(self.n_estimators):
-            self._scores_estimator(e=e, indices=indices, scores=scores[e])
+            self._predict_proba_e(e=e, indices=indices, probs=probs[e])
 
-    def _scores_estimator(
+    def _predict_proba_e(
         self,
         e: int,
         indices: npt.NDArray[np.int64],
         *,
-        scores: MProb,
+        probs: MProb,
     ) -> None:
         if self.is_binary:
             index = int(indices[e])
-            scores[1] = self._predict_leaf(e=e, index=index)
-            scores[0] = -scores[1]
+            probs[1] = self._predict_leaf(e=e, index=index)
+            probs[0] = -probs[1]
             return
 
         n_classes = self.n_classes
         for k in range(n_classes):
-            j = e * n_classes + k
-            index = int(indices[j])
-            scores[k] = self._predict_leaf(e=j, index=index)
-
-    @staticmethod
-    def _transform(X: npt.ArrayLike) -> Data:
-        return X
+            ee = e * n_classes + k
+            index = int(indices[ee])
+            probs[k] = self._predict_leaf(e=ee, index=index)
