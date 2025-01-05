@@ -127,6 +127,7 @@ class FlowVars(BaseVar[MNumber], TreeContainer):
     #  * _add_feature_branchs
     #  * _add_feature_branch_at_node
     #  * _compute_value_expr
+    #  * _compute_value
 
     def _add_flow_vars(self, mip: MIP) -> None:
         name = self.FLOW_VAR_FMT.format(name=self.name)
