@@ -61,11 +61,7 @@ class BaseOCEAN(
         wf = partial(self.weighted_function, weights=weights)
         return wf(class_=class_)
 
-    def weighted_function(
-        self,
-        class_: int,
-        weights: MNumber,
-    ) -> gp.LinExpr:
+    def weighted_function(self, class_: int, weights: MNumber) -> gp.LinExpr:
         return gp.quicksum(
             weights[t] * self._flow_function(t=t, class_=class_)
             for t in range(self.n_estimators)

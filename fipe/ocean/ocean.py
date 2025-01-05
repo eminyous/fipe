@@ -62,9 +62,7 @@ class OCEAN(BaseOCEAN):
         class_: int,
     ) -> None:
         rhs = self._eps if majority_class > class_ else 0.0
-        constr = self.addConstr(
-            self.function(class_=majority_class)
-            >= self.function(class_=class_) + rhs,
-            name=f"majority_class_constr_{majority_class}_class_{class_}",
-        )
+        name = f"majority_class_constr_{majority_class}_class_{class_}"
+        expr = self.function(majority_class) - self.function(class_)
+        constr = self.addConstr(expr >= rhs, name=name)
         self._majority_class_constrs[class_] = constr
