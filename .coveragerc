@@ -1,0 +1,13 @@
+[run]
+source = fipe
+omit = tests/*
+
+[report]
+show_missing = True
+omit = *tests/*
+exclude_lines = 
+    pragma: no cover
+    return NotImplemented
+    raise NotImplementedError
+    def _
+    if __name__ == .__main__.:
