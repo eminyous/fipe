@@ -70,7 +70,7 @@ def predict(model: BaseEnsemble, X: npt.ArrayLike) -> MClass:
         prob = np.array(model.predict(X))
         if prob.ndim == 1:
             return np.array(prob - 0.5 > 0, dtype=np.intp)
-        return np.argmax(model.predict(X), axis=-1)
+        return np.argmax(prob, axis=-1)
     return np.array(model.predict(X))
 
 
@@ -84,9 +84,7 @@ def predict_proba(model: BaseEnsemble, X: npt.ArrayLike) -> MProb:
 
 
 def train_sklearn(
-    model_cls: type[
-        RandomForestClassifier | AdaBoostClassifier | GradientBoostingClassifier
-    ],
+    model_cls: type,
     X_train: npt.ArrayLike,
     y_train: MClass,
     n_estimators: int,
