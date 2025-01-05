@@ -1,5 +1,5 @@
-from abc import ABC, ABCMeta, abstractmethod
-from typing import Any, Generic, TypeVar
+from abc import ABC, abstractmethod
+from typing import Generic, TypeVar
 
 import gurobipy as gp
 import numpy as np
@@ -9,7 +9,7 @@ from .typing import MNumber, Number, SNumber
 VT = TypeVar("VT", bound=Number | MNumber | SNumber)
 
 
-class MIP(gp.Model):
+class MIP(ABC, gp.Model):
     """
     Mixed-Integer Programming (MIP) model.
 
@@ -17,12 +17,10 @@ class MIP(gp.Model):
     class and allows to add attributes to the model.
     """
 
-    __metaclass__ = ABCMeta
-
     def __init__(self, name: str = "", env: gp.Env | None = None) -> None:
         gp.Model.__init__(self, name=name, env=env)
 
-    def __setattr__(self, name: str, value: Any) -> None:  # noqa: ANN401
+    def __setattr__(self, name: str, value) -> None:  # noqa: ANN001
         return object.__setattr__(self, name, value)
 
 
@@ -37,8 +35,6 @@ class BaseVar(ABC, Generic[VT]):
         - apply: apply a function to the variable,
     must be implemented.
     """
-
-    __metaclass__ = ABCMeta
 
     name: str
 
