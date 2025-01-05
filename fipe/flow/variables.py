@@ -250,7 +250,7 @@ class FlowVars(BaseVar[MNumber], TreeContainer):
         return value
 
     def _compute_value(self, flow: MNumber) -> MNumber:
-        value = np.zeros(self.leaf_value_shape)
+        value = np.zeros(self.leaf_value_shape, dtype=Number)
         for node in self.leaves:
             value += flow[node] * self.leaf_value[node]
         return value
