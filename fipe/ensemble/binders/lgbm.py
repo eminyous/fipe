@@ -1,11 +1,11 @@
 from collections.abc import Generator
 from typing import override
 
-from ...typing import LightGBMBooster, LightGBMParsableTree
+from ...typing import LightGBMBooster, LightGBMTree
 from .boost import BoosterBinder
 
 
-class LightGBMBinder(BoosterBinder[LightGBMBooster, LightGBMParsableTree]):
+class LightGBMBinder(BoosterBinder[LightGBMBooster, LightGBMTree]):
     TREE_INFO_KEY = "tree_info"
 
     @property
@@ -20,6 +20,6 @@ class LightGBMBinder(BoosterBinder[LightGBMBooster, LightGBMParsableTree]):
 
     @property
     @override
-    def base_trees(self) -> Generator[LightGBMParsableTree, None, None]:
+    def base_trees(self) -> Generator[LightGBMTree, None, None]:
         model = self._base.dump_model()
         yield from model[self.TREE_INFO_KEY]

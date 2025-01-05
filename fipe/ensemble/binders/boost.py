@@ -7,16 +7,16 @@ import xgboost as xgb
 
 from ...typing import (
     LightGBMBooster,
-    LightGBMParsableTree,
+    LightGBMTree,
     MProb,
     Prob,
     XGBoostBooster,
-    XGBoostParsableTree,
+    XGBoostTree,
 )
 from .generic import GenericBinder
 
 Booster = LightGBMBooster | XGBoostBooster
-ParsableBoosterTree = LightGBMParsableTree | XGBoostParsableTree
+ParsableBoosterTree = LightGBMTree | XGBoostTree
 
 BT = TypeVar("BT", bound=Booster)
 PT = TypeVar("PT", bound=ParsableBoosterTree)

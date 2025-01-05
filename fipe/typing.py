@@ -22,15 +22,15 @@ class FeatureType(Enum):
     BIN = "binary"
 
 
-SKLearnParsableNode = int
-LightGBMParsableNode = Mapping[str, Any]
-XGBoostParsableNode = pd.Series
-ParsableNode = SKLearnParsableNode | LightGBMParsableNode | XGBoostParsableNode
+SKLearnNode = int
+LightGBMNode = Mapping[str, Any]
+XGBoostNode = pd.Series
+ParsableNode = SKLearnNode | LightGBMNode | XGBoostNode
 
-SKLearnParsableTree = Tree
-LightGBMParsableTree = Mapping[str, Any]
-XGBoostParsableTree = pd.DataFrame
-ParsableTree = SKLearnParsableTree | LightGBMParsableTree | XGBoostParsableTree
+SKLearnTree = Tree
+LightGBMTree = Mapping[str, Any]
+XGBoostTree = pd.DataFrame
+ParsableTree = SKLearnTree | LightGBMTree | XGBoostTree
 
 
 SKLearnClassifier = (

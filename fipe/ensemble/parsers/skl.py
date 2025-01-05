@@ -3,13 +3,11 @@ from typing import override
 import numpy as np
 
 from ...feature import FeatureEncoder
-from ...typing import MNumber, Number, SKLearnParsableNode, SKLearnParsableTree
-from .generic import GenericTreeParser
+from ...typing import MNumber, Number, SKLearnNode, SKLearnTree
+from .generic import GenericParser
 
 
-class SKLearnTreeParser(
-    GenericTreeParser[SKLearnParsableTree, SKLearnParsableNode],
-):
+class SKLearnParser(GenericParser[SKLearnTree, SKLearnNode]):
     _use_hard_voting: bool
 
     def __init__(
@@ -26,7 +24,7 @@ class SKLearnTreeParser(
         return self.base.node_count
 
     @override
-    def parse_root(self) -> SKLearnParsableNode:
+    def parse_root(self) -> SKLearnNode:
         return self.DEFAULT_ROOT_ID
 
     @override
@@ -36,7 +34,7 @@ class SKLearnTreeParser(
         return index, threshold
 
     @override
-    def read_leaf(self, node: SKLearnParsableNode) -> MNumber:
+    def read_leaf(self, node: SKLearnNode) -> MNumber:
         value = np.array(self.base.value[node][0], dtype=Number).flatten()
         if value.size == 1:
             return value[0]
@@ -54,15 +52,15 @@ class SKLearnTreeParser(
         return left, right
 
     @override
-    def is_leaf(self, node: SKLearnParsableNode) -> bool:
-        left = SKLearnParsableNode(self.base.children_left[node])  # pyright: ignore[reportAttributeAccessIssue]
-        right = SKLearnParsableNode(self.base.children_right[node])  # pyright: ignore[reportAttributeAccessIssue]
+    def is_leaf(self, node: SKLearnNode) -> bool:
+        left = SKLearnNode(self.base.children_left[node])  # pyright: ignore[reportAttributeAccessIssue]
+        right = SKLearnNode(self.base.children_right[node])  # pyright: ignore[reportAttributeAccessIssue]
         return left == right
 
     @override
-    def read_node_id(self, node: SKLearnParsableNode) -> int:
+    def read_node_id(self, node: SKLearnNode) -> int:
         return self._read_node_id_static(node=node)
 
     @staticmethod
-    def _read_node_id_static(node: SKLearnParsableNode) -> int:
+    def _read_node_id_static(node: SKLearnNode) -> int:
         return node

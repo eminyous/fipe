@@ -3,13 +3,11 @@ from typing import override
 
 import numpy as np
 
-from ...typing import MNumber, Number, XGBoostParsableNode, XGBoostParsableTree
-from .generic import GenericTreeParser
+from ...typing import MNumber, Number, XGBoostNode, XGBoostTree
+from .generic import GenericParser
 
 
-class XGBoostTreeParser(
-    GenericTreeParser[XGBoostParsableTree, XGBoostParsableNode],
-):
+class XGBoostParser(GenericParser[XGBoostTree, XGBoostNode]):
     ID_KEY = "ID"
     NODE_KEY = "Node"
     FEATURE_KEY = "Feature"
@@ -26,11 +24,11 @@ class XGBoostTreeParser(
         return len(self.base)
 
     @override
-    def parse_root(self) -> XGBoostParsableNode:
+    def parse_root(self) -> XGBoostNode:
         return self.base.xs(self.DEFAULT_ROOT_ID, level=self.NODE_KEY).iloc[0]
 
     @override
-    def read_node(self, node: XGBoostParsableNode) -> tuple[int, Number]:
+    def read_node(self, node: XGBoostNode) -> tuple[int, Number]:
         matcher = re.match(self.FEATURE_PATTERN, node[self.FEATURE_KEY])
         if matcher is None:
             raise ValueError
@@ -42,8 +40,8 @@ class XGBoostTreeParser(
     @override
     def read_children(
         self,
-        node: XGBoostParsableNode,
-    ) -> tuple[XGBoostParsableNode, XGBoostParsableNode]:
+        node: XGBoostNode,
+    ) -> tuple[XGBoostNode, XGBoostNode]:
         left_id = str(node[self.LEFT_CHILD_KEY])
         right_id = str(node[self.RIGHT_CHILD_KEY])
         left = self.base.xs(left_id, level=self.ID_KEY).iloc[0]
@@ -51,17 +49,17 @@ class XGBoostTreeParser(
         return left, right
 
     @override
-    def read_leaf(self, node: XGBoostParsableNode) -> MNumber:
+    def read_leaf(self, node: XGBoostNode) -> MNumber:
         return np.array(node[self.VALUE_KEY])
 
     @override
-    def is_leaf(self, node: XGBoostParsableNode) -> bool:
+    def is_leaf(self, node: XGBoostNode) -> bool:
         return str(node[self.FEATURE_KEY]) == self.IS_LEAF
 
     @override
-    def read_node_id(self, node: XGBoostParsableNode) -> int:
+    def read_node_id(self, node: XGBoostNode) -> int:
         return self._read_node_id_static(node=node)
 
     @staticmethod
-    def _read_node_id_static(node: XGBoostParsableNode) -> int:
+    def _read_node_id_static(node: XGBoostNode) -> int:
         return int(str(node.name))

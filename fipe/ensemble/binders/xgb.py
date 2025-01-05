@@ -1,11 +1,11 @@
 from collections.abc import Generator
 from typing import override
 
-from ...typing import XGBoostBooster, XGBoostParsableTree
+from ...typing import XGBoostBooster, XGBoostTree
 from .boost import BoosterBinder
 
 
-class XGBoostBinder(BoosterBinder[XGBoostBooster, XGBoostParsableTree]):
+class XGBoostBinder(BoosterBinder[XGBoostBooster, XGBoostTree]):
     TREE_KEY = "Tree"
     NODE_KEY = "Node"
     ID_KEY = "ID"
@@ -34,7 +34,7 @@ class XGBoostBinder(BoosterBinder[XGBoostBooster, XGBoostParsableTree]):
 
     @property
     @override
-    def base_trees(self) -> Generator[XGBoostParsableTree, None, None]:
+    def base_trees(self) -> Generator[XGBoostTree, None, None]:
         data = self._base.trees_to_dataframe().set_index(list(self.INDEX))
         for _, tree in data.groupby(level=self.TREE_KEY):
             yield tree.reset_index(level=self.TREE_KEY, drop=True)

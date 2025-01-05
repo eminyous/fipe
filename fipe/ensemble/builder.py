@@ -16,9 +16,9 @@ from .binders.cl import SKLearnBinderClassifier
 from .binders.gb import GradientBoostingBinder
 from .binders.lgbm import LightGBMBinder
 from .binders.xgb import XGBoostBinder
-from .parsers.lgbm import LightGBMTreeParser
-from .parsers.skl import SKLearnTreeParser
-from .parsers.xgb import XGBoostTreeParser
+from .parsers.lgbm import LightGBMParser
+from .parsers.skl import SKLearnParser
+from .parsers.xgb import XGBoostParser
 
 Binder = (
     SKLearnBinderClassifier
@@ -28,7 +28,7 @@ Binder = (
 )
 B = TypeVar("B", bound=Binder)
 
-Parser = SKLearnTreeParser | LightGBMTreeParser | XGBoostTreeParser
+Parser = SKLearnParser | LightGBMParser | XGBoostParser
 P = TypeVar("P", bound=Parser)
 
 
@@ -45,26 +45,24 @@ class GenericBuilder(Protocol[B, P]):
         raise NotImplementedError
 
 
-class SKLearnBuilder(
-    GenericBuilder[SKLearnBinderClassifier, SKLearnTreeParser]
-):
+class SKLearnBuilder(GenericBuilder[SKLearnBinderClassifier, SKLearnParser]):
     def parse_trees(self) -> tuple[Tree, ...]:
         return tuple(self.parser.parse(tree) for tree in self.binder.base_trees)
 
 
 class GradientBoostingBuilder(
-    GenericBuilder[GradientBoostingBinder, SKLearnTreeParser]
+    GenericBuilder[GradientBoostingBinder, SKLearnParser]
 ):
     def parse_trees(self) -> tuple[Tree, ...]:
         return tuple(self.parser.parse(tree) for tree in self.binder.base_trees)
 
 
-class LightGBMBuilder(GenericBuilder[LightGBMBinder, LightGBMTreeParser]):
+class LightGBMBuilder(GenericBuilder[LightGBMBinder, LightGBMParser]):
     def parse_trees(self) -> tuple[Tree, ...]:
         return tuple(self.parser.parse(tree) for tree in self.binder.base_trees)
 
 
-class XGBoostBuilder(GenericBuilder[XGBoostBinder, XGBoostTreeParser]):
+class XGBoostBuilder(GenericBuilder[XGBoostBinder, XGBoostParser]):
     def parse_trees(self) -> tuple[Tree, ...]:
         return tuple(self.parser.parse(tree) for tree in self.binder.base_trees)
 
@@ -85,7 +83,7 @@ def create_builder(
             callback=callback,
             use_hard_voting=False,
         )
-        parser = SKLearnTreeParser(encoder=encoder, use_hard_voting=False)
+        parser = SKLearnParser(encoder=encoder, use_hard_voting=False)
         return SKLearnBuilder(binder=binder, parser=parser)
     if isinstance(base, AdaBoostClassifier):
         binder = SKLearnBinderClassifier(
@@ -93,19 +91,19 @@ def create_builder(
             callback=callback,
             use_hard_voting=True,
         )
-        parser = SKLearnTreeParser(encoder=encoder, use_hard_voting=True)
+        parser = SKLearnParser(encoder=encoder, use_hard_voting=True)
         return SKLearnBuilder(binder=binder, parser=parser)
     if isinstance(base, GradientBoostingClassifier):
         binder = GradientBoostingBinder(base, callback=callback)
-        parser = SKLearnTreeParser(encoder=encoder)
+        parser = SKLearnParser(encoder=encoder)
         return GradientBoostingBuilder(binder=binder, parser=parser)
     if isinstance(base, LightGBMBooster):
         binder = LightGBMBinder(base, callback=callback)
-        parser = LightGBMTreeParser(encoder=encoder)
+        parser = LightGBMParser(encoder=encoder)
         return LightGBMBuilder(binder=binder, parser=parser)
     if isinstance(base, XGBoostBooster):
         binder = XGBoostBinder(base, callback=callback)
-        parser = XGBoostTreeParser(encoder=encoder)
+        parser = XGBoostParser(encoder=encoder)
         return XGBoostBuilder(binder=binder, parser=parser)
     msg = f"Unsupported base ensemble: {type(base).__name__}"
     raise TypeError(msg)

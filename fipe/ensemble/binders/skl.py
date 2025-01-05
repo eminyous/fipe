@@ -5,7 +5,7 @@ from typing import Generic, TypeVar, override
 from ...typing import (
     BaseDecisionTree,
     SKLearnClassifier,
-    SKLearnParsableTree,
+    SKLearnTree,
 )
 from .generic import GenericBinder
 
@@ -13,7 +13,7 @@ CL = TypeVar("CL", bound=SKLearnClassifier)
 DT = TypeVar("DT", bound=BaseDecisionTree)
 
 
-class SKLearnBinder(GenericBinder[CL, SKLearnParsableTree], Generic[CL, DT]):
+class SKLearnBinder(GenericBinder[CL, SKLearnTree], Generic[CL, DT]):
     __metaclass__ = ABCMeta
 
     @property
@@ -26,7 +26,7 @@ class SKLearnBinder(GenericBinder[CL, SKLearnParsableTree], Generic[CL, DT]):
 
     @property
     @override
-    def base_trees(self) -> Generator[SKLearnParsableTree, None, None]:
+    def base_trees(self) -> Generator[SKLearnTree, None, None]:
         for tree in self.base_estimators:
             yield tree.tree_
 
