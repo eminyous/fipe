@@ -4,10 +4,10 @@ from typing import override
 import numpy as np
 
 from ...typing import MNumber, Number, XGBoostNode, XGBoostTree
-from .generic import GenericParser
+from .parser import Parser
 
 
-class XGBoostParser(GenericParser[XGBoostTree, XGBoostNode]):
+class XGBoostParser(Parser[XGBoostTree, XGBoostNode]):
     ID_KEY = "ID"
     NODE_KEY = "Node"
     FEATURE_KEY = "Feature"

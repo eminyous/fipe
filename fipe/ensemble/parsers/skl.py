@@ -4,10 +4,10 @@ import numpy as np
 
 from ...feature import FeatureEncoder
 from ...typing import MNumber, Number, SKLearnNode, SKLearnTree
-from .generic import GenericParser
+from .parser import Parser
 
 
-class SKLearnParser(GenericParser[SKLearnTree, SKLearnNode]):
+class SKLearnParser(Parser[SKLearnTree, SKLearnNode]):
     _use_hard_voting: bool
 
     def __init__(

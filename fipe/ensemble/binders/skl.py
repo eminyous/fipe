@@ -1,21 +1,19 @@
-from abc import ABCMeta, abstractmethod
+from abc import abstractmethod
 from collections.abc import Generator
 from typing import Generic, TypeVar, override
 
 from ...typing import (
-    BaseDecisionTree,
+    DecisionTree,
     SKLearnClassifier,
     SKLearnTree,
 )
-from .generic import GenericBinder
+from .binder import Binder
 
-CL = TypeVar("CL", bound=SKLearnClassifier)
-DT = TypeVar("DT", bound=BaseDecisionTree)
+C = TypeVar("C", bound=SKLearnClassifier)
+T = TypeVar("T", bound=DecisionTree)
 
 
-class SKLearnBinder(GenericBinder[CL, SKLearnTree], Generic[CL, DT]):
-    __metaclass__ = ABCMeta
-
+class SKLearnBinder(Binder[C, SKLearnTree], Generic[C, T]):
     @property
     @override
     def n_classes(self) -> int:
@@ -32,5 +30,5 @@ class SKLearnBinder(GenericBinder[CL, SKLearnTree], Generic[CL, DT]):
 
     @property
     @abstractmethod
-    def base_estimators(self) -> Generator[DT, None, None]:
+    def base_estimators(self) -> Generator[T, None, None]:
         raise NotImplementedError

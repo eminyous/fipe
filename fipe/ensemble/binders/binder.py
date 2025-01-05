@@ -12,7 +12,7 @@ BE = TypeVar("BE", bound=BaseEnsemble)
 PT = TypeVar("PT", bound=ParsableTree)
 
 
-class GenericBinder(ABC, Generic[BE, PT]):
+class Binder(ABC, Generic[BE, PT]):
     NUM_BINARY_CLASSES = 2
 
     # Protected attributes

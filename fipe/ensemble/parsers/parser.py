@@ -9,7 +9,7 @@ PT = TypeVar("PT", bound=ParsableTree)
 NT = TypeVar("NT", bound=ParsableNode)
 
 
-class GenericParser(FeatureContainer, Generic[PT, NT]):
+class Parser(FeatureContainer, Generic[PT, NT]):
     DEFAULT_ROOT_ID = 0
 
     leaf_offset: int
@@ -32,7 +32,7 @@ class GenericParser(FeatureContainer, Generic[PT, NT]):
 
     @staticmethod
     def parse_root_id() -> int:
-        return int(GenericParser.DEFAULT_ROOT_ID)
+        return int(Parser.DEFAULT_ROOT_ID)
 
     def parse(self, base: PT) -> Tree:
         self.__base = base

@@ -32,7 +32,7 @@ Parser = SKLearnParser | LightGBMParser | XGBoostParser
 P = TypeVar("P", bound=Parser)
 
 
-class GenericBuilder(Protocol[B, P]):
+class _Builder(Protocol[B, P]):
     binder: B
     parser: P
 
@@ -45,24 +45,22 @@ class GenericBuilder(Protocol[B, P]):
         raise NotImplementedError
 
 
-class SKLearnBuilder(GenericBuilder[SKLearnBinderClassifier, SKLearnParser]):
+class SKLearnBuilder(_Builder[SKLearnBinderClassifier, SKLearnParser]):
     def parse_trees(self) -> tuple[Tree, ...]:
         return tuple(self.parser.parse(tree) for tree in self.binder.base_trees)
 
 
-class GradientBoostingBuilder(
-    GenericBuilder[GradientBoostingBinder, SKLearnParser]
-):
+class GradientBoostingBuilder(_Builder[GradientBoostingBinder, SKLearnParser]):
     def parse_trees(self) -> tuple[Tree, ...]:
         return tuple(self.parser.parse(tree) for tree in self.binder.base_trees)
 
 
-class LightGBMBuilder(GenericBuilder[LightGBMBinder, LightGBMParser]):
+class LightGBMBuilder(_Builder[LightGBMBinder, LightGBMParser]):
     def parse_trees(self) -> tuple[Tree, ...]:
         return tuple(self.parser.parse(tree) for tree in self.binder.base_trees)
 
 
-class XGBoostBuilder(GenericBuilder[XGBoostBinder, XGBoostParser]):
+class XGBoostBuilder(_Builder[XGBoostBinder, XGBoostParser]):
     def parse_trees(self) -> tuple[Tree, ...]:
         return tuple(self.parser.parse(tree) for tree in self.binder.base_trees)
 

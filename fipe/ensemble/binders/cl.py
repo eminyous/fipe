@@ -10,7 +10,7 @@ from ...typing import (
     MProb,
     RandomForestClassifier,
 )
-from .generic import BinderCallback
+from .binder import BinderCallback
 from .skl import SKLearnBinder
 
 Classifier = RandomForestClassifier | AdaBoostClassifier
@@ -43,8 +43,8 @@ class SKLearnBinderClassifier(
 
     @override
     def _predict_proba_impl(self, X: npt.ArrayLike, *, probs: MProb) -> None:
-        for j, e in enumerate(self.base_estimators):
-            self._predict_proba_e(e=e, X=X, probs=probs[:, j, :])
+        for i, e in enumerate(self.base_estimators):
+            self._predict_proba_e(e=e, X=X, probs=probs[:, i, :])
 
     def _predict_proba_e(
         self,

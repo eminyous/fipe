@@ -8,10 +8,10 @@ from ...typing import (
     MNumber,
     Number,
 )
-from .generic import GenericParser
+from .parser import Parser
 
 
-class LightGBMParser(GenericParser[LightGBMTree, LightGBMNode]):
+class LightGBMParser(Parser[LightGBMTree, LightGBMNode]):
     NUM_LEAVES_KEY = "num_leaves"
     NUM_CAT_KEY = "num_cat"
     TREE_STRUCTURE_KEY = "tree_structure"

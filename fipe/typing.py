@@ -38,7 +38,7 @@ SKLearnClassifier = (
 )
 BaseEnsemble = SKLearnClassifier | LightGBMBooster | XGBoostBooster
 
-BaseDecisionTree = DecisionTreeClassifier | DecisionTreeRegressor
+DecisionTree = DecisionTreeClassifier | DecisionTreeRegressor
 
 
 Class = np.intp

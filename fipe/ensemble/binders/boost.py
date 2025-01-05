@@ -13,16 +13,16 @@ from ...typing import (
     XGBoostBooster,
     XGBoostTree,
 )
-from .generic import GenericBinder
+from .binder import Binder
 
 Booster = LightGBMBooster | XGBoostBooster
-ParsableBoosterTree = LightGBMTree | XGBoostTree
+ParsableTree = LightGBMTree | XGBoostTree
 
-BT = TypeVar("BT", bound=Booster)
-PT = TypeVar("PT", bound=ParsableBoosterTree)
+B = TypeVar("B", bound=Booster)
+T = TypeVar("T", bound=ParsableTree)
 
 
-class BoosterBinder(GenericBinder[BT, PT], Generic[BT, PT]):
+class BoosterBinder(Binder[B, T], Generic[B, T]):
     @property
     def n_classes(self) -> int:
         n_per_iter = self.n_trees_per_iter
