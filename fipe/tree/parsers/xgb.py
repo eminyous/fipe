@@ -43,6 +43,7 @@ class XGBoostTreeParser(
         threshold = Number(node[self.THRESHOLD_KEY])
         return index, threshold
 
+    @override
     def read_children(
         self,
         node: XGBoostParsableNode,
@@ -53,12 +54,15 @@ class XGBoostTreeParser(
         right = self.base.xs(right_id, level=self.ID_KEY).iloc[0]
         return left, right
 
+    @override
     def read_leaf(self, node: XGBoostParsableNode) -> MNumber:
         return np.array(node[self.VALUE_KEY])
 
+    @override
     def is_leaf(self, node: XGBoostParsableNode) -> bool:
         return str(node[self.FEATURE_KEY]) == self.IS_LEAF
 
+    @override
     def read_node_id(self, node: XGBoostParsableNode) -> int:
         return self._read_node_id_static(node=node)
 
