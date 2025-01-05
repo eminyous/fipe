@@ -1,4 +1,5 @@
 from collections.abc import Mapping
+from typing import override
 
 import gurobipy as gp
 import pandas as pd
@@ -24,6 +25,7 @@ class FeatureVars(BaseVar[SNumber], dict[str, FeatureVar]):
         BaseVar.__init__(self, name=name)
         dict.__init__(self)
 
+    @override
     def build(self, mip: MIP) -> None:
         for var in self.values():
             var.build(mip)
@@ -43,6 +45,7 @@ class FeatureVars(BaseVar[SNumber], dict[str, FeatureVar]):
             categories=categories,
         )
 
+    @override
     def _apply(self, prop_name: str) -> SNumber:
         series = pd.Series()
         for name, var in self.items():
@@ -67,62 +70,56 @@ class FeatureVars(BaseVar[SNumber], dict[str, FeatureVar]):
         levels: MNumber | None = None,
         categories: Categories | None = None,
     ) -> FeatureVar:
-        cls = FeatureVars.CLASSES.get(vtype)
-        if cls is None:
-            msg = f"Invalid variable type: {vtype}"
-            raise ValueError(msg)
-        args = FeatureVars._build_args(
-            levels=levels,
-            categories=categories,
-        )
-        if vtype == FeatureType.CON.value:
-            args["floor"] = True
-
-        return cls(name=name, **args)
+        match vtype:
+            case FeatureType.BIN.value:
+                return BinaryVar(name=name)
+            case FeatureType.CAT.value:
+                if categories is None:
+                    msg = (
+                        "Categories must be provided for categorical variable."
+                    )
+                    raise ValueError(msg)
+                return CategoricalVar(name=name, categories=categories)
+            case FeatureType.CON.value:
+                if levels is None:
+                    msg = "Levels must be provided for continuous variable."
+                    raise ValueError(msg)
+                return ContinuousVar(name=name, levels=levels, floor=True)
+            case _:
+                msg = f"Invalid variable type: {vtype}"
+                raise ValueError(msg)
 
     @staticmethod
     def fetch(
-        feature_var: FeatureVar,
+        var: FeatureVar,
         *,
         level: Number | None = None,
         category: str | None = None,
     ) -> gp.Var | gp.MVar:
-        if isinstance(feature_var, BinaryVar):
-            return FeatureVars.fetch_bin(feature_var=feature_var)
-        if isinstance(feature_var, ContinuousVar):
-            return FeatureVars.fetch_con(
-                feature_var=feature_var,
-                level=level,
-            )
-        if isinstance(feature_var, CategoricalVar):
-            return FeatureVars.fetch_cat(
-                feature_var=feature_var,
-                category=category,
-            )
-        msg = f"Unknown feature var type: {type(feature_var)}"
+        if isinstance(var, BinaryVar):
+            return FeatureVars._fetch_bin(var=var)
+        if isinstance(var, ContinuousVar):
+            return FeatureVars._fetch_con(var=var, level=level)
+        if isinstance(var, CategoricalVar):
+            return FeatureVars._fetch_cat(var=var, category=category)
+        msg = f"Unknown feature var type: {type(var)}"
         raise ValueError(msg)
 
     @staticmethod
-    def fetch_bin(feature_var: BinaryVar) -> gp.Var:
-        return feature_var.var
+    def _fetch_bin(var: BinaryVar) -> gp.Var:
+        return var.var
 
     @staticmethod
-    def fetch_con(
-        feature_var: ContinuousVar,
-        level: Number | None,
-    ) -> gp.MVar:
+    def _fetch_con(var: ContinuousVar, level: Number | None) -> gp.MVar:
         if level is None:
             msg = "Level must be provided for continuous variable."
             raise ValueError(msg)
-        j = int(feature_var.levels.searchsorted(level))
-        return feature_var[j]
+        j = int(var.levels.searchsorted(level))
+        return var[j]
 
     @staticmethod
-    def fetch_cat(
-        feature_var: CategoricalVar,
-        category: str | None,
-    ) -> gp.Var:
+    def _fetch_cat(var: CategoricalVar, category: str | None) -> gp.Var:
         if category is None:
             msg = "Category must be provided for categorical variable."
             raise ValueError(msg)
-        return feature_var[category]
+        return var[category]
