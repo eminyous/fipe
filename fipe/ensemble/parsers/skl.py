@@ -46,7 +46,7 @@ class SKLearnParser(GenericParser[SKLearnTree, SKLearnNode]):
         return value
 
     @override
-    def read_children(self, node: int) -> tuple[int, int]:
+    def read_children(self, node: int) -> tuple[SKLearnNode, SKLearnNode]:
         left = int(self.base.children_left[node])  # pyright: ignore[reportAttributeAccessIssue]
         right = int(self.base.children_right[node])  # pyright: ignore[reportAttributeAccessIssue]
         return left, right
