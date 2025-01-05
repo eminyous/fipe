@@ -12,22 +12,16 @@ SGenerator = Generator[SNumber, None, None]
 
 
 class Oracle(OCEAN):
-    def __call__(
-        self,
-        new_weights: npt.ArrayLike,
-    ) -> SGenerator:
-        new_weights = np.copy(new_weights)
-        self.new_weights = new_weights
+    def __call__(self, weights: npt.ArrayLike) -> SGenerator:
+        weights = np.copy(weights)
+        self.new_weights = weights
         yield from self._separate()
 
     def _separate(self) -> SGenerator:
         for class_ in range(self.n_classes):
             yield from self._separate_class(majority_class=class_)
 
-    def _separate_class(
-        self,
-        majority_class: int,
-    ) -> SGenerator:
+    def _separate_class(self, majority_class: int) -> SGenerator:
         self.set_majority_class(class_=majority_class)
         for class_ in range(self.n_classes):
             if class_ == majority_class:
@@ -39,11 +33,7 @@ class Oracle(OCEAN):
             )
         self.clear_majority_class()
 
-    def _extract_samples(
-        self,
-        majority_class: int,
-        class_: int,
-    ) -> SGenerator:
+    def _extract_samples(self, majority_class: int, class_: int) -> SGenerator:
         param = gp.GRB.Param.SolutionNumber
         for i in range(self.SolCount):
             self.setParam(param, i)
