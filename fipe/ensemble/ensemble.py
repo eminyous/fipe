@@ -4,20 +4,28 @@ from typing import override
 import numpy.typing as npt
 
 from ..feature import FeatureEncoder
-from ..tree import Tree, TreeParser, create_parser
-from ..typing import BaseEnsemble, MClass, MProb, Prob
-from .binders import Binder, BinderCallback, create_binder
+from ..tree import Tree
+from ..typing import (
+    BaseEnsemble,
+    MClass,
+    MProb,
+    Prob,
+)
+from .binders.callback import BinderCallback
+from .builder import Binder, Builder, create_builder
 
 
 class Ensemble(BinderCallback, Iterable[Tree]):
-    _binder: Binder
-    _parser: TreeParser
+    _builder: Builder
     _trees: Sequence[Tree]
 
     def __init__(self, base: BaseEnsemble, encoder: FeatureEncoder) -> None:
-        self._init_binder(base=base)
-        self._init_parser(base=base, encoder=encoder)
-        self._parse_trees()
+        self._builder = create_builder(
+            base=base,
+            encoder=encoder,
+            callback=self,
+        )
+        self._trees = self._builder.parse_trees()
 
     def predict(self, X: npt.ArrayLike, w: npt.ArrayLike) -> MClass:
         return self._binder.predict(X=X, w=w)
@@ -62,12 +70,6 @@ class Ensemble(BinderCallback, Iterable[Tree]):
     def __len__(self) -> int:
         return len(self._trees)
 
-    def _init_binder(self, base: BaseEnsemble) -> None:
-        self._binder = create_binder(base=base, callback=self)
-
-    def _init_parser(self, base: BaseEnsemble, encoder: FeatureEncoder) -> None:
-        self._parser = create_parser(base=base, encoder=encoder)
-
-    def _parse_trees(self) -> None:
-        base_trees = self._binder.base_trees
-        self._trees = [self._parser.parse(tree) for tree in base_trees]
+    @property
+    def _binder(self) -> Binder:
+        return self._builder.binder
