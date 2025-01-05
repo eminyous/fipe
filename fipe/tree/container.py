@@ -44,8 +44,12 @@ class TreeContainer:
         return self.tree.right
 
     @property
-    def node_value(self) -> Mapping[int, MNumber]:
+    def leaf_value(self) -> Mapping[int, MNumber]:
         return self.tree.leaf_value
+
+    @property
+    def leaf_value_shape(self) -> tuple[int, ...]:
+        return self.tree.leaf_value_shape
 
     @property
     def threshold(self) -> Mapping[int, Number]:

@@ -52,10 +52,10 @@ class Tree(FeatureContainer, Iterable[int]):
     leaf_value: dict[int, MNumber]
 
     __leaf_offset: int
-
     __node_at_depth: dict[int, set[int]]
     __node_split_on: dict[str, set[int]]
     __max_depth: int | None
+    __leaf_value_shape: tuple[int, ...]
 
     def __init__(self, encoder: FeatureEncoder) -> None:
         FeatureContainer.__init__(self, encoder=encoder)
@@ -72,10 +72,11 @@ class Tree(FeatureContainer, Iterable[int]):
         self.category = {}
         self.leaf_value = {}
 
+        self.__leaf_offset = 0
         self.__node_at_depth = {}
         self.__node_split_on = {}
         self.__max_depth = None
-        self.__leaf_offset = 0
+        self.__leaf_value_shape = ()
 
     @property
     def max_depth(self) -> int:
@@ -107,7 +108,7 @@ class Tree(FeatureContainer, Iterable[int]):
             self.category[node] = column
         feature = self.inverse_categories.get(column, column)
         self.feature[node] = feature
-        if feature in self.continuous:
+        if feature in self.continuous and threshold is not None:
             self.threshold[node] = threshold
 
     def add_child(
@@ -127,6 +128,11 @@ class Tree(FeatureContainer, Iterable[int]):
     def add_leaf(self, node: int, value: MNumber) -> None:
         self.leaves.add(node)
         self.leaf_value[node] = value
+        self.__leaf_value_shape = value.shape
+
+    @property
+    def leaf_value_shape(self) -> tuple[int, ...]:
+        return self.__leaf_value_shape
 
     @property
     def leaf_offset(self) -> int:

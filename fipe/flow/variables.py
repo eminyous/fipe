@@ -63,6 +63,9 @@ class FlowVars(BaseVar[MNumber], TreeContainer):
     #   * flow[node] <= var
     _feature_branchs: gp.tupledict[tuple[str, int], Branch]
 
+    # Value of the flow variable
+    __value: gp.MLinExpr | None = None
+
     def __init__(
         self,
         tree: Tree,
@@ -76,9 +79,9 @@ class FlowVars(BaseVar[MNumber], TreeContainer):
 
     @property
     def value(self) -> gp.MLinExpr:
-        return np.sum([
-            self[node] * self.node_value[node] for node in self.leaves
-        ])
+        if self.__value is None:
+            self.__value = self._compute_value_expr()
+        return self.__value
 
     @property
     def flow(self) -> MNumber:
@@ -108,8 +111,7 @@ class FlowVars(BaseVar[MNumber], TreeContainer):
     #  * _apply (override): BaseVar
     def _apply(self, prop_name: str) -> MNumber:
         flow = self._apply_m_prop(mvar=self._flow_vars, prop_name=prop_name)
-        values = [flow[node] * self.node_value[node] for node in self.leaves]
-        return np.sum(values, axis=0)
+        return self._compute_value(flow=flow)
 
     # Private methods:
     # ----------------
@@ -124,6 +126,7 @@ class FlowVars(BaseVar[MNumber], TreeContainer):
     #  * _add_flow_branch_at_node
     #  * _add_feature_branchs
     #  * _add_feature_branch_at_node
+    #  * _compute_value_expr
 
     def _add_flow_vars(self, mip: MIP) -> None:
         name = self.FLOW_VAR_FMT.format(name=self.name)
@@ -238,3 +241,15 @@ class FlowVars(BaseVar[MNumber], TreeContainer):
         var = FeatureVars.fetch(fvar, level=level, category=cat)
         rule = self._create_branch(mip=mip, var=var, node=node, name=name)
         self._feature_branchs[feature, node] = rule
+
+    def _compute_value_expr(self) -> gp.MLinExpr:
+        value = gp.MLinExpr.zeros(self.leaf_value_shape)
+        for node in self.leaves:
+            value += self[node] * self.leaf_value[node]
+        return value
+
+    def _compute_value(self, flow: MNumber) -> MNumber:
+        value = np.zeros(self.leaf_value_shape)
+        for node in self.leaves:
+            value += flow[node] * self.leaf_value[node]
+        return value
