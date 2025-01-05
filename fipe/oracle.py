@@ -22,7 +22,7 @@ class Oracle(OCEAN):
             yield from self._separate_class(majority_class=class_)
 
     def _separate_class(self, majority_class: int) -> SGenerator:
-        self.set_majority_class(class_=majority_class)
+        self.set_maj_class(maj_class=majority_class)
         for class_ in range(self.n_classes):
             if class_ == majority_class:
                 continue

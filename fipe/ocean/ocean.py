@@ -12,7 +12,7 @@ class OCEAN(BaseOCEAN):
 
     _new_weights: MNumber
     _eps: float
-    _majority_class_constrs: gp.tupledict[int, gp.Constr]
+    _maj_class_constrs: gp.tupledict[int, gp.Constr]
 
     def __init__(
         self,
@@ -35,7 +35,7 @@ class OCEAN(BaseOCEAN):
             tol=tol,
         )
         self._eps = eps
-        self._majority_class_constrs = gp.tupledict()
+        self._maj_class_constrs = gp.tupledict()
 
     @property
     def new_weights(self) -> MNumber:
@@ -45,24 +45,20 @@ class OCEAN(BaseOCEAN):
     def new_weights(self, new_weights: MNumber) -> None:
         self._new_weights = np.copy(new_weights)
 
-    def set_majority_class(self, class_: int) -> None:
-        self._majority_class_constrs = gp.tupledict()
-        for c in range(self.n_classes):
-            if c == class_:
+    def set_maj_class(self, maj_class: int) -> None:
+        self._maj_class_constrs = gp.tupledict()
+        for class_ in range(self.n_classes):
+            if class_ == maj_class:
                 continue
-            self._add_majority_class_constr(majority_class=class_, class_=c)
+            self._add_majority_class_constr(maj_class=maj_class, class_=class_)
 
     def clear_majority_class(self) -> None:
-        self.remove(self._majority_class_constrs)
-        self._majority_class_constrs = gp.tupledict()
+        self.remove(self._maj_class_constrs)
+        self._maj_class_constrs = gp.tupledict()
 
-    def _add_majority_class_constr(
-        self,
-        majority_class: int,
-        class_: int,
-    ) -> None:
-        rhs = self._eps if majority_class > class_ else 0.0
-        name = f"majority_class_constr_{majority_class}_class_{class_}"
-        expr = self.function(majority_class) - self.function(class_)
+    def _add_majority_class_constr(self, maj_class: int, class_: int) -> None:
+        rhs = self._eps if maj_class > class_ else 0.0
+        name = f"majority_class_constr_{maj_class}_class_{class_}"
+        expr = self.function(maj_class) - self.function(class_)
         constr = self.addConstr(expr >= rhs, name=name)
-        self._majority_class_constrs[class_] = constr
+        self._maj_class_constrs[class_] = constr
