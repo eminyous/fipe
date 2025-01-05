@@ -1,5 +1,5 @@
-from abc import ABCMeta
 from dataclasses import dataclass
+from typing import override
 
 import gurobipy as gp
 import numpy as np
@@ -11,8 +11,6 @@ from ..typing import MNumber, Number
 
 
 class FlowVars(BaseVar[MNumber], TreeContainer):
-    __metaclass__ = ABCMeta
-
     FLOW_VAR_FMT = "{name}_flow"
     BRANCH_VAR_FMT = "{name}_branch"
 
@@ -92,6 +90,8 @@ class FlowVars(BaseVar[MNumber], TreeContainer):
     #  * build (override): BaseVar
     #  * add_feature_vars
     #  * __getitem__ (override): object
+
+    @override
     def build(self, mip: MIP) -> None:
         self._add_flow_vars(mip=mip)
         self._add_branch_vars(mip=mip)
@@ -109,6 +109,7 @@ class FlowVars(BaseVar[MNumber], TreeContainer):
     # Protected methods:
     # ------------------
     #  * _apply (override): BaseVar
+    @override
     def _apply(self, prop_name: str) -> MNumber:
         flow = self._apply_m_prop(mvar=self._flow_vars, prop_name=prop_name)
         return self._compute_value(flow=flow)
