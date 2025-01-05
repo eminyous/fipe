@@ -1,4 +1,5 @@
 from collections.abc import Iterable
+from typing import override
 
 import gurobipy as gp
 import pandas as pd
@@ -21,10 +22,12 @@ class CategoricalVar(BaseVar[SNumber], gp.tupledict[str, gp.Var]):
         gp.tupledict.__init__(self)
         self.categories = set(categories)
 
+    @override
     def build(self, mip: MIP) -> None:
         self._add_vars(mip)
         self._add_logic_constr(mip)
 
+    @override
     def _apply(self, prop_name: str) -> SNumber:
         values = {
             cat: self._apply_prop(var, prop_name=prop_name)
