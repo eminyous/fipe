@@ -88,4 +88,4 @@ class FIPE(Pruner, FeatureContainer):
 
     def _call_oracle(self, weights: MNumber) -> list[SNumber]:
         self._n_oracle_calls += 1
-        return list(self.oracle(new_weights=weights))
+        return list(self.oracle(weights))
