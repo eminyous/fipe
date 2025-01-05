@@ -24,7 +24,6 @@ docstring-code-format = true
 [lint]
 select = ["ALL"]
 ignore = [
-    "A005", # Shadowing built-in name 'type'
     "ANN003", # Missing type annotation for kwargs
     "CPY", # No copyright header
     "D100", # Missing docstring in public module
