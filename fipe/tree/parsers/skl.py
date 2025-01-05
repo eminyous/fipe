@@ -31,8 +31,8 @@ class SKLearnTreeParser(
 
     @override
     def read_node(self, node: int) -> tuple[int, Number]:
-        index = int(self.base.feature[node])
-        threshold = Number(self.base.threshold[node])
+        index = int(self.base.feature[node])  # pyright: ignore[reportAttributeAccessIssue]
+        threshold = Number(self.base.threshold[node])  # pyright: ignore[reportAttributeAccessIssue]
         return index, threshold
 
     @override
@@ -49,14 +49,14 @@ class SKLearnTreeParser(
 
     @override
     def read_children(self, node: int) -> tuple[int, int]:
-        left = int(self.base.children_left[node])
-        right = int(self.base.children_right[node])
+        left = int(self.base.children_left[node])  # pyright: ignore[reportAttributeAccessIssue]
+        right = int(self.base.children_right[node])  # pyright: ignore[reportAttributeAccessIssue]
         return left, right
 
     @override
     def is_leaf(self, node: SKLearnParsableNode) -> bool:
-        left = SKLearnParsableNode(self.base.children_left[node])
-        right = SKLearnParsableNode(self.base.children_right[node])
+        left = SKLearnParsableNode(self.base.children_left[node])  # pyright: ignore[reportAttributeAccessIssue]
+        right = SKLearnParsableNode(self.base.children_right[node])  # pyright: ignore[reportAttributeAccessIssue]
         return left == right
 
     @override
