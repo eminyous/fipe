@@ -25,8 +25,8 @@ pip install fipepy
 The installation can be checked by running the test suite:
 
 ```shell
-pip install pytest
-pytest
+pip install tox
+tox
 ```
 
 The integration tests require a working Gurobi license. If a license is not available, the tests will pass and print a warning.
