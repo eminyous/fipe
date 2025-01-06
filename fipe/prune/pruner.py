@@ -14,14 +14,13 @@ class Pruner(BasePruner, MIP):
     WEIGHT_VARS_NAME = "weights"
     OBJECTIVE_NAME = "norm"
     SAMPLE_CONSTR_NAME_FMT = "sample_{n}"
+    VALID_NOMRS: tuple[int, ...] = (0, 1)
 
     _n_samples: int
     _norm: int
     _objective: gp.Var
     _weight_vars: gp.MVar
     _sample_constrs: gp.tupledict[int, gp.MConstr]
-
-    _valid_norms: tuple[int, ...] = (0, 1)
 
     def __init__(
         self,
@@ -108,6 +107,6 @@ class Pruner(BasePruner, MIP):
         self.setObjective(self._objective, gp.GRB.MINIMIZE)
 
     def _validate_norm(self, norm: int) -> None:
-        if norm not in self._valid_norms:
+        if norm not in self.VALID_NOMRS:
             msg = "The norm must be either 0 or 1."
             raise ValueError(msg)
