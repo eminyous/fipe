@@ -1,3 +1,5 @@
+from typing import Literal
+
 import gurobipy as gp
 import numpy as np
 import numpy.typing as npt
@@ -19,12 +21,14 @@ class Pruner(BasePruner, MIP):
     _weight_vars: gp.MVar
     _sample_constrs: gp.tupledict[int, gp.MConstr]
 
+    _valid_norms: tuple[int, ...] = (0, 1)
+
     def __init__(
         self,
         base: BaseEnsemble,
         encoder: FeatureEncoder,
         weights: npt.ArrayLike,
-        norm: int = 1,
+        norm: Literal[0, 1] = 1,
         *,
         name: str = "Pruner",
         env: gp.Env | None = None,
@@ -36,6 +40,7 @@ class Pruner(BasePruner, MIP):
             weights=weights,
         )
         MIP.__init__(self, name=name, env=env)
+        self._validate_norm(norm=norm)
         self._norm = norm
         self._sample_constrs = gp.tupledict()
 
@@ -101,3 +106,8 @@ class Pruner(BasePruner, MIP):
             name=self.OBJECTIVE_NAME,
         )
         self.setObjective(self._objective, gp.GRB.MINIMIZE)
+
+    def _validate_norm(self, norm: int) -> None:
+        if norm not in self._valid_norms:
+            msg = "The norm must be either 0 or 1."
+            raise ValueError(msg)

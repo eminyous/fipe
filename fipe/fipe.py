@@ -1,4 +1,5 @@
 import warnings
+from typing import Literal
 
 import gurobipy as gp
 import numpy.typing as npt
@@ -24,7 +25,7 @@ class FIPE(Pruner, FeatureContainer):
         base: BaseEnsemble,
         encoder: FeatureEncoder,
         weights: npt.ArrayLike,
-        norm: int = 1,
+        norm: Literal[0, 1] = 1,
         *,
         name: str = "FIPE",
         env: gp.Env | None = None,
