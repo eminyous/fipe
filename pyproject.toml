@@ -33,6 +33,7 @@ dependencies = [
     "pandas",
     "lightgbm",
     "xgboost",
+    "pyscipopt",
 ]
 
 optional-dependencies.dev = [
