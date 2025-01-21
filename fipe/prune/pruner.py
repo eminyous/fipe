@@ -144,6 +144,7 @@ class Pruner(BasePruner, MIP):
         self.CACHE.mkdir(exist_ok=True)
         self.write(str(self.MPS))
         model = scip.Model()
+        model.hideOutput()
         model.readProblem(str(self.MPS))
         model.optimize()
         self.__weights = self._get_weights_scip(model=model)
@@ -158,7 +159,7 @@ class Pruner(BasePruner, MIP):
         for var in variables:
             matcher = re.match(pattern, var.name)
             if matcher:
-                i = int(matcher.group(1))
+                idx = int(matcher.group(1))
                 val = model.getSolVal(solution, var)
-                values[i] = val
+                values[idx] = val
         return values
