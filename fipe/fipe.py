@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from typing import Literal
 
 import gurobipy as gp
@@ -13,7 +14,7 @@ class FIPE(Pruner, FeatureContainer):
     PRUNER_NAME_FMT = "{name}_Pruner"
     ORACLE_NAME_FMT = "{name}_Oracle"
 
-    oracle: Oracle
+    oracle: Oracle | Callable[[MNumber], list[SNumber]]
 
     _n_oracle_calls: int
     _max_oracle_calls: int
@@ -30,6 +31,7 @@ class FIPE(Pruner, FeatureContainer):
         env: gp.Env | None = None,
         eps: float = Oracle.DEFAULT_EPS,
         tol: float = Oracle.DEFAULT_TOL,
+        oracle: Literal["auto"] | Callable[[MNumber], list[SNumber]] = "auto",
         max_oracle_calls: int = 100,
     ) -> None:
         Pruner.__init__(
@@ -42,28 +44,31 @@ class FIPE(Pruner, FeatureContainer):
             env=env,
         )
         FeatureContainer.__init__(self, encoder=encoder)
-        self.oracle = Oracle(
-            base=base,
-            encoder=encoder,
-            weights=weights,
-            name=self.ORACLE_NAME_FMT.format(name=name),
-            env=env,
-            tol=tol,
-            eps=eps,
-        )
+        if oracle == "auto":
+            self.oracle = Oracle(
+                base=base,
+                encoder=encoder,
+                weights=weights,
+                name=self.ORACLE_NAME_FMT.format(name=name),
+                env=env,
+                tol=tol,
+                eps=eps,
+            )
+        else:
+            self.oracle = oracle
         self._oracle_samples = []
         self._n_oracle_calls = 0
         self._max_oracle_calls = max_oracle_calls
 
     def build(self) -> None:
         Pruner.build(self)
-        self.oracle.build()
+        if isinstance(self.oracle, Oracle):
+            self.oracle.build()
         self._n_oracle_calls = 0
 
     def prune(self) -> None:
         while self._n_oracle_calls < self._max_oracle_calls:
             Pruner.prune(self)
-
             X = self._call_oracle(self.weights)
             if len(X) > 0:
                 self._save_oracle_samples(X=X)
