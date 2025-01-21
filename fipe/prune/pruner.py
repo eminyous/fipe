@@ -19,7 +19,8 @@ class Pruner(BasePruner, MIP):
     OBJECTIVE_NAME = "norm"
     SAMPLE_CONSTR_NAME_FMT = "sample_{n}"
     VALID_NOMRS: tuple[int, ...] = (0, 1)
-    MPS_FILE_NAME = "pruner.mps"
+    CACHE_FOLDER = Path(".fipe_cache")
+    MPS_FILE = CACHE_FOLDER / Path("pruner.mps")
 
     _n_samples: int
     _norm: int
@@ -138,13 +139,15 @@ class Pruner(BasePruner, MIP):
             self.__weights = np.array(self._weight_vars.X)
 
     def _optimize_scip(self) -> None:
-        mps = Path(self.MPS_FILE_NAME)
+        self.CACHE_FOLDER.mkdir(exist_ok=True)
+        mps = Path(self.MPS_FILE)
         self.write(str(mps))
         model = scip.Model()
         model.readProblem(str(mps))
         model.optimize()
         self.__weights = self._get_weights_scip(model=model)
         mps.unlink()
+        self.CACHE_FOLDER.rmdir()
 
     def _get_weights_scip(self, model: scip.Model) -> MNumber:
         solution = model.getBestSol()
