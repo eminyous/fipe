@@ -19,6 +19,8 @@ class Pruner(BasePruner, MIP):
     OBJECTIVE_NAME = "norm"
     SAMPLE_CONSTR_NAME_FMT = "sample_{n}"
     VALID_NOMRS: tuple[int, ...] = (0, 1)
+
+    # Cache
     CACHE = Path(".fipe_cache")
     MPS = CACHE / Path("pruner.mps")
 
