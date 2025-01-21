@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Literal
 
 import pytest
 from utils import DATASETS, ENV, prune, train, validate_prune_pred
@@ -33,7 +34,7 @@ def test_pruner_norm(
     model_cls: type,
     options: dict[str, int | str | None],
     seed: int,
-    norm: int,
+    norm: Literal[0, 1],
 ) -> None:
     model, encoder, _, weights, (X_train, _, _, _) = train(
         dataset=dataset,

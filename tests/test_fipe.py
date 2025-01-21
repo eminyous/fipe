@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Literal
 
 import pytest
 from utils import (
@@ -40,7 +41,7 @@ def test_prune(
     seed: int,
     model_cls: type,
     options: dict[str, int | str | None],
-    norm: int,
+    norm: Literal[0, 1],
 ) -> None:
     model, encoder, _, weights, (X_train, X_test, _, _) = train(
         dataset=dataset,

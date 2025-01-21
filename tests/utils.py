@@ -222,8 +222,8 @@ def separate(oracle: Oracle, weights: MNumber, out: list[SNumber]) -> None:
 def prune(pruner: Pruner) -> None:
     try:
         pruner.prune()
-    except gp.GurobiError:
-        msg = "Gurobi license is not available"
+    except gp.GurobiError as e:
+        msg = f"Gurobi error was raised {e.args}"
         pytest.skip(f"Skipping test: {msg}")
     except Exception:
         raise
