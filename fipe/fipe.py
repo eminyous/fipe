@@ -1,4 +1,3 @@
-import warnings
 from typing import Literal
 
 import gurobipy as gp
@@ -64,10 +63,7 @@ class FIPE(Pruner, FeatureContainer):
     def prune(self) -> None:
         while self._n_oracle_calls < self._max_oracle_calls:
             Pruner.prune(self)
-            if self.SolCount == 0:
-                msg = "No feasible solution in the pruning model."
-                warnings.warn(msg, RuntimeWarning, stacklevel=1)
-                break
+
             X = self._call_oracle(self.weights)
             if len(X) > 0:
                 self._save_oracle_samples(X=X)

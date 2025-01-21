@@ -1,9 +1,13 @@
+import re
+from pathlib import Path
 from typing import Literal
 
 import gurobipy as gp
 import numpy as np
 import numpy.typing as npt
+import pyscipopt as scip
 
+from ..env import ENV, PrunerSolver
 from ..feature import FeatureEncoder
 from ..mip import MIP
 from ..typing import BaseEnsemble, MNumber, MProb, Number
@@ -15,12 +19,15 @@ class Pruner(BasePruner, MIP):
     OBJECTIVE_NAME = "norm"
     SAMPLE_CONSTR_NAME_FMT = "sample_{n}"
     VALID_NOMRS: tuple[int, ...] = (0, 1)
+    MPS_FILE_NAME = "pruner.mps"
 
     _n_samples: int
     _norm: int
     _objective: gp.Var
     _weight_vars: gp.MVar
     _sample_constrs: gp.tupledict[int, gp.MConstr]
+
+    __weights: MNumber
 
     def __init__(
         self,
@@ -70,9 +77,7 @@ class Pruner(BasePruner, MIP):
 
     @property
     def _pruner_weights(self) -> MNumber:
-        if self.SolCount == 0:
-            return self._weights
-        return np.array(self._weight_vars.X)
+        return self.__weights
 
     def _add_sample(self, prob: MProb, class_: int) -> None:
         true_prob = prob[:, [class_]]
@@ -95,19 +100,6 @@ class Pruner(BasePruner, MIP):
             name=self.WEIGHT_VARS_NAME,
         )
 
-    def _add_objective(self) -> None:
-        self._objective = self.addVar(
-            vtype=gp.GRB.CONTINUOUS,
-            name=self.OBJECTIVE_NAME,
-        )
-        self.addGenConstrNorm(
-            resvar=self._objective,
-            vars=self._weight_vars,
-            which=self._norm,
-            name=self.OBJECTIVE_NAME,
-        )
-        self.setObjective(self._objective, gp.GRB.MINIMIZE)
-
     def _validate_norm(self, norm: int) -> None:
         if norm not in self.VALID_NOMRS:
             msg = "The norm must be either 0 or 1."
@@ -116,15 +108,53 @@ class Pruner(BasePruner, MIP):
     def _prune_l1(self) -> None:
         w = self._weight_vars
         self.setObjective(w.sum(), gp.GRB.MINIMIZE)
-        self.optimize()
+        self._optimize()
 
     def _prune_l0(self) -> None:
-        W = Number(np.sum(self._weight_vars.X))
+        W = Number(np.sum(self.__weights))
         n = self.n_estimators
         w = self._weight_vars
         u = self.addMVar(shape=n, vtype=gp.GRB.BINARY, name="u")
         contrs = self.addConstr(w <= W * u, name="bigM")
         self.setObjective(u.sum(), gp.GRB.MINIMIZE)
-        self.optimize()
+        self._optimize()
         self.remove(contrs)
         self.remove(u)
+
+    def _optimize(self) -> None:
+        if ENV.pruner_solver == PrunerSolver.GUROBI:
+            self._optimize_gurobi()
+        elif ENV.pruner_solver == PrunerSolver.SCIP:
+            self._optimize_scip()
+        else:
+            msg = "The pruner solver is not supported."
+            raise ValueError(msg)
+
+    def _optimize_gurobi(self) -> None:
+        self.optimize()
+        if self.SolCount == 0:
+            self.__weights = np.array(self._weights)
+        else:
+            self.__weights = np.array(self._weight_vars.X)
+
+    def _optimize_scip(self) -> None:
+        mps = Path(self.MPS_FILE_NAME)
+        self.write(str(mps))
+        model = scip.Model()
+        model.readProblem(str(mps))
+        model.optimize()
+        self.__weights = self._get_weights_scip(model=model)
+        mps.unlink()
+
+    def _get_weights_scip(self, model: scip.Model) -> MNumber:
+        solution = model.getBestSol()
+        pattern = rf"{self.WEIGHT_VARS_NAME}\[(\d+)\]"
+        values = np.zeros(self.n_estimators)
+        variables = model.getVars()
+        for var in variables:
+            matcher = re.match(pattern, var.name)
+            if matcher:
+                i = int(matcher.group(1))
+                val = model.getSolVal(solution, var)
+                values[i] = val
+        return values
