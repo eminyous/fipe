@@ -137,7 +137,7 @@ class FeatureEncoder:
 
             self.types[column] = FeatureType.CAT
             x = pd.get_dummies(self.X[column], prefix=column)
-            self.categories[column] = list(x.columns)
+            self.categories[column] = set(x.columns)
             for v in self.categories[column]:
                 self.inverse_categories[v] = column
             # Drop the original column
